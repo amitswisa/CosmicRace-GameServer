@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+        <!-- Extra logging related to initialization of Log4j.
+         Set to debug or trace if log4j initialization is failing. -->
+<Configuration status="warn" scan="true" monitorInterval="30">
+
+    <Properties>
+        <!-- ${sys:defaultPattern} -->
+        <Property name="defaultPattern">%d{DD-MM-yyyy hh:mm:ss.sss} %level: %m %n</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- Spring console pattern -->
+        <Console name="ConsoleDefault" target="SYSTEM_OUT">
+            <PatternLayout disableAnsi="false"  pattern="%highlight{%d{HH:mm:ss.SSS} %-5level %logger{36}.%M() - %msg%n}{FATAL=red blink, ERROR=red, WARN=yellow bold, INFO=green, DEBUG=#57D3FF, TRACE=blue}" />
+        </Console>
+
+    </Appenders>
+    <Loggers>
+        <!-- Root logger referring to console appender -->
+        <Root level="INFO">
+            <AppenderRef ref="ConsoleDefault" />
+        </Root>
+
+        <!--<logger name="request-logger" level="INFO" additivity="false">
+            <AppenderRef ref="App_Console"/>
+            <AppenderRef ref="Requests_Log_File" />
+        </logger>-->
+    </Loggers>
+</Configuration>
