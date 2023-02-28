@@ -2,11 +2,12 @@ package utils;
 
 import client.GameSession;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
-public class SocketManager {
-    public static volatile Set<GameSession> socketManager = new HashSet<>();
+public class MatchMaking {
+
+    public static volatile Queue<GameSession> socketManager = new PriorityQueue<>(); // Players waiting for a game to start queue.
     public static volatile int SESSION_ID = 1;
 
     // Sync locks.
@@ -14,8 +15,12 @@ public class SocketManager {
 
     // Adding new socket to socket list.
     public static void add(GameSession socket) {
-        socketManager.add(socket);
+        socketManager.add(socket); // Add player to queue.
         socket.setSESSION_ID(allocateSessionId()); // Create socket's unique id.
+
+        // Loop over the queue to see if there are enough players.
+        // Class Match -> hold all relevant players for a single game.
+
         LoggerManager.info("Socket (" +socket.getHost()+ " #" +socket.getSESSION_ID()+ "): New connection established!");
     }
 
@@ -24,14 +29,7 @@ public class SocketManager {
         socketManager.remove(socket);
     }
 
-    // Send message to every socket connected to the server.
-    public static void broadcast(String message) {
-        synchronized (broadcasstLocker) {
-            socketManager.stream().forEach((session) -> {
-                session.send(message);
-            });
-        }
-    }
+
 
     public static int allocateSessionId() {
         SESSION_ID += 1;
