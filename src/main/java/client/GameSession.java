@@ -11,7 +11,6 @@ import java.net.Socket;
 
 public class GameSession extends Thread {
 
-    private int SESSION_ID; // Session ID.
     private final Socket socketConnection; // Client's socket.
     private PrintWriter out_stream; // Output stream.
     private BufferedReader in_stream; // Input stream.
@@ -71,7 +70,7 @@ public class GameSession extends Thread {
     // Close socket connection.
     public void closeConnection() {
         try {
-            LoggerManager.info("Socket (" + this.getHost() + " #" + this.SESSION_ID + "): Connection closed!");
+            LoggerManager.info("Socket (" + this.getHost() + "): Connection closed!");
             //MatchMaking.remove(this);
             this.socketConnection.close();
         } catch(Exception e) {
@@ -82,15 +81,6 @@ public class GameSession extends Thread {
     // Get host address as known as IP address.
     public String getHost() {
         return this.socketConnection.getInetAddress().getHostAddress();
-    }
-
-    // Set current session unique id.
-    public void setSESSION_ID(int SESSION_ID) {
-        this.SESSION_ID = SESSION_ID;
-    }
-
-    public int getSESSION_ID() {
-        return this.SESSION_ID;
     }
 
     @Override
