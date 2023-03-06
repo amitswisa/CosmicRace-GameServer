@@ -1,5 +1,5 @@
 import utils.Utils;
-import client.GameSession;
+import client.Player;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -16,7 +16,7 @@ public class Main {
             Socket newSocketConnection = serverSocket.accept();
 
             // Create thread to handle new socket.
-            Thread t = new GameSession(newSocketConnection);
+            Thread t = new Player(newSocketConnection);
             t.setDaemon(true); // Close threads when main thread finishes.
             t.start();
         }

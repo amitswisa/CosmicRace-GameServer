@@ -1,46 +1,90 @@
 package utils;
 
-import client.GameSession;
+import client.Player;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.nio.charset.Charset;
+import java.util.*;
 
 public class MatchMaking {
 
+    private static final Object  removeLock = new Object();
     private static volatile int usersWaiting = 0;
-    public static volatile Queue<GameSession> socketManager = new PriorityQueue<>(); // Players waiting for a game to start queue.
+    public static volatile Queue<Player> socketManager = new PriorityQueue<>(); // Players waiting for a game to start queue.
+    public static volatile Map<String, Match> activeMatches = new HashMap<>();
 
     // Adding new socket to socket list.
-    public static synchronized void add(GameSession socket) {
+    public static synchronized void addPlayerToWaitingList(Player socket) throws InterruptedException {
         socketManager.add(socket); // Add player to queue.
         increaseUsersWaiting(); // Add user to waiting users count.
-
-        // Loop over the queue to see if there are enough players.
-        // Class Match -> hold all relevant players for a single game.
+        LoggerManager.info("Socket (" +socket.getHost() + "): Waiting to play!");
 
         // There are enough users to create a match.
-        if(usersWaiting >= 4) {
-            List<GameSession> m_u_List = new ArrayList<>(4);
+        if(usersWaiting >= Utils.MAXIMUM_AMOUNT_OF_PLAYERS) {
+
+            System.out.println("Server is loading....");
+
+            List<Player> m_u_List = new ArrayList<>(4);
 
             // Get 4 users from top of the queue.
-            for(int i = 0; i<4;i++)
-                m_u_List.add(socketManager.poll());
+            for(int i = 0; i < Utils.MAXIMUM_AMOUNT_OF_PLAYERS; i++)
+            {
+                Player player = socketManager.poll();
 
-            Match n_Match = new Match(m_u_List);
+                // If at least one player quits from waiting for a match and there arent enough players.
+                if(player == null)
+                {
+                    // TODO: Notify to all other players - CHECK.
+                    socketManager.addAll(m_u_List);
+                    return;
+                }
+
+                m_u_List.add(player);
+            }
+
+            // Create new match and start it.
+            String matchIdentifyer = generateSessionIdentifyer();
+            Match newMatch = new Match(matchIdentifyer, m_u_List);
+            activeMatches.put(matchIdentifyer, newMatch);
+
+            // Log players currently playing.
+            LoggerManager.info("New match! Players: ");
+            m_u_List.forEach(player -> LoggerManager.info(player.getPlayerName()));
+
+            newMatch.start();
         }
 
-        LoggerManager.info("Socket (" +socket.getHost() + "): New connection established!");
     }
 
     // Removing a socket connection from socket list.
-    public static void remove(GameSession socket) {
-        socketManager.remove(socket);
+    public static void removePlayerFromWaitingList(Player socket) {
+        synchronized (removeLock) {
+            socketManager.remove(socket);
+            decreaseUserWaiting();
+        }
     }
 
+    public static void removeActiveMatch(Match match) {
+        activeMatches.remove(match.getIdentifyer());
+    }
+
+    public static void decreaseUserWaiting(){
+        --usersWaiting;
+    }
     private static void increaseUsersWaiting() {
         usersWaiting += 1;
+    }
+
+    private static String generateSessionIdentifyer() {
+        String generatedString;
+
+        do {
+            byte[] bytes = new byte[7];
+            new Random().nextBytes(bytes);
+            generatedString = new String(bytes, Charset.forName("UTF-8"));
+        } while(activeMatches.containsKey(generatedString));
+
+        return generatedString;
+
     }
 
 }
