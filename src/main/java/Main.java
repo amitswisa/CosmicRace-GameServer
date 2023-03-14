@@ -1,3 +1,4 @@
+import utils.MatchMaking;
 import utils.Utils;
 import client.Player;
 import java.net.ServerSocket;
@@ -16,9 +17,7 @@ public class Main {
             Socket newSocketConnection = serverSocket.accept();
 
             // Create thread to handle new socket.
-            Thread t = new Player(newSocketConnection);
-            t.setDaemon(true); // Close threads when main thread finishes.
-            t.start();
+            MatchMaking.addPlayerToWaitingList(new Player(newSocketConnection)); // Add socket to socket's list.
         }
     }
 }

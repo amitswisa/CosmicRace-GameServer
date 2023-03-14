@@ -14,7 +14,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.logging.Logger;
 
-public class Player extends Thread implements Comparable {
+public class Player implements Comparable {
 
     private String playerName;
     private Match currentMatch;
@@ -22,6 +22,7 @@ public class Player extends Thread implements Comparable {
     private Character character;
 
     private final Socket socketConnection; // Client's socket.
+
     private PrintWriter out_stream; // Output stream.
     private BufferedReader in_stream; // Input stream.
 
@@ -48,30 +49,10 @@ public class Player extends Thread implements Comparable {
 
             this.waitingToPlay = true;
 
-            MatchMaking.addPlayerToWaitingList(this); // Add socket to socket's list.
-
         } catch(Exception e) {
             LoggerManager.error("Error occurred with " + this.getHost() + ": " + e.getMessage());
             closeConnection();
         }
-    }
-
-    @Override
-    public void run() {
-
-        try {
-            String line;
-            while ((line = this.in_stream.readLine()) != null) {
-                // Handle client request to play online.
-
-            }
-
-        } catch (IOException e) {
-            // TODO - remove player from match.
-            LoggerManager.debug("Error handling client ("+ this.getHost() +"): " + e.getMessage());
-            closeConnection();
-        }
-
     }
 
     // Send message to customer.
@@ -118,6 +99,18 @@ public class Player extends Thread implements Comparable {
         return this.socketConnection.getInetAddress().getHostAddress();
     }
 
+    public Socket getSocketConnection() {
+        return socketConnection;
+    }
+
+    public PrintWriter getOut_stream() {
+        return out_stream;
+    }
+
+    public BufferedReader getIn_stream() {
+        return in_stream;
+    }
+
     @Override
     public boolean equals(Object obj) {
         return (this == obj);
@@ -127,4 +120,6 @@ public class Player extends Thread implements Comparable {
     public int compareTo(Object o) {
         return 0;
     }
+
+
 }

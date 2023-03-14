@@ -30,7 +30,7 @@ public class MatchMaking {
             {
                 Player player = socketManager.poll();
 
-                // If at least one player quits from waiting for a match and there arent enough players.
+                // If at least one player quits from waiting for a match and there aren't enough players.
                 if(player == null)
                 {
                     // TODO: Notify to all other players - CHECK.

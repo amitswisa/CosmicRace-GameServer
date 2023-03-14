@@ -7,7 +7,6 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-
 public class User {
 
     public static void main(String[] args) {
