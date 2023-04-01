@@ -1,22 +1,17 @@
 package utils;
 
+import addons.Character;
 import client.Player;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.logging.Logger;
 
 public class Match extends Thread {
 
     private List<Player> players;
     private String identifyer;
-    private TimerTask clientsDataRefresher;
-    private Timer timer;
     private boolean gameOver;
 
 
@@ -32,6 +27,8 @@ public class Match extends Thread {
 
     @Override
     public void run() {
+
+        //TODO: collect character's data before the match starts.
 
         // Log match started
         this.broadCastToAll("Match Started!");
@@ -101,26 +98,16 @@ public class Match extends Thread {
         this.players.forEach(player -> player.closeConnection());
     }
 
+    private void updatePlayersStats(List<Character> characterList){
+
+    }
 
     public void broadCastToAll(String message){
-        players.stream().forEach(player -> player.sendMessage(message));
+        players.forEach(player -> player.sendMessage(message));
         LoggerManager.info("Message to all players: " + message);
     }
 
     public String getIdentifyer() {
         return this.identifyer;
     }
-
-
-
-//    public void collectClientsData() {
-//        clientsDataRefresher = new ClientsDataRefresher(players,
-//                this::doSomething);
-//        timer = new Timer();
-//        timer.schedule(clientsDataRefresher, 200,200);
-//    }
-//
-//    private void doSomething(){
-//
-//    }
 }
