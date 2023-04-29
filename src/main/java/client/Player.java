@@ -1,32 +1,29 @@
 package client;
 import addons.Character;
 import addons.Location;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.Gson;
+import interfaces.Match;
 import utils.LoggerManager;
-import utils.Match;
+
 import utils.MatchMaking;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
+import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
-public class Player implements Comparable {
-
-    private String playerName;
+public class Player implements Comparable/*, AutoCloseable */{
     private Match currentMatch;
     private Location location;
     private Character character;
-
     private final Socket socketConnection; // Client's socket.
-
     private PrintWriter out_stream; // Output stream.
     private BufferedReader in_stream; // Input stream.
-
     private boolean waitingToPlay;
+    private boolean isOnlinePlayer;
+    public static final Gson gson = new Gson();
 
     // GameSession constructor.
     public Player(Socket socketConnection) {
@@ -39,15 +36,23 @@ public class Player implements Comparable {
             LoggerManager.info("Player (" +this.getHost()+ ") connected to server!");
 
             // Get initialization data from client and parse it.
-            String init_Data = in_stream.readLine();
+
+            //TODO: NOTE: probably don't need this anymore, because parsing occurs in "getCharacterInfoFromSocket".
+            /*String init_Data = in_stream.readLine();
             JsonObject parser = JsonParser.parseString(init_Data).getAsJsonObject();
 
             this.playerName = parser.get("username").getAsString();
             this.location = new Location(parser.getAsJsonObject("location").get("x").getAsDouble()
-                    , parser.getAsJsonObject("location").get("y").getAsDouble());
-            // TODO - Get Character init settings from json.
+                    , parser.getAsJsonObject("location").get("y").getAsDouble());*/
 
             this.waitingToPlay = true;
+
+            //TODO: need to get socket's header.
+            //---------------
+            isOnlinePlayer = true;
+            //---------------
+
+            getCharacterJsonFromSocket();
 
         } catch(Exception e) {
             LoggerManager.error("Error occurred with " + this.getHost() + ": " + e.getMessage());
@@ -55,30 +60,55 @@ public class Player implements Comparable {
         }
     }
 
+    private void getCharacterJsonFromSocket() {
+        Gson gson = new Gson();
+        try {
+            character = gson.fromJson(in_stream.readLine(), Character.class);
+        } catch (IOException e) {
+            throw new RuntimeException("couldn't read client's data.");
+        }
+
+        Player.printCharacter(character);
+    }
+
     // Send message to customer.
     public void sendMessage(String message) {
         try {
             out_stream.println(message);
         } catch(Exception e) {
+
+            if(e instanceof SocketException)
+            {
+                // TODO - Handle player teminated client.
+            }
+
             LoggerManager.error(e.getMessage());
+        }
+    }
+
+    public void publishPlayerDetails(){
+        try{
+            String playerDataJson = gson.toJson(character, Character.class);
+            out_stream.println(playerDataJson);
+        }catch(Exception e){
+            LoggerManager.error("player " + getPlayerName() + "couldn't send his details for some reason.");
         }
     }
 
     public void setNewMatch(Match n_Match) {
         this.currentMatch = n_Match;
-        this.location = new Location(0,0);
+        this.location = new Location(0,0); //probably not necessary.
     }
 
-    // Close socket connection.
+    // Close socket connection when player exists while match started.
     public void closeConnection() {
 
         if(this.socketConnection.isClosed())
             return;
 
         try {
-
             LoggerManager.info("Socket (" + this.getHost() + "): Connection closed!");
-            MatchMaking.removePlayerFromWaitingList(this); // Remove from waiting to play list.
+            MatchMaking.removePlayerFromWaitingList(this);
 
             // If player was already in a game.
             if(this.currentMatch != null && !this.currentMatch.isGameOver())
@@ -90,19 +120,30 @@ public class Player implements Comparable {
         }
     }
 
-    public String getPlayerName() {
-        return this.playerName;
-    }
-
     // Get host address as known as IP address.
     public String getHost() {
         return this.socketConnection.getInetAddress().getHostAddress();
     }
 
-    public Socket getSocketConnection() {
+    private Socket getSocketConnection() {
         return socketConnection;
     }
 
+    public boolean isConnectionAlive() {
+
+        try {
+            String heartbeat = "isAlive\n";
+            this.socketConnection.getOutputStream().write(heartbeat.getBytes());
+        } catch (IOException e) {
+            if(e instanceof SocketException) {
+                this.closeConnection();
+                return false;
+            }
+        }
+
+        return true;
+
+    }
     public PrintWriter getOut_stream() {
         return out_stream;
     }
@@ -110,7 +151,9 @@ public class Player implements Comparable {
     public BufferedReader getIn_stream() {
         return in_stream;
     }
-
+    public Character getCharacter(){
+        return this.character;
+    }
     @Override
     public boolean equals(Object obj) {
         return (this == obj);
@@ -121,5 +164,27 @@ public class Player implements Comparable {
         return 0;
     }
 
+    public String getPlayerName(){
+        return this.character.getCharacterName();
+    }
 
+    public static void printCharacter(Character character){
+
+        System.out.println("Character ID: " + character.getCharacterID());
+        System.out.println("Character Name: " + character.getCharacterName());
+        System.out.println("Level: " + character.getLevel());
+        System.out.println("XP: " + character.getXp());
+        System.out.println("Magic Points: " + character.getMagicPoints());
+        System.out.println("Speed: " + character.getSpeed());
+        System.out.println("Power: " + character.getPower());
+        System.out.println("Defense: " + character.getDefence());
+        System.out.println("Jump: " + character.getJump());
+        System.out.println("Wins: " + character.getWins());
+        System.out.println("Loses: " + character.getLoses());
+    }
+
+ /*   @Override
+    public void close() throws Exception {
+        closeConnection();
+    }*/
 }
