@@ -28,8 +28,6 @@ public class MultiPlayerMatch extends Thread implements Match{
     @Override
     public void run() {
 
-        //TODO: collect character's data before the match starts.
-
         // Log match started
         this.broadCastToAll("Match Started!");
 
@@ -96,6 +94,10 @@ public class MultiPlayerMatch extends Thread implements Match{
         LoggerManager.info("Match ended!");
 
         // TODO - update players coins and stats on database.
+        //  /30.4/UPDATE - only stats left.
+        this.players.forEach(player -> {
+            DBHandler.updateStatsInDB(player.getCharacter());
+        });
 
         MatchMaking.removeActiveMatch(this);
         this.players.forEach(player -> player.closeConnection());

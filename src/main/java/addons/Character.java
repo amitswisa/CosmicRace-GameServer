@@ -7,14 +7,14 @@ public class Character {
    private int xp;
    private int Power;
    private int MagicPoints;
-   private int Speed;
-   private int Defence;
-   private int jump;
+   private float Speed;
+   private float Defence;
+   private float jump;
    private int Wins;
    private int Loses;
 
     public Character(int characterID, String characterName, int level,
-                     int xp, int magicPoints, int speed, int defence, int jump,
+                     int xp, int magicPoints, float speed, float defence, float jump,
                      int wins, int loses, int power) {
         CharacterID = characterID;
         CharacterName = characterName;
@@ -49,15 +49,15 @@ public class Character {
         return MagicPoints;
     }
 
-    public int getSpeed() {
+    public float getSpeed() {
         return Speed;
     }
 
-    public int getDefence() {
+    public float getDefence() {
         return Defence;
     }
 
-    public int getJump() {
+    public float getJump() {
         return jump;
     }
 
