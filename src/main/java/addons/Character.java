@@ -1,120 +1,76 @@
 package addons;
 
 public class Character {
-   private int CharacterID;
-   private String CharacterName;
-   private int Level;
+   private int characterID;
+   private String characterName;
+   private int level;
    private int xp;
-   private int Power;
-   private int MagicPoints;
-   private float Speed;
-   private float Defence;
+   private int power;
+   private int magicPoints;
+   private float speed;
+   private float defence;
    private float jump;
-   private int Wins;
-   private int Loses;
+   private int wins;
+   private int loses;
 
-    public Character(int characterID, String characterName, int level,
-                     int xp, int magicPoints, float speed, float defence, float jump,
-                     int wins, int loses, int power) {
-        CharacterID = characterID;
-        CharacterName = characterName;
-        Level = level;
+    public Character(int characterID, String characterName, int level, int xp,
+                     int power, int magicPoints, float speed, float defence,
+                     float jump, int wins, int loses) {
+
+        this.characterID = characterID;
+        this.characterName = characterName;
+        this.level = level;
         this.xp = xp;
-        MagicPoints = magicPoints;
-        Speed = speed;
-        Defence = defence;
+        this.power = power;
+        this.magicPoints = magicPoints;
+        this.speed = speed;
+        this.defence = defence;
         this.jump = jump;
-        Wins = wins;
-        Loses = loses;
-        Power = power;
+        this.wins = wins;
+        this.loses = loses;
     }
 
     public int getCharacterID() {
-        return CharacterID;
+        return characterID;
     }
 
     public String getCharacterName() {
-        return CharacterName;
+        return characterName;
     }
 
     public int getLevel() {
-        return Level;
+        return level;
     }
 
     public int getXp() {
         return xp;
     }
 
+    public int getPower() {
+        return power;
+    }
+
     public int getMagicPoints() {
-        return MagicPoints;
+        return magicPoints;
     }
 
     public float getSpeed() {
-        return Speed;
+        return speed;
     }
 
     public float getDefence() {
-        return Defence;
+        return defence;
     }
 
     public float getJump() {
         return jump;
     }
 
-    public int getPower() {
-        return Power;
-    }
-
     public int getWins() {
-        return Wins;
+        return wins;
     }
 
     public int getLoses() {
-        return Loses;
-    }
-
-
-    public void setCharacterID(int characterID) {
-        CharacterID = characterID;
-    }
-
-    public void setCharacterName(String characterName) {
-        CharacterName = characterName;
-    }
-
-    public void setLevel(int level) {
-        Level = level;
-    }
-
-    public void setXp(int xp) {
-        this.xp = xp;
-    }
-
-    public void setPower(int power) {
-        Power = power;
-    }
-
-    public void setMagicPoints(int magicPoints) {
-        MagicPoints = magicPoints;
-    }
-
-    public void setSpeed(int speed) {
-        Speed = speed;
-    }
-
-    public void setDefence(int defence) {
-        Defence = defence;
-    }
-
-    public void setJump(int jump) {
-        this.jump = jump;
-    }
-
-    public void setWins(int wins) {
-        Wins = wins;
-    }
-
-    public void setLoses(int loses) {
-        Loses = loses;
+        return loses;
     }
 }

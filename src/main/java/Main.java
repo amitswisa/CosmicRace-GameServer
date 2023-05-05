@@ -22,8 +22,9 @@ public class Main {
             // Waiting for new connection.
             Socket newSocketConnection = serverSocket.accept();
 
-            // Create thread to handle new socket.
-            MatchMaking.addPlayerToWaitingList(new Player(newSocketConnection)); // Add socket to socket's list.
+            // Trying to create a player instance.
+            // On success, added to "Players waiting" queue.
+            new Player(newSocketConnection);
         }
     }
 }

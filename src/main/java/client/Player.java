@@ -1,8 +1,9 @@
 package client;
 import addons.Character;
 import addons.Location;
-import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import interfaces.Match;
+import okhttp3.*;
 import utils.LoggerManager;
 
 import utils.MatchMaking;
@@ -11,24 +12,18 @@ import utils.Utils;
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
-import java.nio.channels.SocketChannel;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.logging.Logger;
 
-public class Player implements Comparable/*, AutoCloseable */ {
+public class Player implements Comparable {
+
+    private String username;
     private Match currentMatch;
     private Location location;
     private Character character;
     private final Socket socketConnection; // Client's socket.
     private PrintWriter out_stream; // Output stream.
     private BufferedReader in_stream; // Input stream.
-    private boolean waitingToPlay;
+    private boolean isReady;
     private boolean isOnlinePlayer;
-    public static final Gson gson = new Gson();
 
     // GameSession constructor.
     public Player(Socket socketConnection) {
@@ -40,40 +35,50 @@ public class Player implements Comparable/*, AutoCloseable */ {
             this.in_stream = new BufferedReader(new InputStreamReader(this.socketConnection.getInputStream()));
             LoggerManager.info("Player (" + this.getHost() + ") connected to server!");
 
-            // Get initialization data from client and parse it.
+            // Get initialization data from client in json (contains userid & characterId).
+            String init_Data = in_stream.readLine();
 
-            //TODO: NOTE: probably don't need this anymore, because parsing occurs in "getCharacterInfoFromSocket".
-            /*String init_Data = in_stream.readLine();
-            JsonObject parser = JsonParser.parseString(init_Data).getAsJsonObject();
+            fetchPlayerData(Utils.createJsonFromString(init_Data));
 
-            this.playerName = parser.get("username").getAsString();
-            this.location = new Location(parser.getAsJsonObject("location").get("x").getAsDouble()
-                    , parser.getAsJsonObject("location").get("y").getAsDouble());*/
+            this.isOnlinePlayer = true;
+            this.isReady = false;
+            this.sendMessage("N: Connection established.");
 
-            this.waitingToPlay = true;
-
-            //TODO: need to get socket's header.
-            //---------------
-            isOnlinePlayer = true;
-            //---------------
-
-            getCharacterJsonFromSocket();
-
+            // Add socket to socket's list.
+            MatchMaking.addPlayerToWaitingList(this);
         } catch (Exception e) {
             LoggerManager.error("Error occurred with " + this.getHost() + ": " + e.getMessage());
+            HandleClientError(e);
             closeConnection();
         }
     }
 
-    private void getCharacterJsonFromSocket() {
-        Gson gson = new Gson();
-        try {
-            character = gson.fromJson(in_stream.readLine(), Character.class);
-        } catch (IOException e) {
-            throw new RuntimeException("couldn't read client's data.");
+    private void HandleClientError(Exception e) {
+        sendMessage("E:" + e.getMessage());
+    }
+
+    private void fetchPlayerData(JsonObject init_Data) throws IOException {
+        OkHttpClient client = new OkHttpClient();
+
+        RequestBody requestBody = new FormBody.Builder()
+                .add("userid", String.valueOf(init_Data.get("userid")))
+                .add("characterId", String.valueOf(init_Data.get("characterId")))
+                .build();
+
+        Request request = new Request.Builder()
+                .url(Utils.WEB_API_URL + "/fetchCharacterData")
+                .addHeader("Content-Type", "application/x-www-form-urlencoded")
+                .post(requestBody)
+                .build();
+
+        Response response = client.newCall(request).execute();
+        if (!response.isSuccessful()) {
+            throw new IOException("Error occurred while fetching character data, please try again later...");
         }
 
-        Utils.printCharacter(character);
+        this.username = String.valueOf(Utils.createJsonFromString(response.body().string()).get("username"));
+        character = Utils.gson.fromJson(response.body().string(), Character.class);
+
     }
 
     // Send message to customer.
@@ -83,19 +88,10 @@ public class Player implements Comparable/*, AutoCloseable */ {
         } catch (Exception e) {
 
             if (e instanceof SocketException) {
-                // TODO - Handle player teminated client.
+                // TODO - Handle player terminated client.
             }
 
             LoggerManager.error(e.getMessage());
-        }
-    }
-
-    public void publishPlayerDetails() {
-        try {
-            String playerDataJson = gson.toJson(character, Character.class);
-            out_stream.println(playerDataJson);
-        } catch (Exception e) {
-            LoggerManager.error("player " + getPlayerName() + "couldn't send his details for some reason.");
         }
     }
 
@@ -120,17 +116,13 @@ public class Player implements Comparable/*, AutoCloseable */ {
 
             this.socketConnection.close();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            LoggerManager.error(e.getMessage());
         }
     }
 
     // Get host address as known as IP address.
     public String getHost() {
         return this.socketConnection.getInetAddress().getHostAddress();
-    }
-
-    private Socket getSocketConnection() {
-        return socketConnection;
     }
 
     public boolean isConnectionAlive() {
@@ -175,11 +167,34 @@ public class Player implements Comparable/*, AutoCloseable */ {
         return this.character.getCharacterName();
     }
 
+    public String getUsername() {
+        return this.username;
+    }
 
- /*   @Override
-    public void close() throws Exception {
-        closeConnection();
-    }*/
+    public JsonObject getAppearanceDataAsJson(){
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("characterId", character.getCharacterID());
+        jsonObject.addProperty("characterName", character.getCharacterName());
+        jsonObject.addProperty("playerUsername", this.getUsername());
+        return jsonObject;
+    }
 
+    public String readMessage(){
+        try {
+            return getIn_stream().readLine();
+        } catch (IOException e) {
+
+            //TODO - handle player client termination.
+            return null;
+        }
+    }
+
+    public boolean isReady(){
+        return this.isReady;
+    }
+
+    public void setReady(){
+        this.isReady = true;
+    }
 
 }

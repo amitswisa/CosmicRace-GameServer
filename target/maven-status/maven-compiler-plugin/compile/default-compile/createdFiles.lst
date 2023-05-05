@@ -3,9 +3,11 @@ dto\SocketMessage.class
 utils\LoggerManager.class
 utils\Utils.class
 utils\MatchMaking.class
+dto\ClientMessage$MessageType.class
 addons\Character.class
 client\Player.class
 dto\SocketMessage$MessageType.class
 client\User.class
 Main.class
 utils\DBHandler.class
+dto\ClientMessage.class

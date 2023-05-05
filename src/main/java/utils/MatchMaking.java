@@ -21,6 +21,8 @@ public class MatchMaking {
 
         playersManager.add(newPlayer); // Add player to queue.
         increaseUsersWaiting(); // Add user to waiting users count.
+
+        newPlayer.sendMessage("N: Looking for other players...");
         LoggerManager.info("Socket (" +newPlayer.getHost() + "): Waiting to play!");
 
         // There are enough users to create a match.

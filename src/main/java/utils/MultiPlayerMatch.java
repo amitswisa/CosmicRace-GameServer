@@ -3,12 +3,16 @@ package utils;
 import addons.Character;
 
 import client.Player;
+import com.google.gson.JsonObject;
 import interfaces.Match;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MultiPlayerMatch extends Thread implements Match{
     private List<Player> players;
@@ -17,19 +21,55 @@ public class MultiPlayerMatch extends Thread implements Match{
 
     public MultiPlayerMatch(String identifyer, List<Player> players) {
         // Update current match for all players.
+        this.gameOver = false;
         this.identifyer = identifyer;
         this.players = players;
+
+        // Init settings.
         this.players.forEach(player -> player.setNewMatch(this));
 
-        // Game start!
-        this.gameOver = false;
+        // Message deliver.
+        broadCastToAll("N: Players found, creating a match.");
+        broadCastToAll(createPlayersAppearanceJson());
+        waitForPlayersConfirmation();
+    }
+
+    private void waitForPlayersConfirmation() {
+        AtomicBoolean isEveryoneReady = new AtomicBoolean(false);
+
+        do{
+            isEveryoneReady.set(true);
+            players.forEach(player ->{
+                if(!player.isReady()){
+                    if(player.readMessage() != "READY")
+                        isEveryoneReady.set(false);
+                    else
+                        player.setReady();
+                }
+            });
+        }
+        while(!isEveryoneReady.get());
+    }
+
+    private String createPlayersAppearanceJson() {
+        // Create a map to hold the player objects
+        Map<String, JsonObject> playersMap = new HashMap<>();
+        this.players.forEach((player) -> playersMap.put(player.getUsername(), player.getAppearanceDataAsJson()));
+
+        // Create the main JSON object and add the "MatchIdentifyer" and "Players" properties
+        JsonObject mainObject = new JsonObject();
+        mainObject.addProperty("MatchIdentifier", this.getIdentifyer());
+        mainObject.add("Players", Utils.gson.toJsonTree(playersMap));
+
+        // Convert the JSON object to a string and print it
+        return Utils.gson.toJson(mainObject);
     }
 
     @Override
     public void run() {
 
         // Log match started
-        this.broadCastToAll("Match Started!");
+        this.broadCastToAll("N: Match Started!");
 
         // Keep game alive until its over.
         while(!gameOver)
