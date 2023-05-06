@@ -33,7 +33,7 @@ public class Player implements Comparable {
             // Get client's I/O tunnels.
             this.out_stream = new PrintWriter(this.socketConnection.getOutputStream(), true);
             this.in_stream = new BufferedReader(new InputStreamReader(this.socketConnection.getInputStream()));
-            LoggerManager.info("Player (" + this.getHost() + ") connected to server!");
+            //LoggerManager.info("Player (" + this.getHost() + ") connected to server!");
 
             // Get initialization data from client in json (contains userid & characterId).
             String init_Data = in_stream.readLine();
@@ -76,8 +76,12 @@ public class Player implements Comparable {
             throw new IOException("Error occurred while fetching character data, please try again later...");
         }
 
-        this.username = String.valueOf(Utils.createJsonFromString(response.body().string()).get("username"));
-        character = Utils.gson.fromJson(response.body().string(), Character.class);
+        JsonObject resData = Utils.createJsonFromString(response.body().string());
+        this.username = String.valueOf((resData).get("username"));
+        character = Utils.gson.fromJson(resData, Character.class);
+
+        // TODO - delete
+        this.out_stream.println("Fetched data.");
 
     }
 
@@ -128,7 +132,7 @@ public class Player implements Comparable {
     public boolean isConnectionAlive() {
 
         try {
-            String heartbeat = "isAlive\n";
+            String heartbeat = "C: isAlive\n";
             this.socketConnection.getOutputStream().write(heartbeat.getBytes());
         } catch (IOException e) {
             if (e instanceof SocketException) {
@@ -181,7 +185,8 @@ public class Player implements Comparable {
 
     public String readMessage(){
         try {
-            return getIn_stream().readLine();
+            String msg = getIn_stream().readLine();
+            return msg;
         } catch (IOException e) {
 
             //TODO - handle player client termination.

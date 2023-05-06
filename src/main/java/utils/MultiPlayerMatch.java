@@ -31,7 +31,6 @@ public class MultiPlayerMatch extends Thread implements Match{
         // Message deliver.
         broadCastToAll("N: Players found, creating a match.");
         broadCastToAll(createPlayersAppearanceJson());
-        waitForPlayersConfirmation();
     }
 
     private void waitForPlayersConfirmation() {
@@ -41,7 +40,9 @@ public class MultiPlayerMatch extends Thread implements Match{
             isEveryoneReady.set(true);
             players.forEach(player ->{
                 if(!player.isReady()){
-                    if(player.readMessage() != "READY")
+                    String msg = player.readMessage();
+                    LoggerManager.info(msg);
+                    if(!msg.equals("READY"))
                         isEveryoneReady.set(false);
                     else
                         player.setReady();
@@ -67,6 +68,10 @@ public class MultiPlayerMatch extends Thread implements Match{
 
     @Override
     public void run() {
+        // Logic
+        broadCastToAll("N: READY?");
+        waitForPlayersConfirmation();
+        broadCastToAll("O: START");
 
         // Log match started
         this.broadCastToAll("N: Match Started!");
