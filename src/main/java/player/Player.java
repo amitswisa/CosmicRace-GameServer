@@ -14,6 +14,7 @@ import utils.Utils;
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Objects;
 
 public class Player implements Comparable {
 
@@ -27,8 +28,8 @@ public class Player implements Comparable {
     private boolean m_IsReady;
     private boolean m_IsOnline;
 
-    // GameSession constructor.
-    public Player(Socket socketConnection) throws SocketException {
+    public Player(Socket socketConnection) throws SocketException
+    {
 
         this.m_SocketConnection = socketConnection;
 
@@ -47,16 +48,18 @@ public class Player implements Comparable {
 
         } catch (Exception e) {
             LoggerManager.error("Error occurred with " + this.getHost() + ": " + e.getMessage());
-            HandleClientError(e);
+            handleClientError(e);
             closeConnection();
         }
     }
 
-    private void HandleClientError(Exception e) {
+    private void handleClientError(Exception e)
+    {
         sendMessage(new ClientMessage(ClientMessage.MessageType.ERROR, e.getMessage()).toString());
     }
 
-    private void fetchPlayerData(JsonObject init_Data) throws IOException {
+    private void fetchPlayerData(JsonObject init_Data) throws IOException
+    {
         OkHttpClient client = new OkHttpClient();
 
         RequestBody requestBody = new FormBody.Builder()
@@ -85,7 +88,8 @@ public class Player implements Comparable {
     }
 
     // Send message to customer.
-    public void sendMessage(String message) {
+    public final void sendMessage(String message)
+    {
         try {
             m_OutStream.println(message);
         } catch (Exception e) {
@@ -98,24 +102,25 @@ public class Player implements Comparable {
         }
     }
 
-    public void setNewMatch(Match n_Match) {
+    public final void setNewMatch(Match n_Match)
+    {
         this.m_CurrentMatch = n_Match;
         this.m_Location = new Location(0, 0); //probably not necessary.
     }
 
     // Close socket connection when player exists while match started.
-    public void closeConnection() {
+    public final void closeConnection() {
 
         if (this.m_SocketConnection.isClosed())
             return;
 
         try {
             LoggerManager.info("Socket (" + this.getHost() + "): Connection closed!");
-            MatchMaking.removePlayerFromWaitingList(this);
+            MatchMaking.RemovePlayerFromWaitingList(this);
 
             // If player was already in a game.
-            if (this.m_CurrentMatch != null && !this.m_CurrentMatch.isM_IsGameOver())
-                this.m_CurrentMatch.removePlayerFromMatch(this);
+            if (this.m_CurrentMatch != null && !this.m_CurrentMatch.IsGameOver())
+                this.m_CurrentMatch.RemovePlayerFromMatch(this);
 
             this.m_SocketConnection.close();
         } catch (Exception e) {
@@ -124,11 +129,13 @@ public class Player implements Comparable {
     }
 
     // Get host address as known as IP address.
-    public String getHost() {
+    public final String getHost()
+    {
         return this.m_SocketConnection.getInetAddress().getHostAddress();
     }
 
-    public boolean isConnectionAlive() {
+    public final boolean isConnectionAlive()
+    {
 
         try {
             ClientMessage heartbeat = new ClientMessage(ClientMessage.MessageType.CONFIRMATION, "isAlive\n");
@@ -145,47 +152,44 @@ public class Player implements Comparable {
 
     }
 
-    public PrintWriter getM_OutStream() {
+    public final PrintWriter GetOutStream()
+    {
         return m_OutStream;
     }
 
-    public BufferedReader getM_InStream() {
+    public final BufferedReader GetInStream()
+    {
         return m_InStream;
     }
 
-    public Character getM_Character() {
+    public final Character GetCharacter()
+    {
         return this.m_Character;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        return (this == obj);
-    }
-
-    @Override
-    public int compareTo(Object o) {
-        return 0;
-    }
-
-    public String getPlayerName() {
+    public final String getPlayerName()
+    {
         return this.m_Character.getCharacterName();
     }
 
-    public String getM_UserName() {
+    public final String GetUserName()
+    {
         return this.m_UserName;
     }
 
-    public JsonObject getAppearanceDataAsJson(){
+    public final JsonObject GetCharacterDataAndPlayerName()
+    {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("characterId", m_Character.getCharacterID());
         jsonObject.addProperty("characterName", m_Character.getCharacterName());
-        jsonObject.addProperty("playerUsername", this.getM_UserName());
+        jsonObject.addProperty("playerUsername", this.GetUserName());
         return jsonObject;
     }
 
-    public String readMessage(){
+    public final String ReadMessage()
+    {
         try {
-            String msg = getM_InStream().readLine();
+            String msg = GetInStream().readLine();
             return msg;
         } catch (IOException e) {
 
@@ -194,12 +198,34 @@ public class Player implements Comparable {
         }
     }
 
-    public boolean isM_IsReady(){
+    public final boolean IsReady()
+    {
         return this.m_IsReady;
     }
 
-    public void setReady(){
+    public final void MarkAsReady()
+    {
         this.m_IsReady = true;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        return 0;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Player player = (Player) o;
+        return m_UserName.equals(player.m_UserName) && m_SocketConnection.equals(player.m_SocketConnection);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(m_UserName, m_SocketConnection);
     }
 
 }

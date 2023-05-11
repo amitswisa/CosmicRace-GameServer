@@ -8,7 +8,7 @@ import dto.ClientMessage;
 import interfaces.Match;
 import utils.singletons.DBHandler;
 import utils.LoggerManager;
-import utils.Utils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -38,28 +38,28 @@ final class OnlineMatch extends Thread implements Match {
         this.m_MatchPlayers.forEach(player -> player.setNewMatch(this));
 
         // Message deliver.
-        sendToAll(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Players found, creating a match.").toString());
+        SendToAll(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Players found, creating a match.").toString());
 
-        sendToAll(new ClientMessage(ClientMessage.MessageType.DATA, createPlayersAppearanceJson()).toString());
+        SendToAll(new ClientMessage(ClientMessage.MessageType.DATA, createPlayersAppearanceJson()).toString());
     }
 
     @Override
     public void run() {
 
-        this.sendToAll(new ClientMessage(ClientMessage.MessageType.CONFIRMATION, "READY?").toString());
+        this.SendToAll(new ClientMessage(ClientMessage.MessageType.CONFIRMATION, "READY?").toString());
 
         this.waitForPlayersConfirmation();
 
-        this.sendToAll(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Starting match..").toString());
+        this.SendToAll(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Starting match..").toString());
 
-        this.sendToAll(new ClientMessage(ClientMessage.MessageType.ACTION, "START").toString());
+        this.SendToAll(new ClientMessage(ClientMessage.MessageType.ACTION, "START").toString());
 
         while (!m_IsGameOver) {
             // should read the input from socket's buffer for each player.
             for (Player player : m_MatchPlayers) {
                 try {
-                    BufferedReader in = player.getM_InStream();
-                    PrintWriter out = player.getM_OutStream();
+                    BufferedReader in = player.GetInStream();
+                    PrintWriter out = player.GetOutStream();
 
                     // collect all the input that the client send in the past 200ms.
                     if (in.ready()) {
@@ -78,7 +78,7 @@ final class OnlineMatch extends Thread implements Match {
 
             try {
                 // collecting data from client each 200ms.
-                this.sendToAll("Players Update!"); //sending here players Jsons Details.
+                this.SendToAll("Players Update!"); //sending here players Jsons Details.
                 LoggerManager.info("Going to sleep 200ms.");
                 LoggerManager.info("Amount of players in current match is: " + m_MatchPlayers.size());
                 Thread.sleep(200);
@@ -89,16 +89,16 @@ final class OnlineMatch extends Thread implements Match {
 
         }
 
-        endMatch();
+        EndMatch();
     }
 
     @Override
-    public boolean isM_IsGameOver() {
+    public boolean IsGameOver() {
         return this.m_IsGameOver;
     }
 
     @Override
-    public void removePlayerFromMatch(Player player) {
+    public void RemovePlayerFromMatch(Player player) {
         this.m_MatchPlayers.remove(player);
 
         // if there's only one player left in the game.
@@ -106,30 +106,30 @@ final class OnlineMatch extends Thread implements Match {
             this.m_IsGameOver = true;
 
         LoggerManager.info("Player " + player.getPlayerName() + " has left the game!");
-        this.sendToAll("Player " + player.getPlayerName() + " has left the game!"); // Send player left message to remaining players.
+        this.SendToAll("Player " + player.getPlayerName() + " has left the game!"); // Send player left message to remaining players.
     }
 
     @Override
-    public void endMatch() {
+    public void EndMatch() {
         // Set all player's current match to null.
         LoggerManager.info("Match ended!");
 
         // TODO - update players coins and stats on database.
         //  /30.4/UPDATE - only stats left.
         this.m_MatchPlayers.forEach(player -> {
-            DBHandler.updateStatsInDB(player.getM_Character());
+            DBHandler.updateStatsInDB(player.GetCharacter());
         });
 
-        MatchMaking.removeActiveMatch(this);
+        MatchMaking.RemoveActiveMatch(this);
         this.m_MatchPlayers.forEach(player -> player.closeConnection());
     }
 
-    public void sendToAll(String message){
+    public void SendToAll(String message){
         m_MatchPlayers.forEach(player -> player.sendMessage(message));
         LoggerManager.info("Message to all players: " + message);
     }
 
-    public String getM_MatchIdentifier() {
+    public String GetMatchIdentifier() {
         return this.m_MatchIdentifier;
     }
 
@@ -143,13 +143,13 @@ final class OnlineMatch extends Thread implements Match {
         do {
             isEveryoneReady.set(true);
             m_MatchPlayers.forEach(player -> {
-                if (!player.isM_IsReady()) {
-                    String msg = player.readMessage();
+                if (!player.IsReady()) {
+                    String msg = player.ReadMessage();
                     LoggerManager.info(msg);
                     if (!msg.equals("READY"))
                         isEveryoneReady.set(false);
                     else
-                        player.setReady();
+                        player.MarkAsReady();
                 }
             });
         }
@@ -159,11 +159,11 @@ final class OnlineMatch extends Thread implements Match {
     private String createPlayersAppearanceJson() {
         // Create a map to hold the player objects
         Map<String, JsonObject> playersMap = new HashMap<>();
-        this.m_MatchPlayers.forEach((player) -> playersMap.put(player.getM_UserName(), player.getAppearanceDataAsJson()));
+        this.m_MatchPlayers.forEach((player) -> playersMap.put(player.GetUserName(), player.GetCharacterDataAndPlayerName()));
 
         // Create the main JSON object and add the "MatchIdentifyer" and "Players" properties
         JsonObject mainObject = new JsonObject();
-        mainObject.addProperty("MatchIdentifier", this.getM_MatchIdentifier());
+        mainObject.addProperty("MatchIdentifier", this.GetMatchIdentifier());
         mainObject.add("Players", JsonFormatter.GetGson().toJsonTree(playersMap));
 
         // Convert the JSON object to a string and print it

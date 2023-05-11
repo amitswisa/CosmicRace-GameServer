@@ -12,7 +12,7 @@ public class Main {
 
         while(true) {
             Socket newSocketConnection = serverSocket.accept();
-            MatchMaking.addPlayerToWaitingList(new Player(newSocketConnection));
+            MatchMaking.AddPlayerToWaitingList(new Player(newSocketConnection));
         }
     }
 }

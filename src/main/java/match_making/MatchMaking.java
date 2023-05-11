@@ -10,33 +10,34 @@ import java.util.*;
 
 public final class MatchMaking {
 
-    private static final Object  removeLock = new Object();
-    private static final Object  customRemoveLock = new Object(); //not a good name for this variable.
-    private static volatile int usersWaiting = 0;
-    private static volatile Queue<Player> playersManager = new PriorityQueue<>(); // Players waiting for a game to start queue.
-    private static volatile Map<String, Match> activeMatches = new HashMap<>();
+    private static final Object removeLock = new Object();
+    private static final Object customRemoveLock = new Object(); //not a good name for this variable.
+    private static volatile int s_UsersWaiting = 0;
+    private static volatile Queue<Player> s_PlayersQueue = new PriorityQueue<>();
+    private static volatile Map<String, Match> s_ActiveMatches = new HashMap<>();
 
-    public static synchronized void addPlayerToWaitingList(Player newPlayer) {
+    public static synchronized void AddPlayerToWaitingList(Player i_NewPlayer)
+    {
 
-        addPlayerToQueue(newPlayer);
-        newPlayer.sendMessage(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Looking for other players...").toString());
-        LoggerManager.info("Socket (" +newPlayer.getHost() + "): Waiting to play!");
+        addPlayerToQueue(i_NewPlayer);
+        i_NewPlayer.sendMessage(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Looking for other players...").toString());
+        LoggerManager.info("Socket (" +i_NewPlayer.getHost() + "): Waiting to play!");
 
         // There are enough users to create a match.
-        while (usersWaiting >= Utils.MAXIMUM_AMOUNT_OF_PLAYERS) {
+        while (s_UsersWaiting >= Utils.MAXIMUM_AMOUNT_OF_PLAYERS) {
 
             List<Player> matchPlayers = new ArrayList<>(Utils.MAXIMUM_AMOUNT_OF_PLAYERS);
             LoggerManager.info("Try to start new match...");
 
             while(matchPlayers.size() < Utils.MAXIMUM_AMOUNT_OF_PLAYERS
-                    && usersWaiting >= Utils.MAXIMUM_AMOUNT_OF_PLAYERS - matchPlayers.size()) {
+                    && s_UsersWaiting >= Utils.MAXIMUM_AMOUNT_OF_PLAYERS - matchPlayers.size()) {
 
-                Player player = playersManager.poll();
+                Player player = s_PlayersQueue.poll();
 
                 // If at least one player quits from waiting for a match and there aren't enough players.
                 if (player != null && player.isConnectionAlive()){
                     matchPlayers.add(player);
-                    decreaseUserWaiting();
+                    DecreaseUserWaiting();
                 }
                 else
                     LoggerManager.info("player removed from Player's Queue (quit from game).");
@@ -47,55 +48,58 @@ public final class MatchMaking {
             if(numOfPlayersInList != Utils.MAXIMUM_AMOUNT_OF_PLAYERS)
             {
                 LoggerManager.info("not enough players to create a game. exiting.");
-                playersManager.addAll(matchPlayers);
-                usersWaiting += numOfPlayersInList;
+                s_PlayersQueue.addAll(matchPlayers);
+                s_UsersWaiting += numOfPlayersInList;
                 return;
             }
 
             // Create new match and start it.
-            String matchIdentifyer = generateSessionIdentifyer();
-            Match newMatch = new OnlineMatch(matchIdentifyer, matchPlayers);
-            activeMatches.put(matchIdentifyer, newMatch);
-
-
+            String matchIdentifier = generateSessionIdentifyer();
+            Match newMatch = new OnlineMatch(matchIdentifier, matchPlayers);
+            s_ActiveMatches.put(matchIdentifier, newMatch);
 
             new Thread((Runnable) newMatch).start();
         }
     }
 
-    // Removing a socket connection from socket list.
-    public static void removePlayerFromWaitingList(Player socket) {
+    public static void RemovePlayerFromWaitingList(Player i_PlayerSocket)
+    {
         synchronized (removeLock) {
-            playersManager.remove(socket);
-            decreaseUserWaiting();
+            s_PlayersQueue.remove(i_PlayerSocket);
+            DecreaseUserWaiting();
         }
     }
 
-    public static void removeActiveMatch(Match match) {
-        activeMatches.remove(match.getM_MatchIdentifier());
+    public static void RemoveActiveMatch(Match i_Match)
+    {
+        s_ActiveMatches.remove(i_Match.GetMatchIdentifier());
     }
 
-    public static synchronized void decreaseUserWaiting(){
-        --usersWaiting;
+    public static synchronized void DecreaseUserWaiting()
+    {
+        --s_UsersWaiting;
     }
 
-    private synchronized static void addPlayerToQueue(Player player) {
-        playersManager.add(player); // Add player to queue.
+    private synchronized static void addPlayerToQueue(Player i_Player)
+    {
+        s_PlayersQueue.add(i_Player); // Add player to queue.
         increaseUsersWaiting(); // Add user to waiting users count.
     }
 
-    private static synchronized void increaseUsersWaiting() {
-        usersWaiting += 1;
+    private static synchronized void increaseUsersWaiting()
+    {
+        s_UsersWaiting += 1;
     }
 
-    private static String generateSessionIdentifyer() {
+    private static String generateSessionIdentifyer()
+    {
         String generatedString;
 
         do {
             byte[] bytes = new byte[7];
             new Random().nextBytes(bytes);
             generatedString = new String(bytes, StandardCharsets.UTF_8);
-        } while(activeMatches.containsKey(generatedString));
+        } while(s_ActiveMatches.containsKey(generatedString));
 
         return generatedString;
 

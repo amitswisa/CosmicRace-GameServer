@@ -56,27 +56,27 @@ class CouchMatch extends Thread implements Match {
     public static volatile Map<String, List<Player>> waitingRoomList = new HashMap<>();
 
     @Override
-    public String getM_MatchIdentifier() {
+    public String GetMatchIdentifier() {
         return null;
     }
 
     @Override
-    public void endMatch() {
+    public void EndMatch() {
 
     }
 
     @Override
-    public boolean isM_IsGameOver() {
+    public boolean IsGameOver() {
         return false;
     }
 
     @Override
-    public void removePlayerFromMatch(Player player) {
+    public void RemovePlayerFromMatch(Player player) {
 
     }
 
     @Override
-    public void sendToAll(String message) {
+    public void SendToAll(String message) {
 
     }
 
