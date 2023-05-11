@@ -1,12 +1,14 @@
-package client;
+package player;
 import addons.Character;
 import addons.Location;
 import com.google.gson.JsonObject;
+import dto.ClientMessage;
 import interfaces.Match;
+import json.JsonFormatter;
 import okhttp3.*;
 import utils.LoggerManager;
 
-import utils.MatchMaking;
+import match_making.MatchMaking;
 import utils.Utils;
 
 import java.io.*;
@@ -15,37 +17,34 @@ import java.net.SocketException;
 
 public class Player implements Comparable {
 
-    private String username;
-    private Match currentMatch;
-    private Location location;
-    private Character character;
-    private final Socket socketConnection; // Client's socket.
-    private PrintWriter out_stream; // Output stream.
-    private BufferedReader in_stream; // Input stream.
-    private boolean isReady;
-    private boolean isOnlinePlayer;
+    private String m_UserName;
+    private Match m_CurrentMatch;
+    private Location m_Location;
+    private Character m_Character;
+    private final Socket m_SocketConnection; // Client's socket.
+    private PrintWriter m_OutStream; // Output stream.
+    private BufferedReader m_InStream; // Input stream.
+    private boolean m_IsReady;
+    private boolean m_IsOnline;
 
     // GameSession constructor.
-    public Player(Socket socketConnection) {
+    public Player(Socket socketConnection) throws SocketException {
 
-        this.socketConnection = socketConnection;
+        this.m_SocketConnection = socketConnection;
+
         try {
-            // Get client's I/O tunnels.
-            this.out_stream = new PrintWriter(this.socketConnection.getOutputStream(), true);
-            this.in_stream = new BufferedReader(new InputStreamReader(this.socketConnection.getInputStream()));
-            //LoggerManager.info("Player (" + this.getHost() + ") connected to server!");
 
-            // Get initialization data from client in json (contains userid & characterId).
-            String init_Data = in_stream.readLine();
+            this.m_OutStream = new PrintWriter(this.m_SocketConnection.getOutputStream(), true);
+            this.m_InStream = new BufferedReader(new InputStreamReader(this.m_SocketConnection.getInputStream()));
 
-            fetchPlayerData(Utils.createJsonFromString(init_Data));
+            String initData = m_InStream.readLine(); // Get initialization data from client in json (contains userid & characterId).
+            fetchPlayerData(JsonFormatter.createJsonFromString(initData));
 
-            this.isOnlinePlayer = true;
-            this.isReady = false;
-            this.sendMessage("N: Connection established.");
+            this.m_IsOnline = true;
+            this.m_IsReady = false;
 
-            // Add socket to socket's list.
-            MatchMaking.addPlayerToWaitingList(this);
+            this.sendMessage(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Connection established.").toString());
+
         } catch (Exception e) {
             LoggerManager.error("Error occurred with " + this.getHost() + ": " + e.getMessage());
             HandleClientError(e);
@@ -54,7 +53,7 @@ public class Player implements Comparable {
     }
 
     private void HandleClientError(Exception e) {
-        sendMessage("E:" + e.getMessage());
+        sendMessage(new ClientMessage(ClientMessage.MessageType.ERROR, e.getMessage()).toString());
     }
 
     private void fetchPlayerData(JsonObject init_Data) throws IOException {
@@ -76,19 +75,19 @@ public class Player implements Comparable {
             throw new IOException("Error occurred while fetching character data, please try again later...");
         }
 
-        JsonObject resData = Utils.createJsonFromString(response.body().string());
-        this.username = String.valueOf((resData).get("username"));
-        character = Utils.gson.fromJson(resData, Character.class);
+        JsonObject resData = JsonFormatter.createJsonFromString(response.body().string());
+        this.m_UserName = String.valueOf((resData).get("username"));
+        m_Character = JsonFormatter.GetGson().fromJson(resData, Character.class);
 
         // TODO - delete
-        this.out_stream.println("Fetched data.");
+        this.m_OutStream.println(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Server fetched data."));
 
     }
 
     // Send message to customer.
     public void sendMessage(String message) {
         try {
-            out_stream.println(message);
+            m_OutStream.println(message);
         } catch (Exception e) {
 
             if (e instanceof SocketException) {
@@ -100,14 +99,14 @@ public class Player implements Comparable {
     }
 
     public void setNewMatch(Match n_Match) {
-        this.currentMatch = n_Match;
-        this.location = new Location(0, 0); //probably not necessary.
+        this.m_CurrentMatch = n_Match;
+        this.m_Location = new Location(0, 0); //probably not necessary.
     }
 
     // Close socket connection when player exists while match started.
     public void closeConnection() {
 
-        if (this.socketConnection.isClosed())
+        if (this.m_SocketConnection.isClosed())
             return;
 
         try {
@@ -115,10 +114,10 @@ public class Player implements Comparable {
             MatchMaking.removePlayerFromWaitingList(this);
 
             // If player was already in a game.
-            if (this.currentMatch != null && !this.currentMatch.isGameOver())
-                this.currentMatch.removePlayerFromMatch(this);
+            if (this.m_CurrentMatch != null && !this.m_CurrentMatch.isM_IsGameOver())
+                this.m_CurrentMatch.removePlayerFromMatch(this);
 
-            this.socketConnection.close();
+            this.m_SocketConnection.close();
         } catch (Exception e) {
             LoggerManager.error(e.getMessage());
         }
@@ -126,14 +125,15 @@ public class Player implements Comparable {
 
     // Get host address as known as IP address.
     public String getHost() {
-        return this.socketConnection.getInetAddress().getHostAddress();
+        return this.m_SocketConnection.getInetAddress().getHostAddress();
     }
 
     public boolean isConnectionAlive() {
 
         try {
-            String heartbeat = "C: isAlive\n";
-            this.socketConnection.getOutputStream().write(heartbeat.getBytes());
+            ClientMessage heartbeat = new ClientMessage(ClientMessage.MessageType.CONFIRMATION, "isAlive\n");
+            String heartbeatReadyToSend = heartbeat.toString() + "\n";
+            this.m_SocketConnection.getOutputStream().write(heartbeatReadyToSend.getBytes());
         } catch (IOException e) {
             if (e instanceof SocketException) {
                 this.closeConnection();
@@ -145,16 +145,16 @@ public class Player implements Comparable {
 
     }
 
-    public PrintWriter getOut_stream() {
-        return out_stream;
+    public PrintWriter getM_OutStream() {
+        return m_OutStream;
     }
 
-    public BufferedReader getIn_stream() {
-        return in_stream;
+    public BufferedReader getM_InStream() {
+        return m_InStream;
     }
 
-    public Character getCharacter() {
-        return this.character;
+    public Character getM_Character() {
+        return this.m_Character;
     }
 
     @Override
@@ -168,24 +168,24 @@ public class Player implements Comparable {
     }
 
     public String getPlayerName() {
-        return this.character.getCharacterName();
+        return this.m_Character.getCharacterName();
     }
 
-    public String getUsername() {
-        return this.username;
+    public String getM_UserName() {
+        return this.m_UserName;
     }
 
     public JsonObject getAppearanceDataAsJson(){
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("characterId", character.getCharacterID());
-        jsonObject.addProperty("characterName", character.getCharacterName());
-        jsonObject.addProperty("playerUsername", this.getUsername());
+        jsonObject.addProperty("characterId", m_Character.getCharacterID());
+        jsonObject.addProperty("characterName", m_Character.getCharacterName());
+        jsonObject.addProperty("playerUsername", this.getM_UserName());
         return jsonObject;
     }
 
     public String readMessage(){
         try {
-            String msg = getIn_stream().readLine();
+            String msg = getM_InStream().readLine();
             return msg;
         } catch (IOException e) {
 
@@ -194,12 +194,12 @@ public class Player implements Comparable {
         }
     }
 
-    public boolean isReady(){
-        return this.isReady;
+    public boolean isM_IsReady(){
+        return this.m_IsReady;
     }
 
     public void setReady(){
-        this.isReady = true;
+        this.m_IsReady = true;
     }
 
 }

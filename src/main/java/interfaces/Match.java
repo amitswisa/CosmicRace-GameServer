@@ -1,13 +1,12 @@
 package interfaces;
-import client.Player;
+import player.Player;
 
 public interface Match {
 
-    public String getIdentifyer();
-    public void endMatch();
-    public boolean isGameOver();
-    public void removePlayerFromMatch(Player player);
-    public void broadCastToAll(String message);
-
+    String getM_MatchIdentifier();
+    void endMatch();
+    boolean isM_IsGameOver();
+    void removePlayerFromMatch(Player player);
+    void sendToAll(String message);
 
 }

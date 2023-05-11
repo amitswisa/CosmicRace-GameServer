@@ -1,6 +1,7 @@
-package utils;
+package utils.singletons;
 
 import addons.Character;
+import utils.Utils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

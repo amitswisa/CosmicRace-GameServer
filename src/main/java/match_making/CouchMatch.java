@@ -1,13 +1,13 @@
-package utils;
+package match_making;
 
-import client.Player;
+import player.Player;
 import interfaces.Match;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CouchMatch extends Thread implements Match {
+class CouchMatch extends Thread implements Match {
 
     private List<Player> players;
     private String identifyer;
@@ -56,7 +56,7 @@ public class CouchMatch extends Thread implements Match {
     public static volatile Map<String, List<Player>> waitingRoomList = new HashMap<>();
 
     @Override
-    public String getIdentifyer() {
+    public String getM_MatchIdentifier() {
         return null;
     }
 
@@ -66,7 +66,7 @@ public class CouchMatch extends Thread implements Match {
     }
 
     @Override
-    public boolean isGameOver() {
+    public boolean isM_IsGameOver() {
         return false;
     }
 
@@ -76,7 +76,7 @@ public class CouchMatch extends Thread implements Match {
     }
 
     @Override
-    public void broadCastToAll(String message) {
+    public void sendToAll(String message) {
 
     }
 

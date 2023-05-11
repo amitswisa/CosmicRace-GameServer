@@ -1,22 +1,28 @@
 package dto;
 
 import com.google.gson.JsonObject;
+import json.JsonFormatter;
+import utils.Utils;
 
-public class ClientMessage {
+public final class ClientMessage {
 
-    enum MessageType {
-        NOTIFICATION, DATA, ACTION, ERROR
+    public enum MessageType {
+        NOTIFICATION, DATA, ACTION, ERROR, CONFIRMATION, GAME_OPERATION
     }
 
     private MessageType messageType;
-    private String content;
+    private String message;
 
-    public ClientMessage() {
-
+    public ClientMessage(MessageType messageType, String content) {
+        this.messageType = messageType;
+        this.message = content;
     }
 
-    public JsonObject getMessage() {
-        return null;
+    @Override
+    public String toString() {
+        JsonObject res = new JsonObject();
+        res.addProperty("messageType", this.messageType.toString());
+        res.addProperty("message", this.message);
+        return JsonFormatter.GetGson().toJson(res);
     }
-
 }
