@@ -1,5 +1,7 @@
 package addons;
 
+import json.JsonFormatter;
+
 public final class Character {
    private final int characterID;
    private final String characterName;
@@ -72,5 +74,10 @@ public final class Character {
 
     public int getLoses() {
         return loses;
+    }
+
+    public String GetAsJson()
+    {
+        return JsonFormatter.GetGson().toJson(this);
     }
 }

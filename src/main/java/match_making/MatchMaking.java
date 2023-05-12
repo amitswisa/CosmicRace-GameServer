@@ -3,9 +3,9 @@ package match_making;
 import player.Player;
 import dto.ClientMessage;
 import interfaces.Match;
-import utils.LoggerManager;
+import utils.logs.LoggerManager;
 import utils.Utils;
-import java.nio.charset.StandardCharsets;
+
 import java.util.*;
 
 public final class MatchMaking {
@@ -33,12 +33,11 @@ public final class MatchMaking {
                     && s_UsersWaiting >= Utils.MAXIMUM_AMOUNT_OF_PLAYERS - matchPlayers.size()) {
 
                 Player player = s_PlayersQueue.poll();
+                DecreaseUserWaiting();
 
                 // If at least one player quits from waiting for a match and there aren't enough players.
-                if (player != null && player.isConnectionAlive()){
+                if (player != null && player.IsConnectionAlive())
                     matchPlayers.add(player);
-                    DecreaseUserWaiting();
-                }
                 else
                     LoggerManager.info("player removed from Player's Queue (quit from game).");
 
@@ -54,7 +53,7 @@ public final class MatchMaking {
             }
 
             // Create new match and start it.
-            String matchIdentifier = generateSessionIdentifyer();
+            String matchIdentifier = generateSessionIdentifier();
             Match newMatch = new OnlineMatch(matchIdentifier, matchPlayers);
             s_ActiveMatches.put(matchIdentifier, newMatch);
 
@@ -91,18 +90,13 @@ public final class MatchMaking {
         s_UsersWaiting += 1;
     }
 
-    private static String generateSessionIdentifyer()
-    {
-        String generatedString;
+    private static String generateSessionIdentifier() {
 
-        do {
-            byte[] bytes = new byte[7];
-            new Random().nextBytes(bytes);
-            generatedString = new String(bytes, StandardCharsets.UTF_8);
-        } while(s_ActiveMatches.containsKey(generatedString));
+        Random random = new Random();
+        int min = 1000000; // Minimum 7-digit number
+        int max = 9999999; // Maximum 7-digit number
 
-        return generatedString;
-
+        return (random.nextInt(max - min + 1) + min) + "";
     }
 
 

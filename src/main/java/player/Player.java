@@ -6,7 +6,7 @@ import dto.ClientMessage;
 import interfaces.Match;
 import json.JsonFormatter;
 import okhttp3.*;
-import utils.LoggerManager;
+import utils.logs.LoggerManager;
 
 import match_making.MatchMaking;
 import utils.Utils;
@@ -26,7 +26,7 @@ public class Player implements Comparable {
     private PrintWriter m_OutStream; // Output stream.
     private BufferedReader m_InStream; // Input stream.
     private boolean m_IsReady;
-    private boolean m_IsOnline;
+    private boolean m_IsConnected;
 
     public Player(Socket socketConnection) throws SocketException
     {
@@ -41,7 +41,7 @@ public class Player implements Comparable {
             String initData = m_InStream.readLine(); // Get initialization data from client in json (contains userid & characterId).
             fetchPlayerData(JsonFormatter.createJsonFromString(initData));
 
-            this.m_IsOnline = true;
+            this.m_IsConnected = true;
             this.m_IsReady = false;
 
             this.sendMessage(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Connection established.").toString());
@@ -49,13 +49,13 @@ public class Player implements Comparable {
         } catch (Exception e) {
             LoggerManager.error("Error occurred with " + this.getHost() + ": " + e.getMessage());
             handleClientError(e);
-            closeConnection();
         }
     }
 
     private void handleClientError(Exception e)
     {
         sendMessage(new ClientMessage(ClientMessage.MessageType.ERROR, e.getMessage()).toString());
+        closeConnection();
     }
 
     private void fetchPlayerData(JsonObject init_Data) throws IOException
@@ -90,16 +90,7 @@ public class Player implements Comparable {
     // Send message to customer.
     public final void sendMessage(String message)
     {
-        try {
-            m_OutStream.println(message);
-        } catch (Exception e) {
-
-            if (e instanceof SocketException) {
-                // TODO - Handle player terminated client.
-            }
-
-            LoggerManager.error(e.getMessage());
-        }
+        m_OutStream.println(message);
     }
 
     public final void setNewMatch(Match n_Match)
@@ -109,18 +100,17 @@ public class Player implements Comparable {
     }
 
     // Close socket connection when player exists while match started.
-    public final void closeConnection() {
+    public final void closeConnection()
+    {
 
-        if (this.m_SocketConnection.isClosed())
+        if (!this.m_IsConnected || this.m_SocketConnection.isClosed())
             return;
 
         try {
+            this.m_IsConnected = false;
             LoggerManager.info("Socket (" + this.getHost() + "): Connection closed!");
-            MatchMaking.RemovePlayerFromWaitingList(this);
 
-            // If player was already in a game.
-            if (this.m_CurrentMatch != null && !this.m_CurrentMatch.IsGameOver())
-                this.m_CurrentMatch.RemovePlayerFromMatch(this);
+            MatchMaking.RemovePlayerFromWaitingList(this);
 
             this.m_SocketConnection.close();
         } catch (Exception e) {
@@ -134,18 +124,14 @@ public class Player implements Comparable {
         return this.m_SocketConnection.getInetAddress().getHostAddress();
     }
 
-    public final boolean isConnectionAlive()
+    public final boolean IsConnectionAlive()
     {
-
         try {
             ClientMessage heartbeat = new ClientMessage(ClientMessage.MessageType.CONFIRMATION, "isAlive\n");
             String heartbeatReadyToSend = heartbeat.toString() + "\n";
             this.m_SocketConnection.getOutputStream().write(heartbeatReadyToSend.getBytes());
-        } catch (IOException e) {
-            if (e instanceof SocketException) {
-                this.closeConnection();
-                return false;
-            }
+        } catch (Exception e) {
+            return false;
         }
 
         return true;
@@ -167,7 +153,7 @@ public class Player implements Comparable {
         return this.m_Character;
     }
 
-    public final String getPlayerName()
+    public final String GetCharacterName()
     {
         return this.m_Character.getCharacterName();
     }
@@ -177,12 +163,11 @@ public class Player implements Comparable {
         return this.m_UserName;
     }
 
-    public final JsonObject GetCharacterData()
+    public final JsonObject GetPlayerMatchData()
     {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("playerUsername", this.GetUserName());
-        jsonObject.addProperty("characterId", m_Character.getCharacterID());
-        jsonObject.addProperty("characterName", m_Character.getCharacterName());
+        jsonObject.addProperty("CharacterData", this.GetCharacter().GetAsJson());
         return jsonObject;
     }
 
