@@ -83,7 +83,7 @@ public class Player implements Comparable {
         m_Character = JsonFormatter.GetGson().fromJson(resData, Character.class);
 
         // TODO - delete
-        this.m_OutStream.println(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Server fetched data."));
+        //this.m_OutStream.println(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Server fetched data."));
 
     }
 
@@ -177,12 +177,12 @@ public class Player implements Comparable {
         return this.m_UserName;
     }
 
-    public final JsonObject GetCharacterDataAndPlayerName()
+    public final JsonObject GetCharacterData()
     {
         JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("playerUsername", this.GetUserName());
         jsonObject.addProperty("characterId", m_Character.getCharacterID());
         jsonObject.addProperty("characterName", m_Character.getCharacterName());
-        jsonObject.addProperty("playerUsername", this.GetUserName());
         return jsonObject;
     }
 

@@ -1,17 +1,17 @@
 package addons;
 
-public class Character {
-   private int characterID;
-   private String characterName;
-   private int level;
-   private int xp;
-   private int power;
-   private int magicPoints;
-   private float speed;
-   private float defence;
-   private float jump;
-   private int wins;
-   private int loses;
+public final class Character {
+   private final int characterID;
+   private final String characterName;
+   private final int level;
+   private final int xp;
+   private final int power;
+   private final int magicPoints;
+   private final float speed;
+   private final float defence;
+   private final float jump;
+   private final int wins;
+   private final int loses;
 
     public Character(int characterID, String characterName, int level, int xp,
                      int power, int magicPoints, float speed, float defence,

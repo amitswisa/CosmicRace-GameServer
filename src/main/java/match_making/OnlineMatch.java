@@ -40,6 +40,7 @@ final class OnlineMatch extends Thread implements Match {
         // Message deliver.
         SendToAll(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Players found, creating a match.").toString());
 
+        // Broadcast players character data.
         SendToAll(new ClientMessage(ClientMessage.MessageType.DATA, createPlayersAppearanceJson()).toString());
     }
 
@@ -159,7 +160,7 @@ final class OnlineMatch extends Thread implements Match {
     private String createPlayersAppearanceJson() {
         // Create a map to hold the player objects
         Map<String, JsonObject> playersMap = new HashMap<>();
-        this.m_MatchPlayers.forEach((player) -> playersMap.put(player.GetUserName(), player.GetCharacterDataAndPlayerName()));
+        this.m_MatchPlayers.forEach((player) -> playersMap.put(player.GetUserName(), player.GetCharacterData()));
 
         // Create the main JSON object and add the "MatchIdentifyer" and "Players" properties
         JsonObject mainObject = new JsonObject();
