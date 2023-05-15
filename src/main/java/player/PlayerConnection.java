@@ -1,6 +1,7 @@
 package player;
 
 import dto.ClientMessage;
+import utils.GlobalSettings;
 import utils.logs.LoggerManager;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,7 +20,6 @@ public final class PlayerConnection {
 
     public PlayerConnection(Socket i_Socket){
 
-
         this.m_SocketConnection = i_Socket;
         this.m_IsConnected = true;
 
@@ -31,7 +31,7 @@ public final class PlayerConnection {
             this.sendMessage(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Connection established.").toString());
 
         }catch(Exception e){
-            handleClientError(e);
+            CloseConnection(e.getMessage());
         }
     }
 
@@ -40,29 +40,26 @@ public final class PlayerConnection {
         this.m_LastClientConnectionTime = System.currentTimeMillis();
     }
 
-    private void handleClientError(Exception e)
+    public void sendMessage(String message)
     {
-        sendMessage(new ClientMessage(ClientMessage.MessageType.ERROR, e.getMessage()).toString());
-        closeConnection();
+        if(this.IsConnectionAlive())
+            m_OutStream.println(message);
     }
 
-    public final void sendMessage(String message)
+    public void CloseConnection(String i_ExceptionMessage)
     {
-        m_OutStream.println(message);
-    }
-
-    public final void closeConnection()
-    {
-        if (!this.m_IsConnected || this.m_SocketConnection.isClosed())
+        if (!this.m_IsConnected)
             return;
 
         try {
             this.m_IsConnected = false;
-            LoggerManager.info("Socket (" + this.getHost() + "): Connection closed!");
-
             this.m_SocketConnection.close();
+
+            if(!i_ExceptionMessage.equals(GlobalSettings.MATCH_ENDED))
+                LoggerManager.error("Socket (" + this.getHost() + "): " + i_ExceptionMessage);
+
         } catch (Exception e) {
-            LoggerManager.error(e.getMessage());
+            LoggerManager.error("Socket (" + this.getHost() + "): " + e.getMessage());
         }
     }
 
@@ -71,13 +68,24 @@ public final class PlayerConnection {
         return this.m_SocketConnection.getInetAddress().getHostAddress();
     }
 
-    public final boolean IsConnectionAlive()
+    public boolean IsConnectionAlive()
     {
+        if (!this.m_IsConnected)
+            return false;
+
         try {
             ClientMessage heartbeat = new ClientMessage(ClientMessage.MessageType.CONFIRMATION, "isAlive\n");
             String heartbeatReadyToSend = heartbeat.toString() + "\n";
             this.m_SocketConnection.getOutputStream().write(heartbeatReadyToSend.getBytes());
+            this.updateLastClientConnectionTime();
         } catch (Exception e) {
+
+            // Client timed out.
+            if(isTimedOut())
+            {
+                CloseConnection(e.getMessage());
+            }
+
             return false;
         }
 
@@ -94,27 +102,53 @@ public final class PlayerConnection {
         return m_InStream;
     }
 
-    public final String ReadMessage()
-    {
-        try {
-            String msg = GetInStream().readLine();
-            return msg;
-        } catch (IOException e) {
+    public String ReadMessage() throws IOException {
+        String lastClientMessage = "";
+        do
+        {
+            if(this.GetInStream().ready())
+            {
+                lastClientMessage = this.GetInStream().readLine();
 
-            //TODO - handle player client termination.
-            return null;
-        }
+                // TODO - Cheeck
+                if(lastClientMessage == null)
+                    throw new IOException(GlobalSettings.TERMINATE_DUE_TO_TIME_OUT);
+
+                this.updateLastClientConnectionTime();
+            }
+            else {
+                return GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER;
+            }
+
+        } while(lastClientMessage.equals(GlobalSettings.CLIENT_HEARTBEAT_RESPONSE));
+
+        return lastClientMessage;
     }
 
-    public String WaitForPlayerResponse(){
-        try{
-            // Get initialization data from client in json (contains userid & characterId).
-            String initData = m_InStream.readLine();
-            return initData;
-        } catch (Exception e) {
-            LoggerManager.error("Error occurred with " + this.getHost() + ": " + e.getMessage());
-            handleClientError(e);
+    public String WaitForPlayerResponse()
+    {
+        while(!isTimedOut())
+        {
+            try{
+                // Get initialization data from client in json (contains userid & characterId).
+                String initData = this.ReadMessage();
+
+                if(initData.equals(GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER))
+                    continue;
+
+                return initData;
+
+            } catch (Exception e) {
+                this.CloseConnection(e.getMessage());
+                break;
+            }
         }
+
         return null;
+    }
+
+    private boolean isTimedOut()
+    {
+        return (System.currentTimeMillis() - this.m_LastClientConnectionTime > GlobalSettings.MAX_TIME_OUT);
     }
 }

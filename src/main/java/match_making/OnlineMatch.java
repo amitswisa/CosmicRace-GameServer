@@ -82,7 +82,7 @@ final class OnlineMatch extends Thread implements Match {
         // TODO - update players coins and stats on database.
         //  /30.4/UPDATE - only stats left.
         this.actionOnMatchPlayers(p -> DBHandler.updateStatsInDB(p.GetCharacter()));
-        this.actionOnMatchPlayers(p -> p.CloseConnection());
+        this.actionOnMatchPlayers(p -> p.CloseConnection(GlobalSettings.MATCH_ENDED));
 
         MatchMaking.RemoveActiveMatch(this);
         this.interrupt();
@@ -105,6 +105,9 @@ final class OnlineMatch extends Thread implements Match {
             actionOnMatchPlayers(player -> {
                 if (!player.IsReady()) {
                     String msg = player.ReadMessage();
+
+                    // TODO - Handle no connection (NO_CONNECTION) message.
+
                     LoggerManager.info(msg);
                     if (!msg.equals("READY"))
                         isEveryoneReady.set(false);

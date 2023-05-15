@@ -5,9 +5,12 @@ public class GlobalSettings {
     // General settings
     public static final String HOST = "localhost";
     public static final int PORT = 6666;
+
     public static final String AUTH_KEY = "9c62e986-5d00-44f6-97be-59c9f2207852";
     public static final Integer MAXIMUM_AMOUNT_OF_PLAYERS = 1;
     public static final Integer MINIMUM_AMOUNT_OF_PLAYERS = 1;
+    public static final int MAX_TIME_OUT = 10000; // 10 Seconds
+    public static final String CLIENT_HEARTBEAT_RESPONSE = "ALIVE";
 
     // Messages
     public static final String UN_AUTHORIZED = "Unauthorized access, connection closed!";
@@ -22,6 +25,13 @@ public class GlobalSettings {
 
     // Player errors
     public final static String COULDNT_FETCH_ERROR = "Error occurred while fetching character data.";
+    public static final String TERMINATE_DUE_TO_TIME_OUT = "Client socket closed due to reachability issues.";
 
+    public static final String CLIENT_CLOSED_CONNECTION = "Cant reach client, closing connection..";
+
+    public static final String NO_CONNECTION = "No connection";
+    public static final String MATCH_ENDED = "Match ended";
+
+    public static final String NO_MESSAGES_IN_CLIENT_BUFFER = "No Messages";
 }
 

@@ -92,7 +92,13 @@ public class Player implements Comparable {
 
     public final String ReadMessage()
     {
-       return this.m_PlayerConnection.ReadMessage();
+        try {
+            return this.m_PlayerConnection.ReadMessage();
+        } catch(Exception e) {
+            this.CloseConnection(e.getMessage());
+        }
+
+        return GlobalSettings.NO_CONNECTION;
     }
 
     public final boolean IsReady()
@@ -110,10 +116,10 @@ public class Player implements Comparable {
         this.m_PlayerConnection.sendMessage(i_Message);
     }
 
-    public final void CloseConnection()
+    public final void CloseConnection(String i_ExceptionMessage)
     {
         MatchMaking.RemovePlayerFromWaitingList(this);
-        this.m_PlayerConnection.closeConnection();
+        this.m_PlayerConnection.CloseConnection(i_ExceptionMessage);
     }
 
     // Get host address as known as IP address.
