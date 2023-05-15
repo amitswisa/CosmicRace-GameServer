@@ -5,14 +5,11 @@ import player.Player;
 import com.google.gson.JsonObject;
 import dto.ClientMessage;
 import interfaces.Match;
-import utils.Utils;
+import utils.GlobalSettings;
 import utils.logs.MatchLogger;
 import utils.singletons.DBHandler;
 import utils.logs.LoggerManager;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,13 +26,13 @@ final class OnlineMatch extends Thread implements Match {
 
     public OnlineMatch(String i_MatchIdentifier, List<Player> i_MatchPlayers) {
 
-        MatchLogger.Info(GetMatchIdentifier(), MatchLogger.LogType.NOTIFICATION, "New match created!");
-
         this.m_MatchIdentifier = i_MatchIdentifier;
         this.m_MatchPlayers = i_MatchPlayers;
         this.m_MatchQuitedPlayers = new ArrayList<>(getNumOfPlayerInMatch());
         this.m_IsGameOver = false;
         this.actionOnMatchPlayers(player -> player.setNewMatch(this));
+
+        MatchLogger.Info(GetMatchIdentifier(), MatchLogger.LogType.NOTIFICATION, "New match created!");
 
         SendToAll(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Players found, creating a match.").toString());
         SendToAll(new ClientMessage(ClientMessage.MessageType.DATA, getMatchPlayersAsJson()).toString());
@@ -85,14 +82,14 @@ final class OnlineMatch extends Thread implements Match {
         // TODO - update players coins and stats on database.
         //  /30.4/UPDATE - only stats left.
         this.actionOnMatchPlayers(p -> DBHandler.updateStatsInDB(p.GetCharacter()));
-        this.actionOnMatchPlayers(p -> p.closeConnection());
+        this.actionOnMatchPlayers(p -> p.CloseConnection());
 
         MatchMaking.RemoveActiveMatch(this);
         this.interrupt();
     }
 
     public void SendToAll(String message){
-        actionOnMatchPlayers(player -> player.sendMessage(message));
+        actionOnMatchPlayers(player -> player.SendMessage(message));
         MatchLogger.Info(GetMatchIdentifier(), MatchLogger.LogType.ALL_MESSAGE, message);
     }
 
@@ -138,7 +135,7 @@ final class OnlineMatch extends Thread implements Match {
         this.m_MatchPlayers.removeAll(playersToRemove);
         this.m_MatchQuitedPlayers.addAll(playersToRemove);
 
-        if (!m_IsGameOver && connectedPlayersNum < Utils.MINIMUM_AMOUNT_OF_PLAYERS)
+        if (!m_IsGameOver && connectedPlayersNum < GlobalSettings.MINIMUM_AMOUNT_OF_PLAYERS)
         {
             EndMatch();
         }

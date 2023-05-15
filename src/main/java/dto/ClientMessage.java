@@ -2,7 +2,6 @@ package dto;
 
 import com.google.gson.JsonObject;
 import json.JsonFormatter;
-import utils.Utils;
 
 public final class ClientMessage {
 

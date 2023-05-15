@@ -1,7 +1,7 @@
 package utils.singletons;
 
 import addons.Character;
-import utils.Utils;
+import utils.GlobalSettings;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -34,8 +34,8 @@ public class DBHandler {
         String answer = null;
         try {
             // Get a connection to the database
-            Connection conn = DriverManager.getConnection(Utils.DB_URL,
-                    Utils.DB_USERNAME, Utils.DB_PASSWORD);
+            Connection conn = DriverManager.getConnection(GlobalSettings.DB_URL,
+                    GlobalSettings.DB_USERNAME, GlobalSettings.DB_PASSWORD);
 
             // Prepare the update statement with the characterId parameter
             PreparedStatement statement = conn.prepareStatement(sqlQuery);
