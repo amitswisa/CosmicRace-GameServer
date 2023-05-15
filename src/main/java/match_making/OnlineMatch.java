@@ -115,6 +115,13 @@ final class OnlineMatch extends Thread implements Match {
                         player.MarkAsReady();
                 }
             });
+
+            try {
+                Thread.sleep(500);
+            } catch(InterruptedException e) {
+                LoggerManager.error(e.getMessage());
+            }
+
         }
         while (!isEveryoneReady.get());
     }
