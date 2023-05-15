@@ -125,8 +125,7 @@ public final class PlayerConnection {
         return lastClientMessage;
     }
 
-    public String WaitForPlayerResponse()
-    {
+    public String WaitForPlayerResponse() throws IOException {
         while(!isTimedOut())
         {
             try{
@@ -144,7 +143,7 @@ public final class PlayerConnection {
             }
         }
 
-        return null;
+        throw new IOException(GlobalSettings.TERMINATE_DUE_TO_TIME_OUT);
     }
 
     private boolean isTimedOut()
