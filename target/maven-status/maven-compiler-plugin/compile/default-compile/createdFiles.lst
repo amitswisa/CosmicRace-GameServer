@@ -1,8 +1,6 @@
 addons\Location.class
 utils\servlets\UpdatePlayerStatsServlet.class
 dto\SocketMessage.class
-utils\LoggerManager.class
-utils\Utils.class
 dto\ClientMessage$MessageType.class
 addons\Character.class
 dto\SocketMessage$MessageType.class
@@ -15,5 +13,3 @@ dto\ClientMessage.class
 json\JsonFormatter.class
 player\Player.class
 match_making\CouchMatch.class
-player\OnlinePlayer.class
-player\CouchPlayer.class
