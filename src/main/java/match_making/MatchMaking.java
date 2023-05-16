@@ -6,6 +6,7 @@ import interfaces.Match;
 import utils.logs.LoggerManager;
 import utils.GlobalSettings;
 
+import java.net.SocketTimeoutException;
 import java.util.*;
 
 public final class MatchMaking {
@@ -18,15 +19,19 @@ public final class MatchMaking {
     public static synchronized void AddPlayerToWaitingList(Player i_NewPlayer)
     {
 
-        addPlayerToQueue(i_NewPlayer);
-        i_NewPlayer.SendMessage(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Looking for other players...").toString());
-        LoggerManager.info("Socket (" +i_NewPlayer.getHost() + "): Waiting to play!");
+        try {
+            i_NewPlayer.SendMessage(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Looking for other players...").toString());
+            addPlayerToQueue(i_NewPlayer);
+            LoggerManager.info("Player " +i_NewPlayer.GetUserName()+ " log: Added to waiting list queue!");
+        } catch(SocketTimeoutException ste) {
+            i_NewPlayer.CloseConnection(ste.getMessage());
+        }
 
         // There are enough users to create a match.
         while (s_UsersWaiting >= GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS) {
 
             List<Player> matchPlayers = new ArrayList<>(GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS);
-            LoggerManager.info("Try to start new match...");
+            LoggerManager.info("Match Making log: Looking for players...");
 
             while(matchPlayers.size() < GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS
                     && s_UsersWaiting >= GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS - matchPlayers.size()) {
@@ -38,14 +43,13 @@ public final class MatchMaking {
                 if (player != null && player.IsConnectionAlive())
                     matchPlayers.add(player);
                 else
-                    LoggerManager.info("Player terminated connection or unreachable.");
-
+                    LoggerManager.info("Player " +player.GetUserName()+ " log: Connection terminated or unreachable.");
             }
 
             int numOfPlayersInList = matchPlayers.size();
             if(numOfPlayersInList != GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS)
             {
-                LoggerManager.info("not enough players to create a game. exiting.");
+                LoggerManager.info("Match Making log: Failed to create a match, not enough players.");
                 s_PlayersQueue.addAll(matchPlayers);
                 s_UsersWaiting += numOfPlayersInList;
                 return;
@@ -53,6 +57,8 @@ public final class MatchMaking {
 
             // Create new match and start it.
             String matchIdentifier = generateSessionIdentifier();
+            LoggerManager.info("Match Making log: Players found, creating a match (#"+matchIdentifier+").");
+
             Match newMatch = new OnlineMatch(matchIdentifier, matchPlayers);
             s_ActiveMatches.put(matchIdentifier, newMatch);
 
@@ -68,7 +74,7 @@ public final class MatchMaking {
         }
     }
 
-    public static void RemoveActiveMatch(Match i_Match)
+    public static synchronized void RemoveActiveMatch(Match i_Match)
     {
         s_ActiveMatches.remove(i_Match.GetMatchIdentifier());
     }

@@ -1,4 +1,4 @@
-package player;
+package player.connection_handler;
 
 import dto.ClientMessage;
 import utils.GlobalSettings;
@@ -8,13 +8,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.util.logging.Logger;
 
 public final class PlayerConnection {
 
-    private final Socket m_SocketConnection; // Client's socket.
-    private PrintWriter m_OutStream; // Output stream.
-    private BufferedReader m_InStream; // Input stream.
+    private final Socket m_SocketConnection;
+    private PrintWriter m_OutStream;
+    private BufferedReader m_InStream;
     private boolean m_IsConnected;
     private long m_LastClientConnectionTime;
 
@@ -28,22 +30,20 @@ public final class PlayerConnection {
             this.m_InStream = new BufferedReader(new InputStreamReader(this.m_SocketConnection.getInputStream()));
             this.updateLastClientConnectionTime();
 
-            this.sendMessage(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Connection established.").toString());
+            this.SendMessage(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Connecting to server...").toString());
 
         }catch(Exception e){
             CloseConnection(e.getMessage());
         }
     }
 
-    private void updateLastClientConnectionTime()
-    {
-        this.m_LastClientConnectionTime = System.currentTimeMillis();
-    }
-
-    public void sendMessage(String message)
-    {
+    public void SendMessage(String i_Message) throws SocketTimeoutException {
         if(this.IsConnectionAlive())
-            m_OutStream.println(message);
+        {
+            m_OutStream.println(i_Message);
+        } else {
+            throw new SocketTimeoutException(GlobalSettings.NO_CONNECTION);
+        }
     }
 
     public void CloseConnection(String i_ExceptionMessage)
@@ -63,46 +63,35 @@ public final class PlayerConnection {
         }
     }
 
-    public final String getHost()
-    {
-        return this.m_SocketConnection.getInetAddress().getHostAddress();
-    }
-
     public boolean IsConnectionAlive()
     {
         if (!this.m_IsConnected)
             return false;
 
         try {
-            ClientMessage heartbeat = new ClientMessage(ClientMessage.MessageType.CONFIRMATION, "isAlive\n");
-            String heartbeatReadyToSend = heartbeat.toString() + "\n";
-            this.m_SocketConnection.getOutputStream().write(heartbeatReadyToSend.getBytes());
+            ClientMessage heartbeat = new ClientMessage(ClientMessage.MessageType.CONFIRMATION, GlobalSettings.HEARTBEAT_MESSAGE);
+            String heartbeatJson = heartbeat.toString() + "\n";
+
+            this.m_SocketConnection.getOutputStream().write(heartbeatJson.getBytes());
+
             this.updateLastClientConnectionTime();
         } catch (Exception e) {
 
             // Client timed out.
             if(isTimedOut())
             {
-                CloseConnection(e.getMessage());
+                return false;
             }
-
-            return false;
         }
 
         return true;
     }
 
-    public final PrintWriter GetOutStream()
-    {
-        return m_OutStream;
-    }
-
-    public final BufferedReader GetInStream()
-    {
-        return m_InStream;
-    }
-
     public String ReadMessage() throws IOException {
+
+        if(isTimedOut())
+            throw new SocketTimeoutException(GlobalSettings.TERMINATE_DUE_TO_TIME_OUT);
+
         String lastClientMessage = "";
         do
         {
@@ -110,9 +99,8 @@ public final class PlayerConnection {
             {
                 lastClientMessage = this.GetInStream().readLine();
 
-                // TODO - Cheeck
                 if(lastClientMessage == null)
-                    throw new IOException(GlobalSettings.TERMINATE_DUE_TO_TIME_OUT);
+                    throw new SocketTimeoutException(GlobalSettings.TERMINATE_DUE_TO_TIME_OUT);
 
                 this.updateLastClientConnectionTime();
             }
@@ -125,11 +113,15 @@ public final class PlayerConnection {
         return lastClientMessage;
     }
 
+    /**
+     * @return - Message received by client
+     * @throws IOException - When null is read from client's input stream, indicates of connection termination.
+     */
     public String WaitForPlayerResponse() throws IOException {
         while(!isTimedOut())
         {
             try{
-                // Get initialization data from client in json (contains userid & characterId).
+
                 String initData = this.ReadMessage();
 
                 if(initData.equals(GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER))
@@ -149,5 +141,20 @@ public final class PlayerConnection {
     private boolean isTimedOut()
     {
         return (System.currentTimeMillis() - this.m_LastClientConnectionTime > GlobalSettings.MAX_TIME_OUT);
+    }
+
+    public String getHost()
+    {
+        return this.m_SocketConnection.getInetAddress().getHostAddress();
+    }
+
+    public BufferedReader GetInStream()
+    {
+        return m_InStream;
+    }
+
+    private void updateLastClientConnectionTime()
+    {
+        this.m_LastClientConnectionTime = System.currentTimeMillis();
     }
 }

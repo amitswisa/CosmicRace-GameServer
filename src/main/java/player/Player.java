@@ -7,14 +7,19 @@ import json.JsonFormatter;
 import okhttp3.*;
 
 import match_making.MatchMaking;
+import org.jetbrains.annotations.NotNull;
+import player.connection_handler.PlayerConnection;
 import utils.GlobalSettings;
 import utils.logs.LoggerManager;
+import utils.messages_manager.APIRoutes;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.Objects;
+import java.util.logging.Logger;
 
-public class Player implements Comparable {
+public class Player implements Comparable<Player> {
 
     private final PlayerConnection m_PlayerConnection;
     private Match m_CurrentMatch;
@@ -23,15 +28,18 @@ public class Player implements Comparable {
     private String m_UserName;
     private boolean m_IsReady;
 
-    public Player(Socket socketConnection) throws IOException
+    public Player(Socket i_SocketConnection) throws IOException
     {
-        this.m_PlayerConnection = new PlayerConnection(socketConnection);
+        this.m_PlayerConnection = new PlayerConnection(i_SocketConnection);
 
         String initData = this.m_PlayerConnection.WaitForPlayerResponse();
+        LoggerManager.debug("Received data from socket " + this.m_PlayerConnection.getHost());
+
         fetchPlayerData(JsonFormatter.createJsonFromString(initData));
+        LoggerManager.debug("Player " + this.GetUserName() + " log: fetched character data successfully.");
 
         this.m_IsReady = false;
-        LoggerManager.info("Player " + this.m_UserName + " has been created!");
+        LoggerManager.debug("Player " + this.m_UserName + " has been created!");
     }
 
     // TODO - maybe static ?
@@ -45,14 +53,14 @@ public class Player implements Comparable {
                 .build();
 
         Request request = new Request.Builder()
-                .url(GlobalSettings.WEB_API_URL + "/fetchCharacterData")
+                .url(APIRoutes.GetCompleteRoute(APIRoutes.FETCH_CHARACTER_ROUTE))
                 .addHeader("Content-Type", "application/x-www-form-urlencoded")
                 .post(requestBody)
                 .build();
 
         Response response = client.newCall(request).execute();
         if (!response.isSuccessful()) {
-            throw new IOException(GlobalSettings.COULDNT_FETCH_ERROR);
+            throw new IOException(GlobalSettings.COULDNT_FETCH_CHARACTER_DATA_ERROR);
         }
 
         JsonObject resData = JsonFormatter.createJsonFromString(response.body().string());
@@ -60,21 +68,10 @@ public class Player implements Comparable {
         m_Character = JsonFormatter.GetGson().fromJson(resData, Character.class);
     }
 
-    // Send message to customer.
-    public final void setNewMatch(Match i_Match)
+    public final void SetMatch(Match i_Match)
     {
         this.m_CurrentMatch = i_Match;
-        this.m_Location = new Location(0, 0); //probably not necessary.
-    }
-
-    public final Character GetCharacter()
-    {
-        return this.m_Character;
-    }
-
-    public final String GetCharacterName()
-    {
-        return this.m_Character.getCharacterName();
+        this.m_Location = new Location(0, 0);
     }
 
     public final String GetUserName()
@@ -90,15 +87,12 @@ public class Player implements Comparable {
         return jsonObject;
     }
 
-    public final String ReadMessage()
-    {
-        try {
-            return this.m_PlayerConnection.ReadMessage();
-        } catch(Exception e) {
-            this.CloseConnection(e.getMessage());
-        }
+    public final String ReadMessage() throws IOException {
+        return this.m_PlayerConnection.ReadMessage();
+    }
 
-        return GlobalSettings.NO_CONNECTION;
+    public final void SendMessage(String i_Message) throws SocketTimeoutException {
+        this.m_PlayerConnection.SendMessage(i_Message);
     }
 
     public final boolean IsReady()
@@ -111,18 +105,18 @@ public class Player implements Comparable {
         this.m_IsReady = true;
     }
 
-    public void SendMessage(String i_Message)
+    public final Character GetCharacter()
     {
-        this.m_PlayerConnection.sendMessage(i_Message);
+        return this.m_Character;
     }
 
     public final void CloseConnection(String i_ExceptionMessage)
     {
+        this.m_CurrentMatch.RemovePlayerFromMatch(this);
         MatchMaking.RemovePlayerFromWaitingList(this);
         this.m_PlayerConnection.CloseConnection(i_ExceptionMessage);
     }
 
-    // Get host address as known as IP address.
     public final String getHost()
     {
         return this.m_PlayerConnection.getHost();
@@ -130,12 +124,14 @@ public class Player implements Comparable {
 
     public final boolean IsConnectionAlive()
     {
-        return this.m_PlayerConnection.IsConnectionAlive();
-    }
+        boolean isConnectionAlive = this.m_PlayerConnection.IsConnectionAlive();
 
-    @Override
-    public int compareTo(Object o) {
-        return 0;
+        if(isConnectionAlive)
+            return true;
+        else {
+            this.CloseConnection(GlobalSettings.TERMINATE_DUE_TO_TIME_OUT);
+            return false;
+        }
     }
 
     @Override
@@ -153,4 +149,8 @@ public class Player implements Comparable {
         return Objects.hash(m_UserName);
     }
 
+    @Override
+    public int compareTo(@NotNull Player o) {
+        return 0;
+    }
 }

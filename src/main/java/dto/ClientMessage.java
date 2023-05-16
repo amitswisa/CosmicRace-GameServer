@@ -6,7 +6,12 @@ import json.JsonFormatter;
 public final class ClientMessage {
 
     public enum MessageType {
-        NOTIFICATION, DATA, ACTION, ERROR, CONFIRMATION, GAME_OPERATION
+        NOTIFICATION,
+        DATA,
+        ACTION,
+        ERROR,
+        CONFIRMATION,
+        GAME_OPERATION
     }
 
     private MessageType messageType;

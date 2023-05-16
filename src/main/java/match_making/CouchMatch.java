@@ -61,7 +61,7 @@ class CouchMatch extends Thread implements Match {
     }
 
     @Override
-    public void EndMatch() {
+    public void EndMatch(String i_MatchEndedReason) {
 
     }
 

@@ -2,17 +2,22 @@ package utils.logs;
 
 public class MatchLogger {
 
-    public enum LogType {
-        PLAYER_MESSAGE, ALL_MESSAGE, NOTIFICATION, WARNING
+    public static void Info(String i_MatchIdentifier, String i_LogMessage)
+    {
+        String logMessage = "\nMatch #" + i_MatchIdentifier + " log: " + i_LogMessage;
+        LoggerManager.info(logMessage);
     }
 
-    public static void Info(String i_MatchIdentifier,LogType logType, String i_LogMessage)
+    public static void Error(String i_MatchIdentifier, String i_LogMessage)
     {
-        String logMessage = "\nMatch Log - #(" + i_MatchIdentifier + ")." +
-                "\nLog type: " + logType.toString() +
-                "\nLog Message: " + i_LogMessage;
+        String logMessage = "\nMatch #" + i_MatchIdentifier + " log: " + i_LogMessage;
+        LoggerManager.error(logMessage);
+    }
 
-        LoggerManager.info(logMessage);
+    public static void Debug(String i_MatchIdentifier, String i_LogMessage)
+    {
+        String logMessage = "\nMatch #" + i_MatchIdentifier + " log: " + i_LogMessage;
+        LoggerManager.debug(logMessage);
     }
 
 }

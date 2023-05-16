@@ -10,6 +10,8 @@ import utils.logs.MatchLogger;
 import utils.singletons.DBHandler;
 import utils.logs.LoggerManager;
 
+import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +23,7 @@ final class OnlineMatch extends Thread implements Match {
 
     private List<Player> m_MatchPlayers;
     private List<Player> m_MatchQuitedPlayers;
+    private List<Player> m_WaitingToQuit;
     private final String m_MatchIdentifier;
     private boolean m_IsGameOver;
 
@@ -29,92 +32,150 @@ final class OnlineMatch extends Thread implements Match {
         this.m_MatchIdentifier = i_MatchIdentifier;
         this.m_MatchPlayers = i_MatchPlayers;
         this.m_MatchQuitedPlayers = new ArrayList<>(getNumOfPlayerInMatch());
+        this.m_WaitingToQuit = new ArrayList<>(getNumOfPlayerInMatch());
         this.m_IsGameOver = false;
-        this.actionOnMatchPlayers(player -> player.setNewMatch(this));
-
-        MatchLogger.Info(GetMatchIdentifier(), MatchLogger.LogType.NOTIFICATION, "New match created!");
+        this.actionOnMatchPlayers(player -> player.SetMatch(this));
 
         SendToAll(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Players found, creating a match.").toString());
+        MatchLogger.Debug(GetMatchIdentifier(), "Trying to create a match!");
+
         SendToAll(new ClientMessage(ClientMessage.MessageType.DATA, getMatchPlayersAsJson()).toString());
+        MatchLogger.Debug(GetMatchIdentifier(), "Players initial data sent!");
+    }
+
+    private void initMatch() throws Exception {
+
+        this.waitForPlayersToBeReady();
+        MatchLogger.Debug(GetMatchIdentifier(), "Players ready.");
+
+        this.SendToAll(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Starting match..").toString());
+        MatchLogger.Debug(GetMatchIdentifier(), "Start message sent.");
+
+        this.SendToAll(new ClientMessage(ClientMessage.MessageType.ACTION, "START").toString());
+        MatchLogger.Info(GetMatchIdentifier(), "Starting game.");
     }
 
     @Override
     public void run() {
 
-        this.SendToAll(new ClientMessage(ClientMessage.MessageType.CONFIRMATION, "READY?").toString());
+        try
+        {
 
-        this.waitForPlayersConfirmation();
+            this.initMatch();
 
-        this.SendToAll(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Starting match..").toString());
+            while (!m_IsGameOver)
+            {
 
-        this.SendToAll(new ClientMessage(ClientMessage.MessageType.ACTION, "START").toString());
+                this.removeWaitingToQuitPlayers();
 
-        while (!m_IsGameOver) {
+                if(!this.matchIsOver())
+                {
+                    // collecting data from client each 200ms.
+                    this.SendToAll("Players Update!"); //sending here players Jsons Details.
+                    LoggerManager.info("Going to sleep 200ms.");
+                    LoggerManager.info("Amount of players in current match is: " + m_MatchPlayers.size());
 
-            try {
-                // collecting data from client each 200ms.
-                this.SendToAll("Players Update!"); //sending here players Jsons Details.
-                LoggerManager.info("Going to sleep 200ms.");
-                LoggerManager.info("Amount of players in current match is: " + m_MatchPlayers.size());
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                break;
+                    try {
+                        Thread.sleep(200);
+                    } catch(InterruptedException ie) {
+                        MatchLogger.Error(this.GetMatchIdentifier()," has been interrupted.");
+                    }
+                }
+
             }
 
+        } catch(Exception e){
+            this.EndMatch(e.getMessage());
+            return;
         }
 
-        EndMatch();
+        this.EndMatch(GlobalSettings.MATCH_ENDED);
+
+    }
+
+    private boolean matchIsOver() {
+        return (m_IsGameOver || this.isActivePlayersFinished());
+    }
+    // TODO - Create that function.
+
+    private boolean isActivePlayersFinished() {
+        return false;
     }
 
     @Override
-    public void RemovePlayerFromMatch(Player player)
+    public synchronized void RemovePlayerFromMatch(Player player)
     {
-        this.m_MatchPlayers.remove(player);
-        MatchLogger.Info(GetMatchIdentifier(), MatchLogger.LogType.NOTIFICATION, "Player " + player.GetUserName() + " has left the game!");
-    }
-
-    @Override
-    public void EndMatch() {
-
-        this.m_IsGameOver = true;
-        MatchLogger.Info(GetMatchIdentifier(), MatchLogger.LogType.NOTIFICATION, "Match ended!");
-
-        // TODO - update players coins and stats on database.
-        //  /30.4/UPDATE - only stats left.
-        this.actionOnMatchPlayers(p -> DBHandler.updateStatsInDB(p.GetCharacter()));
-        this.actionOnMatchPlayers(p -> p.CloseConnection(GlobalSettings.MATCH_ENDED));
-
-        MatchMaking.RemoveActiveMatch(this);
-        this.interrupt();
+        this.m_WaitingToQuit.add(player);
+        MatchLogger.Info(GetMatchIdentifier(), "Player " + player.GetUserName() + " has left the game!");
     }
 
     public void SendToAll(String message){
-        actionOnMatchPlayers(player -> player.SendMessage(message));
-        MatchLogger.Info(GetMatchIdentifier(), MatchLogger.LogType.ALL_MESSAGE, message);
+        actionOnMatchPlayers(player -> {
+
+            try {
+                player.SendMessage(message);
+            } catch(SocketTimeoutException ste) {
+                player.CloseConnection(ste.getMessage());
+            }
+
+        });
     }
 
     public String GetMatchIdentifier() {
         return this.m_MatchIdentifier;
     }
 
-    private void waitForPlayersConfirmation() {
+    private void removeWaitingToQuitPlayers() throws Exception {
+
+        if(this.m_WaitingToQuit.size() > 0)
+        {
+            this.m_MatchPlayers.removeAll(this.m_WaitingToQuit);
+            this.m_MatchQuitedPlayers.addAll(this.m_WaitingToQuit);
+
+            // TODO - announce of player quited.
+            this.m_WaitingToQuit.forEach((quitedPlayer) -> {
+                MatchLogger.Debug(GetMatchIdentifier(), "Player " + quitedPlayer.GetUserName() + " disconnected.");
+            });
+
+            if (!this.m_IsGameOver
+                    && this.m_MatchPlayers.size() < GlobalSettings.MINIMUM_AMOUNT_OF_PLAYERS)
+            {
+                throw new Exception(GlobalSettings.MATCH_TERMINATED);
+            }
+        }
+    }
+
+    private void waitForPlayersToBeReady() throws Exception {
+
+        this.SendToAll(new ClientMessage(ClientMessage.MessageType.CONFIRMATION, GlobalSettings.PLAYER_READY_MESSAGE).toString());
+        MatchLogger.Debug(GetMatchIdentifier(), "Waiting for player to be ready...");
+
         AtomicBoolean isEveryoneReady = new AtomicBoolean(false);
 
         do {
             isEveryoneReady.set(true);
-            actionOnMatchPlayers(player -> {
-                if (!player.IsReady()) {
-                    String msg = player.ReadMessage();
+            actionOnMatchPlayers((player) -> {
 
-                    // TODO - Handle no connection (NO_CONNECTION) message.
+                try {
+                    if (!player.IsReady()) {
+                        String msg = player.ReadMessage();
 
-                    LoggerManager.info(msg);
-                    if (!msg.equals("READY"))
-                        isEveryoneReady.set(false);
-                    else
-                        player.MarkAsReady();
+                        if (!msg.equals(GlobalSettings.PLAYER_READY_RESPONSE_MESSAGE))
+                            isEveryoneReady.set(false);
+                        else {
+                            player.MarkAsReady();
+                            MatchLogger.Debug(GetMatchIdentifier(), "Player " + player.GetUserName() + " is ready!");
+                        }
+
+                    }
+                } catch(IOException ioe) {
+                    player.CloseConnection(ioe.getMessage());
+                    isEveryoneReady.set(false);
                 }
+
             });
+
+            this.removeWaitingToQuitPlayers();
 
             try {
                 Thread.sleep(500);
@@ -128,26 +189,14 @@ final class OnlineMatch extends Thread implements Match {
 
     private void actionOnMatchPlayers(Consumer<Player> processor) {
 
-        int connectedPlayersNum = 0;
-        List<Player> playersToRemove = new ArrayList<>();
-
         for (Player player : m_MatchPlayers) {
             if (player.IsConnectionAlive()) {
                 try {
                     processor.accept(player);
-                    connectedPlayersNum++;
                 } catch (Exception e) {
-                    playersToRemove.add(player);
+                    LoggerManager.error("Player " + player.GetUserName() + " " + e.getMessage());
                 }
             }
-        }
-
-        this.m_MatchPlayers.removeAll(playersToRemove);
-        this.m_MatchQuitedPlayers.addAll(playersToRemove);
-
-        if (!m_IsGameOver && connectedPlayersNum < GlobalSettings.MINIMUM_AMOUNT_OF_PLAYERS)
-        {
-            EndMatch();
         }
     }
 
@@ -170,6 +219,25 @@ final class OnlineMatch extends Thread implements Match {
     private int getNumOfPlayerInMatch()
     {
         return this.m_MatchPlayers.size();
+    }
+
+    @Override
+    public void EndMatch(String i_MatchEndedReason) {
+
+        this.m_IsGameOver = true;
+
+        if(!i_MatchEndedReason.equals(GlobalSettings.MATCH_ENDED))
+            MatchLogger.Error(GetMatchIdentifier(), i_MatchEndedReason);
+        else
+            MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
+
+        // TODO - update players coins and stats on database.
+        //  /30.4/UPDATE - only stats left.
+        this.actionOnMatchPlayers(p -> DBHandler.updateStatsInDB(p.GetCharacter()));
+        this.actionOnMatchPlayers(p -> p.CloseConnection(GlobalSettings.MATCH_ENDED));
+
+        MatchMaking.RemoveActiveMatch(this);
+        this.interrupt();
     }
 }
 
