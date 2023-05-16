@@ -66,14 +66,13 @@ final class OnlineMatch extends Thread implements Match {
             while (!m_IsGameOver)
             {
 
+                this.SendToAll("Players Updates!");
                 this.removeWaitingToQuitPlayers();
 
                 if(!this.matchIsOver())
                 {
                     // collecting data from client each 200ms.
-                    this.SendToAll("Players Update!"); //sending here players Jsons Details.
-                    LoggerManager.info("Going to sleep 200ms.");
-                    LoggerManager.info("Amount of players in current match is: " + m_MatchPlayers.size());
+                    MatchLogger.Debug(this.GetMatchIdentifier(), "Thread action - Sleep 200ms.");
 
                     try {
                         Thread.sleep(200);
@@ -106,7 +105,6 @@ final class OnlineMatch extends Thread implements Match {
     public synchronized void RemovePlayerFromMatch(Player player)
     {
         this.m_WaitingToQuit.add(player);
-        MatchLogger.Info(GetMatchIdentifier(), "Player " + player.GetUserName() + " has left the game!");
     }
 
     public void SendToAll(String message){
@@ -140,7 +138,7 @@ final class OnlineMatch extends Thread implements Match {
             if (!this.m_IsGameOver
                     && this.m_MatchPlayers.size() < GlobalSettings.MINIMUM_AMOUNT_OF_PLAYERS)
             {
-                throw new Exception(GlobalSettings.MATCH_TERMINATED);
+                throw new Exception(GlobalSettings.NOT_ENOUGH_PLAYERS_TO_CONTINUE);
             }
         }
     }

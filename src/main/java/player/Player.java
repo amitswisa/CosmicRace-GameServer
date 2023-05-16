@@ -112,7 +112,9 @@ public class Player implements Comparable<Player> {
 
     public final void CloseConnection(String i_ExceptionMessage)
     {
-        this.m_CurrentMatch.RemovePlayerFromMatch(this);
+        if(this.m_CurrentMatch != null)
+            this.m_CurrentMatch.RemovePlayerFromMatch(this);
+
         MatchMaking.RemovePlayerFromWaitingList(this);
         this.m_PlayerConnection.CloseConnection(i_ExceptionMessage);
     }

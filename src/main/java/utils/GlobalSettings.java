@@ -30,7 +30,8 @@ public class GlobalSettings {
     public static final String CLIENT_CLOSED_CONNECTION = "Cant reach client, closing connection..";
     public static final String NO_CONNECTION = "No connection";
     public static final String MATCH_ENDED = "Match ended";
-    public static final String MATCH_TERMINATED = "Match has been terminated due to unexpected error.";
+    public static final String MATCH_TERMINATED = "Match has been stopped due to unexpected error.";
     public static final String NO_MESSAGES_IN_CLIENT_BUFFER = "No Messages";
+    public static final String NOT_ENOUGH_PLAYERS_TO_CONTINUE = "Match has been terminated - Number of players is under the minimum required.";
 }
 
