@@ -9,7 +9,6 @@ import utils.GlobalSettings;
 import utils.logs.MatchLogger;
 import utils.singletons.DBHandler;
 import utils.logs.LoggerManager;
-
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
@@ -60,11 +59,29 @@ final class OnlineMatch extends Thread implements Match {
 
         try
         {
-
             this.initMatch();
 
             while (!m_IsGameOver)
             {
+                for(Player player : m_MatchPlayers)
+                {
+                    try
+                    {
+                        String playerResponse = player.ReadMessage();
+                        switch (playerResponse.trim().toUpperCase())
+                        {
+                            case "QUIT": {
+                                throw new IOException(GlobalSettings.CLIENT_CLOSED_CONNECTION);
+                            }
+                            default: {
+                                LoggerManager.info("Player " + player.GetUserName() + " response: " + playerResponse);
+                            }
+                        }
+
+                    } catch(IOException ioe) {
+                        player.CloseConnection(ioe.getMessage());
+                    }
+                }
 
                 this.SendToAll("Players Updates!");
                 this.removeWaitingToQuitPlayers();
@@ -95,8 +112,8 @@ final class OnlineMatch extends Thread implements Match {
     private boolean matchIsOver() {
         return (m_IsGameOver || this.isActivePlayersFinished());
     }
-    // TODO - Create that function.
 
+    // TODO - Create that function.
     private boolean isActivePlayersFinished() {
         return false;
     }

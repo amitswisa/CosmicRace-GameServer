@@ -11,7 +11,7 @@
     <Appenders>
         <!-- Spring console pattern -->
         <Console name="ConsoleDefault" target="SYSTEM_OUT">
-            <PatternLayout disableAnsi="false"  pattern="%highlight{%d{HH:mm:ss.SSS} %-5level %logger{36}.%M() - %msg%n}{FATAL=red blink, ERROR=red, WARN=yellow bold, INFO=green, DEBUG=#57D3FF, TRACE=blue}" />
+            <PatternLayout disableAnsi="false"  pattern="%highlight{%d{HH:mm:ss.SSS} %-5level LOG - %msg%n}{FATAL=red blink, ERROR=red, WARN=yellow bold, INFO=green, DEBUG=#57D3FF, TRACE=blue}" />
         </Console>
 
     </Appenders>

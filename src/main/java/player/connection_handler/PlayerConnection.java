@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.logging.Logger;
 
 public final class PlayerConnection {
 
@@ -69,7 +67,7 @@ public final class PlayerConnection {
             return false;
 
         try {
-            ClientMessage heartbeat = new ClientMessage(ClientMessage.MessageType.CONFIRMATION, GlobalSettings.HEARTBEAT_MESSAGE);
+            ClientMessage heartbeat = new ClientMessage(ClientMessage.MessageType.CONFIRMATION, GlobalSettings.SERVER_HEARTBEAT_MESSAGE);
             String heartbeatJson = heartbeat.toString() + "\n";
 
             this.m_SocketConnection.getOutputStream().write(heartbeatJson.getBytes());

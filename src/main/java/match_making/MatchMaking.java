@@ -19,13 +19,7 @@ public final class MatchMaking {
     public static synchronized void AddPlayerToWaitingList(Player i_NewPlayer)
     {
 
-        try {
-            i_NewPlayer.SendMessage(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Looking for other players...").toString());
-            addPlayerToQueue(i_NewPlayer);
-            LoggerManager.info("Player " +i_NewPlayer.GetUserName()+ " log: Added to waiting list queue!");
-        } catch(SocketTimeoutException ste) {
-            i_NewPlayer.CloseConnection(ste.getMessage());
-        }
+        addPlayerToQueue(i_NewPlayer);
 
         // There are enough users to create a match.
         while (s_UsersWaiting >= GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS) {
@@ -39,7 +33,6 @@ public final class MatchMaking {
                 Player player = s_PlayersQueue.poll();
                 DecreaseUserWaiting();
 
-                // TODO - Recheck player terminated connection or has lagging.
                 if (player != null && player.IsConnectionAlive())
                     matchPlayers.add(player);
                 else
@@ -86,8 +79,22 @@ public final class MatchMaking {
 
     private synchronized static void addPlayerToQueue(Player i_Player)
     {
-        s_PlayersQueue.add(i_Player); // Add player to queue.
-        increaseUsersWaiting(); // Add user to waiting users count.
+        try {
+            s_PlayersQueue.add(i_Player); // Add player to queue.
+            increaseUsersWaiting(); // Add user to waiting users count.
+            LoggerManager.info("Player " +i_Player.GetUserName()+ " log: Added to waiting list queue!");
+
+            i_Player.SendMessage(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Looking for other players...").toString());
+        } catch(SocketTimeoutException ste) {
+            removePlayerFromQueue(i_Player);
+            i_Player.CloseConnection(ste.getMessage());
+        }
+    }
+
+    private synchronized static void removePlayerFromQueue(Player i_Player)
+    {
+        s_PlayersQueue.remove(i_Player);
+        DecreaseUserWaiting();
     }
 
     private static synchronized void increaseUsersWaiting()

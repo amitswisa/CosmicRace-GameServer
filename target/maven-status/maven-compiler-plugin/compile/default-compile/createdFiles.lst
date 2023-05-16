@@ -1,9 +1,7 @@
 addons\Location.class
 utils\servlets\UpdatePlayerStatsServlet.class
-dto\SocketMessage.class
 dto\ClientMessage$MessageType.class
 addons\Character.class
-dto\SocketMessage$MessageType.class
 Main.class
 utils\singletons\DBHandler.class
 interfaces\Match.class

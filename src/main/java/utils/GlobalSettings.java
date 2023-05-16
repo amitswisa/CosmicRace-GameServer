@@ -17,8 +17,9 @@ public class GlobalSettings {
     public final static String DB_PASSWORD = "cosmicrace!@#";
 
     // Communication messages
-    public final static String HEARTBEAT_MESSAGE = "isAlive\n";
+    public final static String SERVER_HEARTBEAT_MESSAGE = "isAlive\n";
     public final static String CLIENT_HEARTBEAT_RESPONSE = "ALIVE";
+    public final static String CLIENT_QUITED_BY_CHOICE = "QUIT";
 
     // Player validations messages
     public final static String PLAYER_READY_MESSAGE = "READY?";
@@ -27,7 +28,7 @@ public class GlobalSettings {
     // Player errors
     public final static String COULDNT_FETCH_CHARACTER_DATA_ERROR = "Error occurred while fetching character data.";
     public static final String TERMINATE_DUE_TO_TIME_OUT = "Client socket closed due to reachability issues.";
-    public static final String CLIENT_CLOSED_CONNECTION = "Cant reach client, closing connection..";
+    public static final String CLIENT_CLOSED_CONNECTION = "The client closed the connection.";
     public static final String NO_CONNECTION = "No connection";
     public static final String MATCH_ENDED = "Match ended";
     public static final String MATCH_TERMINATED = "Match has been stopped due to unexpected error.";
