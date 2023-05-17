@@ -68,7 +68,9 @@ final class OnlineMatch extends Thread implements Match {
                     try
                     {
                         String playerResponse = player.ReadMessage();
-                        switch (playerResponse.trim().toUpperCase())
+
+                        this.handlePlayerResponse(player, playerResponse.trim().toUpperCase());
+                        /*switch (playerResponse.trim().toUpperCase())
                         {
                             case "QUIT": {
                                 throw new IOException(GlobalSettings.CLIENT_CLOSED_CONNECTION);
@@ -76,7 +78,7 @@ final class OnlineMatch extends Thread implements Match {
                             default: {
                                 LoggerManager.info("Player " + player.GetUserName() + " response: " + playerResponse);
                             }
-                        }
+                        }*/
 
                     } catch(IOException ioe) {
                         player.CloseConnection(ioe.getMessage());
@@ -107,6 +109,17 @@ final class OnlineMatch extends Thread implements Match {
 
         this.EndMatch(GlobalSettings.MATCH_ENDED);
 
+    }
+
+    private void handlePlayerResponse(Player i_Player, String i_PlayerResponse) throws IOException {
+        switch (i_PlayerResponse) {
+            case GlobalSettings.CLIENT_QUITED_BY_CHOICE: {
+                throw new IOException(GlobalSettings.CLIENT_CLOSED_CONNECTION);
+            }
+            default: {
+                LoggerManager.info("Player " + i_Player.GetUserName() + " response: " + i_PlayerResponse);
+            }
+        }
     }
 
     private boolean matchIsOver() {

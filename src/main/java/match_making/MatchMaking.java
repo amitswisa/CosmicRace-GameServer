@@ -72,7 +72,7 @@ public final class MatchMaking {
         s_ActiveMatches.remove(i_Match.GetMatchIdentifier());
     }
 
-    public static synchronized void DecreaseUserWaiting()
+    public static void DecreaseUserWaiting() //Ran removed the Synchronized.
     {
         --s_UsersWaiting;
     }
@@ -97,7 +97,7 @@ public final class MatchMaking {
         DecreaseUserWaiting();
     }
 
-    private static synchronized void increaseUsersWaiting()
+    private static void increaseUsersWaiting() //Ran removed the Synchronized.
     {
         s_UsersWaiting += 1;
     }
