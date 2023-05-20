@@ -11,14 +11,13 @@ import java.util.*;
 
 public final class MatchMaking {
 
-    private static final Object removeLock = new Object();
+    private static final Object incOrDecLock = new Object();
     private static volatile int s_UsersWaiting = 0;
     private static volatile Queue<Player> s_PlayersQueue = new PriorityQueue<>();
     private static volatile Map<String, Match> s_ActiveMatches = new HashMap<>();
 
     public static synchronized void AddPlayerToWaitingList(Player i_NewPlayer)
     {
-
         addPlayerToQueue(i_NewPlayer);
 
         // There are enough users to create a match.
@@ -59,47 +58,48 @@ public final class MatchMaking {
         }
     }
 
-    public static void RemovePlayerFromWaitingList(Player i_PlayerSocket)
-    {
-        synchronized (removeLock) {
-            s_PlayersQueue.remove(i_PlayerSocket);
-            DecreaseUserWaiting();
-        }
-    }
-
     public static synchronized void RemoveActiveMatch(Match i_Match)
     {
         s_ActiveMatches.remove(i_Match.GetMatchIdentifier());
     }
 
-    public static void DecreaseUserWaiting() //Ran removed the Synchronized.
-    {
-        --s_UsersWaiting;
-    }
-
-    private synchronized static void addPlayerToQueue(Player i_Player)
+    private static void addPlayerToQueue(Player i_Player) // Only one sync function call it - no need to sync.
     {
         try {
-            s_PlayersQueue.add(i_Player); // Add player to queue.
-            increaseUsersWaiting(); // Add user to waiting users count.
+            s_PlayersQueue.add(i_Player);
+            increaseUsersWaiting();
             LoggerManager.info("Player " +i_Player.GetUserName()+ " log: Added to waiting list queue!");
 
             i_Player.SendMessage(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Looking for other players...").toString());
         } catch(SocketTimeoutException ste) {
-            removePlayerFromQueue(i_Player);
+            RemovePlayerFromQueue(i_Player);
             i_Player.CloseConnection(ste.getMessage());
         }
     }
 
-    private synchronized static void removePlayerFromQueue(Player i_Player)
+    public static void RemovePlayerFromQueue(Player i_Player)
     {
-        s_PlayersQueue.remove(i_Player);
-        DecreaseUserWaiting();
+        if(s_PlayersQueue.contains(i_Player))
+        {
+            s_PlayersQueue.remove(i_Player);
+            DecreaseUserWaiting();
+        }
+    }
+
+    public static void DecreaseUserWaiting() //Ran removed the Synchronized.
+    {
+        synchronized (incOrDecLock)
+        {
+            s_UsersWaiting -= 1;
+        }
     }
 
     private static void increaseUsersWaiting() //Ran removed the Synchronized.
     {
-        s_UsersWaiting += 1;
+        synchronized (incOrDecLock)
+        {
+            s_UsersWaiting += 1;
+        }
     }
 
     private static String generateSessionIdentifier() {

@@ -68,18 +68,7 @@ final class OnlineMatch extends Thread implements Match {
                     try
                     {
                         String playerResponse = player.ReadMessage();
-
                         this.handlePlayerResponse(player, playerResponse.trim().toUpperCase());
-                        /*switch (playerResponse.trim().toUpperCase())
-                        {
-                            case "QUIT": {
-                                throw new IOException(GlobalSettings.CLIENT_CLOSED_CONNECTION);
-                            }
-                            default: {
-                                LoggerManager.info("Player " + player.GetUserName() + " response: " + playerResponse);
-                            }
-                        }*/
-
                     } catch(IOException ioe) {
                         player.CloseConnection(ioe.getMessage());
                     }
@@ -164,6 +153,8 @@ final class OnlineMatch extends Thread implements Match {
             this.m_WaitingToQuit.forEach((quitedPlayer) -> {
                 MatchLogger.Debug(GetMatchIdentifier(), "Player " + quitedPlayer.GetUserName() + " disconnected.");
             });
+
+            this.m_WaitingToQuit.clear();
 
             if (!this.m_IsGameOver
                     && this.m_MatchPlayers.size() < GlobalSettings.MINIMUM_AMOUNT_OF_PLAYERS)

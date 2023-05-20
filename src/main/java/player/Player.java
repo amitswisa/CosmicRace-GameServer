@@ -5,19 +5,16 @@ import com.google.gson.JsonObject;
 import interfaces.Match;
 import json.JsonFormatter;
 import okhttp3.*;
-
 import match_making.MatchMaking;
 import org.jetbrains.annotations.NotNull;
 import player.connection_handler.PlayerConnection;
 import utils.GlobalSettings;
 import utils.logs.LoggerManager;
 import utils.messages_manager.APIRoutes;
-
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Objects;
-import java.util.logging.Logger;
 
 public class Player implements Comparable<Player> {
 
@@ -115,7 +112,7 @@ public class Player implements Comparable<Player> {
         if(this.m_CurrentMatch != null)
             this.m_CurrentMatch.RemovePlayerFromMatch(this);
 
-        MatchMaking.RemovePlayerFromWaitingList(this);
+        MatchMaking.RemovePlayerFromQueue(this);
         this.m_PlayerConnection.CloseConnection(i_ExceptionMessage);
     }
 
