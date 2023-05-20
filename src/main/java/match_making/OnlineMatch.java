@@ -1,5 +1,6 @@
 package match_making;
 
+import com.google.gson.JsonElement;
 import json.JsonFormatter;
 import player.Player;
 import com.google.gson.JsonObject;
@@ -226,7 +227,10 @@ final class OnlineMatch extends Thread implements Match {
 
         JsonObject mainObject = new JsonObject();
         mainObject.addProperty("MatchIdentifier", this.GetMatchIdentifier());
-        mainObject.add("Players", JsonFormatter.GetGson().toJsonTree(playersMap));
+
+        JsonElement playersElement = JsonFormatter.GetGson().toJsonTree(playersMap);
+        mainObject.add("Players", playersElement);
+
         return JsonFormatter.GetGson().toJson(mainObject);
     }
 
