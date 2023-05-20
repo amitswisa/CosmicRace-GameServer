@@ -87,7 +87,7 @@ public final class PlayerConnection {
 
     public String ReadMessage() throws IOException {
 
-        if(isTimedOut())
+        if(isTimedOut() || !IsConnectionAlive())
             throw new SocketTimeoutException(GlobalSettings.TERMINATE_DUE_TO_TIME_OUT);
 
         String lastClientMessage = "";
