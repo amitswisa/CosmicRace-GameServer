@@ -2,6 +2,7 @@ package dto;
 
 import addons.Location;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -56,7 +57,8 @@ public class PlayerCommand {
     }
 
     public void parseFromJson(String jsonString) {
-        JsonElement jsonElement = new JsonParser().parse(jsonString);
+        Gson gson = new Gson();
+        JsonElement jsonElement = gson.fromJson(jsonString, JsonElement.class);
         JsonObject jsonObject = jsonElement.getAsJsonObject();
 
         this.m_MessageType = jsonObject.get("m_MessageType").getAsString();
