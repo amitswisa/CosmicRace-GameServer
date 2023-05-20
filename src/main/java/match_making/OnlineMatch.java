@@ -62,6 +62,7 @@ final class OnlineMatch extends Thread implements Match {
 
     @Override
     public void run() {
+        PlayerCommand playerCommand = new PlayerCommand();
 
         try
         {
@@ -76,9 +77,7 @@ final class OnlineMatch extends Thread implements Match {
                         String playerResponse = player.ReadMessage();
 
                         if(!playerResponse.equals(GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER)) {
-                            PlayerCommand playerCommand = JsonFormatter.GetGson()
-                                    .fromJson(playerResponse.trim().toUpperCase(), PlayerCommand.class);
-
+                            playerCommand.parseFromJson(playerResponse);
                             this.handlePlayerResponse(player, playerCommand);
                         }
                     }
@@ -98,7 +97,7 @@ final class OnlineMatch extends Thread implements Match {
                 if(!this.matchIsOver())
                 {
                     // collecting data from client each 200ms.
-                    MatchLogger.Debug(this.GetMatchIdentifier(), "Thread action - Sleep 200ms.");
+//                    MatchLogger.Debug(this.GetMatchIdentifier(), "Thread action - Sleep 200ms.");
 
                     try {
                         Thread.sleep(200);

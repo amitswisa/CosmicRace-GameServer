@@ -2,7 +2,11 @@ package dto;
 
 import addons.Location;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.annotations.SerializedName;
+import player.Player;
 
 public class PlayerCommand {
     private String m_MessageType;
@@ -15,6 +19,8 @@ public class PlayerCommand {
         this.m_Action = i_Action;
         this.m_Location = i_Location;
     }
+
+    public PlayerCommand(){}
 
     public String GetMessageType()
     {
@@ -47,5 +53,17 @@ public class PlayerCommand {
 
     public void SetMessageType(String m_MessageType) {
         this.m_MessageType = m_MessageType;
+    }
+
+    public void parseFromJson(String jsonString) {
+        JsonElement jsonElement = new JsonParser().parse(jsonString);
+        JsonObject jsonObject = jsonElement.getAsJsonObject();
+
+        this.m_MessageType = jsonObject.get("m_MessageType").getAsString();
+        this.m_Username = jsonObject.get("m_Username").getAsString();
+        this.m_Action = jsonObject.get("m_Action").getAsString();
+
+        JsonObject locationJson = jsonObject.getAsJsonObject("m_Location");
+        this.m_Location = new Location(locationJson.get("x").getAsDouble(), locationJson.get("y").getAsDouble());
     }
 }
