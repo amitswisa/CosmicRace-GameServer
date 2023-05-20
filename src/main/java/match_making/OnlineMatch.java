@@ -2,7 +2,6 @@ package match_making;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
-import dto.PlayerAction;
 import dto.PlayerCommand;
 import json.JsonFormatter;
 import player.Player;
@@ -77,7 +76,9 @@ final class OnlineMatch extends Thread implements Match {
                         String playerResponse = player.ReadMessage();
 
                         if(!playerResponse.equals(GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER)) {
-                            playerCommand.parseFromJson(playerResponse);
+                            LoggerManager.info(playerResponse);
+
+                            playerCommand.ParseFromJson(playerResponse);
                             this.handlePlayerResponse(player, playerCommand);
                         }
                     }

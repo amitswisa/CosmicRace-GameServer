@@ -5,9 +5,6 @@ import addons.Location;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.annotations.SerializedName;
-import player.Player;
 
 public class PlayerCommand {
     private String m_MessageType;
@@ -56,7 +53,7 @@ public class PlayerCommand {
         this.m_MessageType = m_MessageType;
     }
 
-    public void parseFromJson(String jsonString) {
+    public void ParseFromJson(String jsonString) {
         Gson gson = new Gson();
         JsonElement jsonElement = gson.fromJson(jsonString, JsonElement.class);
         JsonObject jsonObject = jsonElement.getAsJsonObject();
