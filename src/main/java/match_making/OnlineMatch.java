@@ -222,8 +222,11 @@ final class OnlineMatch extends Thread implements Match {
 
     private String getMatchPlayersAsJson() {
 
-        Map<String, JsonObject> playersMap = new HashMap<>();
-        this.actionOnMatchPlayers((player) -> playersMap.put(player.GetUserName(), player.GetPlayerMatchData()));
+        Map<String, JsonElement> playersMap = new HashMap<>();
+        this.actionOnMatchPlayers((player) -> {
+            JsonElement playerData = player.GetPlayerMatchData();
+            playersMap.put(player.GetUserName(), playerData);
+        });
 
         JsonObject mainObject = new JsonObject();
         mainObject.addProperty("MatchIdentifier", this.GetMatchIdentifier());
