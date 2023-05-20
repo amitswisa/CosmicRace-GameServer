@@ -5,36 +5,11 @@ import addons.Location;
 import com.google.gson.annotations.SerializedName;
 
 public class PlayerCommand {
-
-    public enum ePlayerAction
-    {
-        @SerializedName("IDLE")
-        IDLE,
-
-        @SerializedName("RUN_RIGHT")
-        RUN_RIGHT,
-
-        @SerializedName("RUN_LEFT")
-        RUN_LEFT,
-
-        @SerializedName("JUMP")
-        JUMP,
-
-        @SerializedName("DEATH")
-        DEATH,
-
-        @SerializedName("QUIT")
-        QUIT,
-
-        // TODO - ATTACK.
-    }
-
-    private eMessageType m_MessageType;
+    private String m_MessageType;
     private String m_Username;
-    private ePlayerAction m_Action;
     private Location m_Location;
-
-    public PlayerCommand(eMessageType i_MessageType, String i_Username, ePlayerAction i_Action, Location i_Location) {
+    private String m_Action;
+    public PlayerCommand(String i_MessageType, String i_Username, String i_Action, Location i_Location) {
         this.m_MessageType = i_MessageType;
         this.m_Username = i_Username;
         this.m_Action = i_Action;
@@ -50,7 +25,7 @@ public class PlayerCommand {
         return this.m_Username;
     }
 
-    public ePlayerAction GetAction() {
+    public String GetAction() {
         return this.m_Action;
     }
 
@@ -62,7 +37,7 @@ public class PlayerCommand {
         this.m_Username = m_Username;
     }
 
-    public void SetAction(ePlayerAction m_Action) {
+    public void SetAction(String m_Action) {
         this.m_Action = m_Action;
     }
 
@@ -70,7 +45,7 @@ public class PlayerCommand {
         this.m_Location = m_Location;
     }
 
-    public void SetMessageType(eMessageType m_MessageType) {
+    public void SetMessageType(String m_MessageType) {
         this.m_MessageType = m_MessageType;
     }
 }
