@@ -2,11 +2,11 @@ package dto;
 
 public class PlayerAction {
 
-    private String IDLE = "IDLE";
-    private String RUN_RIGHT = "RUN_RIGHT";
-    private String RUN_LEFT = "RUN_LEFT";
-    private String JUMP = "JUMP";
-    private String DEATH = "DEATH";
-    private String QUIT = "QUIT";
+    public static final String IDLE = "IDLE";
+    public static final String RUN_RIGHT = "RUN_RIGHT";
+    public static final String RUN_LEFT = "RUN_LEFT";
+    public static final String JUMP = "JUMP";
+    public static final String DEATH = "DEATH";
+    public static final String QUIT = "QUIT";
 
 }

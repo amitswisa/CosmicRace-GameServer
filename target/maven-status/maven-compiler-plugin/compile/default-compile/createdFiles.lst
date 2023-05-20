@@ -1,12 +1,11 @@
 addons\Location.class
 utils\messages_manager\APIRoutes.class
-dto\eMessageType.class
 utils\servlets\UpdatePlayerStatsServlet.class
 utils\GlobalSettings.class
 player\connection_handler\PlayerConnection.class
+dto\MessageType.class
 dto\PlayerCommand.class
 dto\PlayerGeneralMessage$MessageType.class
-dto\PlayerCommand$ePlayerAction.class
 Main.class
 utils\singletons\DBHandler.class
 interfaces\Match.class
@@ -16,7 +15,7 @@ utils\logs\MatchLogger.class
 utils\messages_manager\MessagesCreator.class
 player\Player.class
 match_making\CouchMatch.class
-match_making\OnlineMatch$1.class
+dto\PlayerAction.class
 utils\logs\LoggerManager.class
 addons\Character.class
 factories\PlayerFactory.class

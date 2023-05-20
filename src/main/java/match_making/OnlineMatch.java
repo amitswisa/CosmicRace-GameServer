@@ -2,6 +2,7 @@ package match_making;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
+import dto.PlayerAction;
 import dto.PlayerCommand;
 import json.JsonFormatter;
 import player.Player;
@@ -20,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+
+import static dto.PlayerAction.*;
 
 final class OnlineMatch extends Thread implements Match {
 
@@ -114,7 +117,6 @@ final class OnlineMatch extends Thread implements Match {
 
     private void handlePlayerResponse(Player i_Player, PlayerCommand i_PlayerCommand) throws IOException
     {
-
         switch (i_PlayerCommand.GetAction())
         {
             case IDLE:
