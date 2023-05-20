@@ -74,10 +74,13 @@ final class OnlineMatch extends Thread implements Match {
                     try
                     {
                         String playerResponse = player.ReadMessage();
-                        PlayerCommand playerCommand = JsonFormatter.GetGson()
-                                .fromJson(playerResponse.trim().toUpperCase(), PlayerCommand.class);
 
-                        this.handlePlayerResponse(player, playerCommand);
+                        if(!playerResponse.equals(GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER)) {
+                            PlayerCommand playerCommand = JsonFormatter.GetGson()
+                                    .fromJson(playerResponse.trim().toUpperCase(), PlayerCommand.class);
+
+                            this.handlePlayerResponse(player, playerCommand);
+                        }
                     }
                     catch(IOException ioe)
                     {
@@ -177,6 +180,7 @@ final class OnlineMatch extends Thread implements Match {
             {
                 try {
                     String command = JsonFormatter.GetGson().toJson(i_PlayerCommand, PlayerCommand.class);
+
                     player.SendMessage(command);
                 } catch(SocketTimeoutException ste) {
                     player.CloseConnection(ste.getMessage());
