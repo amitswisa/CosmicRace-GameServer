@@ -7,6 +7,6 @@ public interface Match {
     void EndMatch(String i_MatchEndedReason);
     boolean IsGameOver();
     void RemovePlayerFromMatch(Player player);
-    void SendToAll(String message);
+    void SendMessageToAll(String message);
 
 }

@@ -76,7 +76,7 @@ class CouchMatch extends Thread implements Match {
     }
 
     @Override
-    public void SendToAll(String message) {
+    public void SendMessageToAll(String message) {
 
     }
 

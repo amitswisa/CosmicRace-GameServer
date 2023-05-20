@@ -133,6 +133,11 @@ public class Player implements Comparable<Player> {
         }
     }
 
+    public final void UpdateLocation(Location i_PlayerLastLocation)
+    {
+        this.m_Location = i_PlayerLastLocation;
+    }
+
     @Override
     public boolean equals(Object o)
     {

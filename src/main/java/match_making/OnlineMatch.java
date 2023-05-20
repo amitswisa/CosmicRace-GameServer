@@ -1,10 +1,12 @@
 package match_making;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonSyntaxException;
+import dto.PlayerCommand;
 import json.JsonFormatter;
 import player.Player;
 import com.google.gson.JsonObject;
-import dto.ClientMessage;
+import dto.PlayerGeneralMessage;
 import interfaces.Match;
 import utils.GlobalSettings;
 import utils.logs.MatchLogger;
@@ -36,10 +38,10 @@ final class OnlineMatch extends Thread implements Match {
         this.m_IsGameOver = false;
         this.actionOnMatchPlayers(player -> player.SetMatch(this));
 
-        SendToAll(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Players found, creating a match.").toString());
+        SendMessageToAll(new PlayerGeneralMessage(PlayerGeneralMessage.MessageType.NOTIFICATION, "Players found, creating a match.").toString());
         MatchLogger.Debug(GetMatchIdentifier(), "Trying to create a match!");
 
-        SendToAll(new ClientMessage(ClientMessage.MessageType.DATA, getMatchPlayersAsJson()).toString());
+        SendMessageToAll(new PlayerGeneralMessage(PlayerGeneralMessage.MessageType.DATA, getMatchPlayersAsJson()).toString());
         MatchLogger.Debug(GetMatchIdentifier(), "Players initial data sent!");
     }
 
@@ -48,10 +50,10 @@ final class OnlineMatch extends Thread implements Match {
         this.waitForPlayersToBeReady();
         MatchLogger.Debug(GetMatchIdentifier(), "Players ready.");
 
-        this.SendToAll(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Starting match..").toString());
+        this.SendMessageToAll(new PlayerGeneralMessage(PlayerGeneralMessage.MessageType.NOTIFICATION, "Starting match..").toString());
         MatchLogger.Debug(GetMatchIdentifier(), "Start message sent.");
 
-        this.SendToAll(new ClientMessage(ClientMessage.MessageType.ACTION, "START").toString());
+        this.SendMessageToAll(new PlayerGeneralMessage(PlayerGeneralMessage.MessageType.ACTION, "START").toString());
         MatchLogger.Info(GetMatchIdentifier(), "Starting game.");
     }
 
@@ -69,13 +71,22 @@ final class OnlineMatch extends Thread implements Match {
                     try
                     {
                         String playerResponse = player.ReadMessage();
-                        this.handlePlayerResponse(player, playerResponse.trim().toUpperCase());
-                    } catch(IOException ioe) {
+                        PlayerCommand playerCommand = JsonFormatter.GetGson()
+                                .fromJson(playerResponse.trim().toUpperCase(), PlayerCommand.class);
+
+                        this.handlePlayerResponse(player, playerCommand);
+                    }
+                    catch(IOException ioe)
+                    {
                         player.CloseConnection(ioe.getMessage());
+                    }
+                    catch(JsonSyntaxException jse)
+                    {
+                        MatchLogger.Error(this.GetMatchIdentifier()
+                                , "Player " + player.GetUserName() + " command error: " + jse.getMessage());
                     }
                 }
 
-                this.SendToAll("Players Updates!");
                 this.removeWaitingToQuitPlayers();
 
                 if(!this.matchIsOver())
@@ -101,15 +112,30 @@ final class OnlineMatch extends Thread implements Match {
 
     }
 
-    private void handlePlayerResponse(Player i_Player, String i_PlayerResponse) throws IOException {
-        switch (i_PlayerResponse) {
-            case GlobalSettings.CLIENT_QUITED_BY_CHOICE: {
+    private void handlePlayerResponse(Player i_Player, PlayerCommand i_PlayerCommand) throws IOException
+    {
+
+        switch (i_PlayerCommand.GetAction())
+        {
+            case IDLE:
+            case RUN_RIGHT:
+            case RUN_LEFT:
+            case DEATH:
+            case JUMP: {
+                i_Player.UpdateLocation(i_PlayerCommand.GetLocation());
+                this.SendPlayerCommand(i_PlayerCommand);
+                break;
+            }
+            case QUIT:
+            {
                 throw new IOException(GlobalSettings.CLIENT_CLOSED_CONNECTION);
             }
-            default: {
-                LoggerManager.info("Player " + i_Player.GetUserName() + " response: " + i_PlayerResponse);
+            default:
+            {
+                LoggerManager.warning("Player " + i_PlayerCommand.GetUsername() + " command not found");
             }
         }
+
     }
 
     private boolean matchIsOver() {
@@ -127,13 +153,31 @@ final class OnlineMatch extends Thread implements Match {
         this.m_WaitingToQuit.add(player);
     }
 
-    public void SendToAll(String message){
+    public void SendMessageToAll(String i_Message)
+    {
         actionOnMatchPlayers(player -> {
 
             try {
-                player.SendMessage(message);
+                player.SendMessage(i_Message);
             } catch(SocketTimeoutException ste) {
                 player.CloseConnection(ste.getMessage());
+            }
+
+        });
+    }
+
+    public void SendPlayerCommand(PlayerCommand i_PlayerCommand)
+    {
+        actionOnMatchPlayers((player) -> {
+
+            if(!player.GetUserName().equals(i_PlayerCommand.GetUsername()))
+            {
+                try {
+                    String command = JsonFormatter.GetGson().toJson(i_PlayerCommand, PlayerCommand.class);
+                    player.SendMessage(command);
+                } catch(SocketTimeoutException ste) {
+                    player.CloseConnection(ste.getMessage());
+                }
             }
 
         });
@@ -167,7 +211,7 @@ final class OnlineMatch extends Thread implements Match {
 
     private void waitForPlayersToBeReady() throws Exception {
 
-        this.SendToAll(new ClientMessage(ClientMessage.MessageType.CONFIRMATION, GlobalSettings.PLAYER_READY_MESSAGE).toString());
+        this.SendMessageToAll(new PlayerGeneralMessage(PlayerGeneralMessage.MessageType.CONFIRMATION, GlobalSettings.PLAYER_READY_MESSAGE).toString());
         MatchLogger.Debug(GetMatchIdentifier(), "Waiting for player to be ready...");
 
         AtomicBoolean isEveryoneReady = new AtomicBoolean(false);
@@ -220,8 +264,8 @@ final class OnlineMatch extends Thread implements Match {
         }
     }
 
-    private String getMatchPlayersAsJson() {
-
+    private String getMatchPlayersAsJson()
+    {
         Map<String, JsonElement> playersMap = new HashMap<>();
         this.actionOnMatchPlayers((player) -> {
             JsonElement playerData = player.GetPlayerMatchData();

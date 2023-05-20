@@ -1,6 +1,6 @@
 package player.connection_handler;
 
-import dto.ClientMessage;
+import dto.PlayerGeneralMessage;
 import utils.GlobalSettings;
 import utils.logs.LoggerManager;
 import java.io.BufferedReader;
@@ -28,7 +28,7 @@ public final class PlayerConnection {
             this.m_InStream = new BufferedReader(new InputStreamReader(this.m_SocketConnection.getInputStream()));
             this.updateLastClientConnectionTime();
 
-            this.SendMessage(new ClientMessage(ClientMessage.MessageType.NOTIFICATION, "Connecting to server...").toString());
+            this.SendMessage(new PlayerGeneralMessage(PlayerGeneralMessage.MessageType.NOTIFICATION, "Connecting to server...").toString());
 
         }catch(Exception e){
             CloseConnection(e.getMessage());
@@ -67,7 +67,7 @@ public final class PlayerConnection {
             return false;
 
         try {
-            ClientMessage heartbeat = new ClientMessage(ClientMessage.MessageType.CONFIRMATION, GlobalSettings.SERVER_HEARTBEAT_MESSAGE);
+            PlayerGeneralMessage heartbeat = new PlayerGeneralMessage(PlayerGeneralMessage.MessageType.CONFIRMATION, GlobalSettings.SERVER_HEARTBEAT_MESSAGE);
             String heartbeatJson = heartbeat.toString() + "\n";
 
             this.m_SocketConnection.getOutputStream().write(heartbeatJson.getBytes());
