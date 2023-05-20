@@ -1,5 +1,6 @@
 addons\Location.class
 utils\messages_manager\APIRoutes.class
+dto\eMessageType.class
 utils\servlets\UpdatePlayerStatsServlet.class
 utils\GlobalSettings.class
 player\connection_handler\PlayerConnection.class

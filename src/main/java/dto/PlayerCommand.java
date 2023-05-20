@@ -29,14 +29,21 @@ public class PlayerCommand {
         // TODO - ATTACK.
     }
 
+    private eMessageType m_MessageType;
     private String m_Username;
     private ePlayerAction m_Action;
     private Location m_Location;
 
-    public PlayerCommand(String i_Username, ePlayerAction i_Action, Location i_Location) {
+    public PlayerCommand(eMessageType i_MessageType, String i_Username, ePlayerAction i_Action, Location i_Location) {
+        this.m_MessageType = i_MessageType;
         this.m_Username = i_Username;
         this.m_Action = i_Action;
         this.m_Location = i_Location;
+    }
+
+    public String GetMessageType()
+    {
+        return this.m_MessageType.toString();
     }
 
     public String GetUsername() {
@@ -61,5 +68,9 @@ public class PlayerCommand {
 
     public void SetLocation(Location m_Location) {
         this.m_Location = m_Location;
+    }
+
+    public void SetMessageType(eMessageType m_MessageType) {
+        this.m_MessageType = m_MessageType;
     }
 }

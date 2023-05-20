@@ -24,7 +24,8 @@ public final class PlayerGeneralMessage {
     @Override
     public String toString() {
         JsonObject res = new JsonObject();
-        res.addProperty("MessageType", this.m_MessageType.toString());
+        res.addProperty("m_MessageType", "MESSAGE");
+        res.addProperty("ActionType", this.m_MessageType.toString());
         res.addProperty("MessageContent", this.m_MessageContent);
         return JsonFormatter.GetGson().toJson(res);
     }

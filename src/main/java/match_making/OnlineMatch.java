@@ -124,6 +124,7 @@ final class OnlineMatch extends Thread implements Match {
             case JUMP: {
                 i_Player.UpdateLocation(i_PlayerCommand.GetLocation());
                 this.SendPlayerCommand(i_PlayerCommand);
+                LoggerManager.info(i_PlayerCommand.toString());
                 break;
             }
             case QUIT:
