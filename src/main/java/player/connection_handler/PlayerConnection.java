@@ -85,7 +85,7 @@ public final class PlayerConnection {
                 return false;
             }
         }*/
-
+        this.updateLastClientConnectionTime();
         return true;
     }
 
