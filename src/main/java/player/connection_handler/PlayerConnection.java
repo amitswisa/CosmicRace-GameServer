@@ -36,10 +36,17 @@ public final class PlayerConnection {
     }
 
     public void SendMessage(String i_Message) throws SocketTimeoutException {
-        if(this.IsConnectionAlive())
+
+        if(isTimedOut())
+            throw new SocketTimeoutException(GlobalSettings.TERMINATE_DUE_TO_TIME_OUT);
+
+        try
         {
-            m_OutStream.println(i_Message);
-        } else {
+            String msg = i_Message + "\n";
+            this.m_SocketConnection.getOutputStream().write(msg.getBytes());
+
+            this.updateLastClientConnectionTime();
+        } catch(IOException ioe) {
             throw new SocketTimeoutException(GlobalSettings.NO_CONNECTION);
         }
     }
@@ -63,7 +70,7 @@ public final class PlayerConnection {
 
     public boolean IsConnectionAlive()
     {
-        /*if (!this.m_IsConnected)
+        if (!this.m_IsConnected)
             return false;
 
        if(System.currentTimeMillis() - this.m_LastClientConnectionTime <= 5000){
@@ -84,8 +91,8 @@ public final class PlayerConnection {
             {
                 return false;
             }
-        }*/
-        this.updateLastClientConnectionTime();
+        }
+
         return true;
     }
 
