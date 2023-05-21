@@ -65,10 +65,10 @@ public final class PlayerConnection {
     {
         if (!this.m_IsConnected)
             return false;
-
-        if(System.currentTimeMillis() - this.m_LastClientConnectionTime <= 5000){
-            return true;
-        }
+//
+//        if(System.currentTimeMillis() - this.m_LastClientConnectionTime <= 5000){
+//            return true;
+//        }
 
         try {
             PlayerGeneralMessage heartbeat = new PlayerGeneralMessage(PlayerGeneralMessage.MessageType.CONFIRMATION, GlobalSettings.SERVER_HEARTBEAT_MESSAGE);
