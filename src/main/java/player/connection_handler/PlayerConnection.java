@@ -63,7 +63,7 @@ public final class PlayerConnection {
 
     public boolean IsConnectionAlive()
     {
-        if (!this.m_IsConnected)
+        /*if (!this.m_IsConnected)
             return false;
 
        if(System.currentTimeMillis() - this.m_LastClientConnectionTime <= 5000){
@@ -84,7 +84,7 @@ public final class PlayerConnection {
             {
                 return false;
             }
-        }
+        }*/
 
         return true;
     }
