@@ -101,17 +101,7 @@ final class OnlineMatch extends Thread implements Match {
 
                 this.removeWaitingToQuitPlayers();
 
-                if(!this.matchIsOver())
-                {
-                    // collecting data from client each 200ms.
-//                    MatchLogger.Debug(this.GetMatchIdentifier(), "Thread action - Sleep 200ms.");
 
-                    try {
-                        Thread.sleep(200);
-                    } catch(InterruptedException ie) {
-                        MatchLogger.Error(this.GetMatchIdentifier()," has been interrupted.");
-                    }
-                }
 
             }
 
