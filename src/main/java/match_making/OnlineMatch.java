@@ -1,13 +1,19 @@
 package match_making;
 
+import addons.Location;
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
+import dto.MessageType;
+import dto.PlayerAction;
 import dto.PlayerCommand;
 import json.JsonFormatter;
+import org.apache.logging.log4j.message.Message;
 import player.Player;
 import com.google.gson.JsonObject;
 import dto.PlayerGeneralMessage;
 import interfaces.Match;
+import player.connection_handler.PlayerConnection;
 import utils.GlobalSettings;
 import utils.logs.MatchLogger;
 import utils.singletons.DBHandler;
@@ -186,7 +192,6 @@ final class OnlineMatch extends Thread implements Match {
                     player.CloseConnection(ste.getMessage());
                 }
             }
-
         });
     }
 
@@ -201,8 +206,13 @@ final class OnlineMatch extends Thread implements Match {
             this.m_MatchPlayers.removeAll(this.m_WaitingToQuit);
             this.m_MatchQuitedPlayers.addAll(this.m_WaitingToQuit);
 
-            // TODO - announce of player quited.
             this.m_WaitingToQuit.forEach((quitedPlayer) -> {
+
+                // TODO IN CLIENT - destroy his instance.
+
+                this.SendPlayerCommand(new PlayerCommand(MessageType.COMMAND,
+                        quitedPlayer.GetUserName(), QUIT, new Location(-1,-1)));
+
                 MatchLogger.Debug(GetMatchIdentifier(), "Player " + quitedPlayer.GetUserName() + " disconnected.");
             });
 
@@ -253,7 +263,6 @@ final class OnlineMatch extends Thread implements Match {
             } catch(InterruptedException e) {
                 LoggerManager.error(e.getMessage());
             }
-
         }
         while (!isEveryoneReady.get());
     }
