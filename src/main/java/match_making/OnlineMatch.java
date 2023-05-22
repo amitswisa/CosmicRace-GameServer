@@ -84,8 +84,8 @@ final class OnlineMatch extends Thread implements Match {
                         if(!playerResponse.equals(GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER)) {
                             LoggerManager.info(playerResponse);
 
-                            playerCommand.ParseFromJson(playerResponse);
-                            this.handlePlayerResponse(player, playerCommand);
+                            //playerCommand.ParseFromJson(playerResponse);
+                            //this.handlePlayerResponse(player, playerCommand);
                         }
                     }
                     catch(IOException ioe)
@@ -100,9 +100,6 @@ final class OnlineMatch extends Thread implements Match {
                 }
 
                 this.removeWaitingToQuitPlayers();
-
-
-
             }
 
         } catch(Exception e){
@@ -220,7 +217,6 @@ final class OnlineMatch extends Thread implements Match {
 
         this.SendMessageToAll(new PlayerGeneralMessage(PlayerGeneralMessage.MessageType.CONFIRMATION, GlobalSettings.PLAYER_READY_MESSAGE).toString());
         MatchLogger.Debug(GetMatchIdentifier(), "Waiting for player to be ready...");
-
         AtomicBoolean isEveryoneReady = new AtomicBoolean(false);
 
         do {
@@ -316,27 +312,3 @@ final class OnlineMatch extends Thread implements Match {
         this.interrupt();
     }
 }
-
-
-/*
-// should read the input from socket's buffer for each player.
-            for (Player player : m_MatchPlayers) {
-                try {
-                    BufferedReader in = player.GetInStream();
-                    PrintWriter out = player.GetOutStream();
-
-                    // collect all the input that the client send in the past 200ms.
-                    if (in.ready()) {
-                        String inputLine = in.readLine(); // Read last line.
-                        LoggerManager.info(player.GetCharacterName() + ": " + inputLine);
-
-                        //TODO: store client's data somehow, and update his process.
-                        out.println("Data received.");
-                    }
-
-                } catch (IOException e) {
-                    LoggerManager.debug("Something went wrong with player " + player.GetCharacterName());
-                    throw new RuntimeException(e);
-                }
-            }
- */

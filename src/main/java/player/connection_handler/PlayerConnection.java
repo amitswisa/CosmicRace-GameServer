@@ -98,28 +98,45 @@ public final class PlayerConnection {
 
     public String ReadMessage() throws IOException {
 
-        if(isTimedOut() || !IsConnectionAlive())
+        if(isTimedOut() || !IsConnectionAlive()) {
+            // TODO - PROBLEM HERE
             throw new SocketTimeoutException(GlobalSettings.TERMINATE_DUE_TO_TIME_OUT);
+        }
 
-        String lastClientMessage = "";
-        do
+        String message = null;
+
+        try
         {
-            if(this.GetInStream().ready())
+            while(this.GetInStream().ready())
             {
-                lastClientMessage = this.GetInStream().readLine();
+                message = this.GetInStream().readLine();
 
-                if(lastClientMessage == null)
-                    throw new SocketTimeoutException(GlobalSettings.TERMINATE_DUE_TO_TIME_OUT);
+                if(message == null) {
+                    throw new IOException(GlobalSettings.TERMINATE_DUE_TO_TIME_OUT);
+                }
 
+                // Update the connection time after each received heartbeat
                 this.updateLastClientConnectionTime();
+
+                // If the message is not a heartbeat response, break the loop
+                if(!message.equals(GlobalSettings.CLIENT_HEARTBEAT_RESPONSE)) {
+                    break;
+                }
             }
-            else {
+
+            // If there was no data to read
+            if(message == null || message.equals(GlobalSettings.CLIENT_HEARTBEAT_RESPONSE))
+            {
                 return GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER;
             }
 
-        } while(lastClientMessage.equals(GlobalSettings.CLIENT_HEARTBEAT_RESPONSE));
+            this.updateLastClientConnectionTime();
+        }
+        catch (IOException e) {
+            this.CloseConnection(e.getMessage());
+        }
 
-        return lastClientMessage;
+        return message;
     }
 
     /**
