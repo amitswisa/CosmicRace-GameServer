@@ -84,8 +84,8 @@ final class OnlineMatch extends Thread implements Match {
                         if(!playerResponse.equals(GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER)) {
                             LoggerManager.info(playerResponse);
 
-                            //playerCommand.ParseFromJson(playerResponse);
-                            //this.handlePlayerResponse(player, playerCommand);
+                            playerCommand.ParseFromJson(playerResponse);
+                            this.handlePlayerResponse(player, playerCommand);
                         }
                     }
                     catch(IOException ioe)
