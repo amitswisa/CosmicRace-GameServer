@@ -24,10 +24,12 @@ public class Player implements Comparable<Player> {
     private Location m_Location;
     private String m_UserName;
     private boolean m_IsReady;
+    private int m_CoinsCollected;
 
     public Player(Socket i_SocketConnection) throws IOException
     {
         this.m_PlayerConnection = new PlayerConnection(i_SocketConnection);
+        this.m_CoinsCollected = 0;
 
         String initData = this.m_PlayerConnection.WaitForPlayerResponse();
         LoggerManager.debug("Received data from socket " + this.m_PlayerConnection.getHost());
@@ -113,6 +115,14 @@ public class Player implements Comparable<Player> {
             this.m_CurrentMatch.RemovePlayerFromMatch(this);
 
         MatchMaking.RemovePlayerFromQueue(this);
+
+        // Notify player on connection close.
+        try {
+            this.SendMessage(i_ExceptionMessage);
+        } catch(SocketTimeoutException ste) {
+            LoggerManager.warning("Couldn't notify player " + this.m_UserName + " on " + i_ExceptionMessage);
+        }
+
         this.m_PlayerConnection.CloseConnection(i_ExceptionMessage);
     }
 
@@ -136,6 +146,16 @@ public class Player implements Comparable<Player> {
     public final void UpdateLocation(Location i_PlayerLastLocation)
     {
         this.m_Location = i_PlayerLastLocation;
+    }
+
+    public final void CoinCollected()
+    {
+        this.m_CoinsCollected += 1;
+    }
+
+    public boolean EqualByUsername(String i_Username)
+    {
+        return this.m_UserName.equals(i_Username);
     }
 
     @Override

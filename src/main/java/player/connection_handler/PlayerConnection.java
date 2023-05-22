@@ -99,7 +99,6 @@ public final class PlayerConnection {
     public String ReadMessage() throws IOException {
 
         if(isTimedOut() || !IsConnectionAlive()) {
-            // TODO - PROBLEM HERE
             throw new SocketTimeoutException(GlobalSettings.TERMINATE_DUE_TO_TIME_OUT);
         }
 

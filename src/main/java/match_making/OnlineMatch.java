@@ -20,10 +20,7 @@ import utils.singletons.DBHandler;
 import utils.logs.LoggerManager;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -82,8 +79,6 @@ final class OnlineMatch extends Thread implements Match {
                         String playerResponse = player.ReadMessage();
 
                         if(!playerResponse.equals(GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER)) {
-                            LoggerManager.info(playerResponse);
-
                             playerCommand.ParseFromJson(playerResponse);
                             this.handlePlayerResponse(player, playerCommand);
                         }
@@ -123,7 +118,13 @@ final class OnlineMatch extends Thread implements Match {
             case JUMP: {
                 i_Player.UpdateLocation(i_PlayerCommand.GetLocation());
                 this.SendPlayerCommand(i_PlayerCommand);
-                LoggerManager.info(i_PlayerCommand.toString());
+                LoggerManager.trace(i_PlayerCommand.toString());
+                break;
+            }
+            case COIN_COLLECT:
+            {
+                updateCoinsOfPlayer(i_PlayerCommand.GetUsername());
+                LoggerManager.info(i_PlayerCommand.GetUsername() + " Collected a coin!");
                 break;
             }
             case QUIT:
@@ -136,6 +137,25 @@ final class OnlineMatch extends Thread implements Match {
             }
         }
 
+    }
+
+    private void updateCoinsOfPlayer(String i_PlayerUsername)
+    {
+        Player playerToUpdate = findPlayerInList(i_PlayerUsername);
+
+        if(playerToUpdate != null)
+        {
+            playerToUpdate.CoinCollected();
+        }
+    }
+
+    private Player findPlayerInList(String i_PlayerUsername)
+    {
+        Optional<Player> playerOptional = this.m_MatchPlayers.stream()
+                .filter(p -> p.EqualByUsername(i_PlayerUsername))
+                .findFirst();
+
+        return playerOptional.orElse(null);
     }
 
     private boolean matchIsOver() {
@@ -187,7 +207,8 @@ final class OnlineMatch extends Thread implements Match {
         return this.m_MatchIdentifier;
     }
 
-    private void removeWaitingToQuitPlayers() throws Exception {
+    private void removeWaitingToQuitPlayers() throws Exception
+    {
 
         if(this.m_WaitingToQuit.size() > 0)
         {
@@ -306,7 +327,7 @@ final class OnlineMatch extends Thread implements Match {
 
         // TODO - update players coins and stats on database.
         //  /30.4/UPDATE - only stats left.
-        this.actionOnMatchPlayers(p -> DBHandler.updateStatsInDB(p.GetCharacter()));
+        //this.actionOnMatchPlayers(p -> DBHandler.updateStatsInDB(p.GetCharacter()));
         this.actionOnMatchPlayers(p -> p.CloseConnection(GlobalSettings.MATCH_ENDED));
 
         MatchMaking.RemoveActiveMatch(this);
