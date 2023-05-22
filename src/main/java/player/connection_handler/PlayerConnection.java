@@ -73,7 +73,7 @@ public final class PlayerConnection {
         if (!this.m_IsConnected)
             return false;
 
-       if(System.currentTimeMillis() - this.m_LastClientConnectionTime <= 5000){
+        if(System.currentTimeMillis() - this.m_LastClientConnectionTime <= 5000){
            return true;
         }
 

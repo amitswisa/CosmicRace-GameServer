@@ -31,9 +31,9 @@ import static dto.PlayerAction.*;
 
 final class OnlineMatch extends Thread implements Match {
 
-    private List<Player> m_MatchPlayers;
-    private List<Player> m_MatchQuitedPlayers;
-    private List<Player> m_WaitingToQuit;
+    private final List<Player> m_MatchPlayers;
+    private final List<Player> m_MatchQuitedPlayers;
+    private final List<Player> m_WaitingToQuit;
     private final String m_MatchIdentifier;
     private boolean m_IsGameOver;
 
@@ -119,6 +119,7 @@ final class OnlineMatch extends Thread implements Match {
             case RUN_RIGHT:
             case RUN_LEFT:
             case DEATH:
+            case UPDATE_LOCATION:
             case JUMP: {
                 i_Player.UpdateLocation(i_PlayerCommand.GetLocation());
                 this.SendPlayerCommand(i_PlayerCommand);
