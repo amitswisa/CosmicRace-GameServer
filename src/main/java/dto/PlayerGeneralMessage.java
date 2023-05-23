@@ -1,7 +1,7 @@
 package dto;
 
 import com.google.gson.JsonObject;
-import json.JsonFormatter;
+import utils.json.JsonFormatter;
 
 public final class PlayerGeneralMessage {
 

@@ -1,4 +1,4 @@
-package utils.messages_manager;
+package utils.route;
 
 public class APIRoutes {
 

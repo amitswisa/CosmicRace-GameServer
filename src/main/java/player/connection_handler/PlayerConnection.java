@@ -2,7 +2,7 @@ package player.connection_handler;
 
 import dto.PlayerGeneralMessage;
 import utils.GlobalSettings;
-import utils.logs.LoggerManager;
+import utils.loggers.LoggerManager;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

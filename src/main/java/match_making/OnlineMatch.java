@@ -1,28 +1,25 @@
 package match_making;
 
-import addons.Location;
-import com.google.gson.Gson;
+import exceptions.PlayerQuitException;
+import player.Location;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import dto.MessageType;
-import dto.PlayerAction;
 import dto.PlayerCommand;
-import json.JsonFormatter;
-import org.apache.logging.log4j.message.Message;
+import utils.json.JsonFormatter;
 import player.Player;
 import com.google.gson.JsonObject;
 import dto.PlayerGeneralMessage;
 import interfaces.Match;
-import player.connection_handler.PlayerConnection;
 import utils.GlobalSettings;
-import utils.logs.MatchLogger;
-import utils.singletons.DBHandler;
-import utils.logs.LoggerManager;
+import utils.loggers.MatchLogger;
+import utils.loggers.LoggerManager;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 import static dto.PlayerAction.*;
 
@@ -74,18 +71,18 @@ final class OnlineMatch extends Thread implements Match {
             {
                 for(Player player : m_MatchPlayers)
                 {
-                    try
-                    {
+                    try {
                         String playerResponse = player.ReadMessage();
 
                         if(!playerResponse.equals(GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER)) {
+                            LoggerManager.info(playerResponse);
                             playerCommand.ParseFromJson(playerResponse);
                             this.handlePlayerResponse(player, playerCommand);
                         }
                     }
-                    catch(IOException ioe)
+                    catch(PlayerQuitException pqe)
                     {
-                        player.CloseConnection(ioe.getMessage());
+                        player.CloseConnection(pqe.getMessage());
                     }
                     catch(JsonSyntaxException jse)
                     {
@@ -106,8 +103,8 @@ final class OnlineMatch extends Thread implements Match {
 
     }
 
-    private void handlePlayerResponse(Player i_Player, PlayerCommand i_PlayerCommand) throws IOException
-    {
+    private void handlePlayerResponse(Player i_Player, PlayerCommand i_PlayerCommand) throws PlayerQuitException {
+
         switch (i_PlayerCommand.GetAction())
         {
             case IDLE:
@@ -129,7 +126,7 @@ final class OnlineMatch extends Thread implements Match {
             }
             case QUIT:
             {
-                throw new IOException(GlobalSettings.CLIENT_CLOSED_CONNECTION);
+                throw new PlayerQuitException(GlobalSettings.CLIENT_CLOSED_CONNECTION);
             }
             default:
             {
@@ -217,10 +214,10 @@ final class OnlineMatch extends Thread implements Match {
 
             this.m_WaitingToQuit.forEach((quitedPlayer) -> {
 
-                // TODO IN CLIENT - destroy his instance.
+                String playerUsername = quitedPlayer.GetUserName().replace("\"", "");
 
                 this.SendPlayerCommand(new PlayerCommand(MessageType.COMMAND,
-                        quitedPlayer.GetUserName(), QUIT, new Location(-1,-1)));
+                        playerUsername, RIVAL_QUIT, new Location(0,0)));
 
                 MatchLogger.Debug(GetMatchIdentifier(), "Player " + quitedPlayer.GetUserName() + " disconnected.");
             });

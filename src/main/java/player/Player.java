@@ -1,16 +1,15 @@
 package player;
-import addons.Character;
-import addons.Location;
 import com.google.gson.JsonObject;
+import dto.PlayerGeneralMessage;
 import interfaces.Match;
-import json.JsonFormatter;
+import utils.json.JsonFormatter;
 import okhttp3.*;
 import match_making.MatchMaking;
 import org.jetbrains.annotations.NotNull;
 import player.connection_handler.PlayerConnection;
 import utils.GlobalSettings;
-import utils.logs.LoggerManager;
-import utils.messages_manager.APIRoutes;
+import utils.loggers.LoggerManager;
+import utils.route.APIRoutes;
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -113,12 +112,12 @@ public class Player implements Comparable<Player> {
     {
         if(this.m_CurrentMatch != null)
             this.m_CurrentMatch.RemovePlayerFromMatch(this);
-
-        MatchMaking.RemovePlayerFromQueue(this);
+        else
+            MatchMaking.RemovePlayerFromQueue(this);
 
         // Notify player on connection close.
         try {
-            this.SendMessage(i_ExceptionMessage);
+            this.SendMessage(new PlayerGeneralMessage(PlayerGeneralMessage.MessageType.NOTIFICATION, i_ExceptionMessage).toString());
         } catch(SocketTimeoutException ste) {
             LoggerManager.warning("Couldn't notify player " + this.m_UserName + " on " + i_ExceptionMessage);
         }

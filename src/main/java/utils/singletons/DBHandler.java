@@ -1,6 +1,6 @@
 package utils.singletons;
 
-import addons.Character;
+import player.Character;
 import utils.GlobalSettings;
 
 import java.sql.Connection;

@@ -1,4 +1,4 @@
-package utils.logs;
+package utils.loggers;
 
 public class MatchLogger {
 

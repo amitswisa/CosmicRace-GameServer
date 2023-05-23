@@ -1,6 +1,6 @@
-package addons;
+package player;
 
-import json.JsonFormatter;
+import utils.json.JsonFormatter;
 
 public final class Character {
    private final int characterID;

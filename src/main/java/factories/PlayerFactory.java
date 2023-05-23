@@ -2,7 +2,7 @@ package factories;
 
 import match_making.MatchMaking;
 import player.Player;
-import utils.logs.LoggerManager;
+import utils.loggers.LoggerManager;
 
 import java.io.IOException;
 import java.net.Socket;

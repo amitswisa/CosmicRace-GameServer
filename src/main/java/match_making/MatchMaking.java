@@ -3,7 +3,7 @@ package match_making;
 import player.Player;
 import dto.PlayerGeneralMessage;
 import interfaces.Match;
-import utils.logs.LoggerManager;
+import utils.loggers.LoggerManager;
 import utils.GlobalSettings;
 
 import java.net.SocketTimeoutException;

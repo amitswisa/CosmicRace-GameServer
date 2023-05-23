@@ -1,16 +1,19 @@
 package dto;
 
-import addons.Location;
+import player.Location;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import utils.json.JsonFormatter;
 
 public class PlayerCommand {
+
     private String m_MessageType;
     private String m_Username;
     private Location m_Location;
     private String m_Action;
+
     public PlayerCommand(String i_MessageType, String i_Username, String i_Action, Location i_Location) {
         this.m_MessageType = i_MessageType;
         this.m_Username = i_Username;
@@ -64,5 +67,10 @@ public class PlayerCommand {
 
         JsonObject locationJson = jsonObject.getAsJsonObject("m_Location");
         this.m_Location = new Location(locationJson.get("x").getAsDouble(), locationJson.get("y").getAsDouble());
+    }
+
+    public static String Serialize(PlayerCommand i_Command)
+    {
+        return JsonFormatter.GetGson().toJson(i_Command, PlayerCommand.class);
     }
 }

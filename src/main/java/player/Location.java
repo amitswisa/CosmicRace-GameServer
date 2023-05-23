@@ -1,4 +1,4 @@
-package addons;
+package player;
 
 public class Location {
     private double x;
