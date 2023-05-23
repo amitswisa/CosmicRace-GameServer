@@ -1,7 +1,7 @@
 package match_making;
 
 import player.Player;
-import dto.PlayerGeneralMessage;
+import dto.ServerGeneralMessage;
 import interfaces.Match;
 import utils.loggers.LoggerManager;
 import utils.GlobalSettings;
@@ -70,7 +70,7 @@ public final class MatchMaking {
             increaseUsersWaiting();
             LoggerManager.info("Player " +i_Player.GetUserName()+ " log: Added to waiting list queue!");
 
-            i_Player.SendMessage(new PlayerGeneralMessage(PlayerGeneralMessage.MessageType.NOTIFICATION, "Looking for other players...").toString());
+            i_Player.SendMessage(new ServerGeneralMessage(ServerGeneralMessage.eActionType.NOTIFICATION, "Looking for other players...").toString());
         } catch(SocketTimeoutException ste) {
             RemovePlayerFromQueue(i_Player);
             i_Player.CloseConnection(ste.getMessage());

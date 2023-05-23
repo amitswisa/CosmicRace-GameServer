@@ -1,6 +1,6 @@
 package player;
 import com.google.gson.JsonObject;
-import dto.PlayerGeneralMessage;
+import dto.ServerGeneralMessage;
 import interfaces.Match;
 import utils.json.JsonFormatter;
 import okhttp3.*;
@@ -62,7 +62,7 @@ public class Player implements Comparable<Player> {
         }
 
         JsonObject resData = JsonFormatter.createJsonFromString(response.body().string());
-        this.m_UserName = String.valueOf((resData).get("username"));
+        this.m_UserName = String.valueOf((resData).get("username")).replace("\"", "");
         m_Character = JsonFormatter.GetGson().fromJson(resData, Character.class);
     }
 
@@ -117,7 +117,7 @@ public class Player implements Comparable<Player> {
 
         // Notify player on connection close.
         try {
-            this.SendMessage(new PlayerGeneralMessage(PlayerGeneralMessage.MessageType.NOTIFICATION, i_ExceptionMessage).toString());
+            this.SendMessage(new ServerGeneralMessage(ServerGeneralMessage.eActionType.NOTIFICATION, i_ExceptionMessage).toString());
         } catch(SocketTimeoutException ste) {
             LoggerManager.warning("Couldn't notify player " + this.m_UserName + " on " + i_ExceptionMessage);
         }

@@ -3,21 +3,23 @@ package dto;
 import com.google.gson.JsonObject;
 import utils.json.JsonFormatter;
 
-public final class PlayerGeneralMessage {
+public final class ServerGeneralMessage {
 
-    public enum MessageType {
+    public enum eActionType {
         NOTIFICATION,
         DATA,
         ACTION,
         ERROR,
-        CONFIRMATION
+        CONFIRMATION,
+        MATCH_TERMINATION,
+        MATCH_ENDED
     }
 
-    private MessageType m_MessageType;
+    private eActionType m_ActionType;
     private String m_MessageContent;
 
-    public PlayerGeneralMessage(MessageType i_MessageType, String i_MessageContent) {
-        this.m_MessageType = i_MessageType;
+    public ServerGeneralMessage(eActionType i_ActionType, String i_MessageContent) {
+        this.m_ActionType = i_ActionType;
         this.m_MessageContent = i_MessageContent;
     }
 
@@ -25,7 +27,7 @@ public final class PlayerGeneralMessage {
     public String toString() {
         JsonObject res = new JsonObject();
         res.addProperty("m_MessageType", "MESSAGE");
-        res.addProperty("ActionType", this.m_MessageType.toString());
+        res.addProperty("ActionType", this.m_ActionType.toString());
         res.addProperty("MessageContent", this.m_MessageContent);
         return JsonFormatter.GetGson().toJson(res);
     }

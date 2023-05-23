@@ -1,6 +1,7 @@
 package match_making;
 
-import exceptions.PlayerQuitException;
+import exceptions.MatchTerminationException;
+import exceptions.PlayerConnectionException;
 import player.Location;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
@@ -9,7 +10,7 @@ import dto.PlayerCommand;
 import utils.json.JsonFormatter;
 import player.Player;
 import com.google.gson.JsonObject;
-import dto.PlayerGeneralMessage;
+import dto.ServerGeneralMessage;
 import interfaces.Match;
 import utils.GlobalSettings;
 import utils.loggers.MatchLogger;
@@ -19,7 +20,6 @@ import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 
 import static dto.PlayerAction.*;
 
@@ -40,10 +40,10 @@ final class OnlineMatch extends Thread implements Match {
         this.m_IsGameOver = false;
         this.actionOnMatchPlayers(player -> player.SetMatch(this));
 
-        SendMessageToAll(new PlayerGeneralMessage(PlayerGeneralMessage.MessageType.NOTIFICATION, "Players found, creating a match.").toString());
+        SendMessageToAll(new ServerGeneralMessage(ServerGeneralMessage.eActionType.NOTIFICATION, "Players found, creating a match.").toString());
         MatchLogger.Debug(GetMatchIdentifier(), "Trying to create a match!");
 
-        SendMessageToAll(new PlayerGeneralMessage(PlayerGeneralMessage.MessageType.DATA, getMatchPlayersAsJson()).toString());
+        SendMessageToAll(new ServerGeneralMessage(ServerGeneralMessage.eActionType.DATA, getMatchPlayersAsJson()).toString());
         MatchLogger.Debug(GetMatchIdentifier(), "Players initial data sent!");
     }
 
@@ -52,10 +52,10 @@ final class OnlineMatch extends Thread implements Match {
         this.waitForPlayersToBeReady();
         MatchLogger.Debug(GetMatchIdentifier(), "Players ready.");
 
-        this.SendMessageToAll(new PlayerGeneralMessage(PlayerGeneralMessage.MessageType.NOTIFICATION, "Starting match..").toString());
+        this.SendMessageToAll(new ServerGeneralMessage(ServerGeneralMessage.eActionType.NOTIFICATION, "Starting match..").toString());
         MatchLogger.Debug(GetMatchIdentifier(), "Start message sent.");
 
-        this.SendMessageToAll(new PlayerGeneralMessage(PlayerGeneralMessage.MessageType.ACTION, "START").toString());
+        this.SendMessageToAll(new ServerGeneralMessage(ServerGeneralMessage.eActionType.ACTION, "START").toString());
         MatchLogger.Info(GetMatchIdentifier(), "Starting game.");
     }
 
@@ -80,7 +80,7 @@ final class OnlineMatch extends Thread implements Match {
                             this.handlePlayerResponse(player, playerCommand);
                         }
                     }
-                    catch(PlayerQuitException pqe)
+                    catch(PlayerConnectionException pqe)
                     {
                         player.CloseConnection(pqe.getMessage());
                     }
@@ -94,16 +94,14 @@ final class OnlineMatch extends Thread implements Match {
                 this.removeWaitingToQuitPlayers();
             }
 
+            this.EndMatch(GlobalSettings.MATCH_ENDED);
+
         } catch(Exception e){
             this.EndMatch(e.getMessage());
-            return;
         }
-
-        this.EndMatch(GlobalSettings.MATCH_ENDED);
-
     }
 
-    private void handlePlayerResponse(Player i_Player, PlayerCommand i_PlayerCommand) throws PlayerQuitException {
+    private void handlePlayerResponse(Player i_Player, PlayerCommand i_PlayerCommand) throws PlayerConnectionException {
 
         switch (i_PlayerCommand.GetAction())
         {
@@ -126,7 +124,7 @@ final class OnlineMatch extends Thread implements Match {
             }
             case QUIT:
             {
-                throw new PlayerQuitException(GlobalSettings.CLIENT_CLOSED_CONNECTION);
+                throw new PlayerConnectionException(GlobalSettings.CLIENT_CLOSED_CONNECTION);
             }
             default:
             {
@@ -214,10 +212,8 @@ final class OnlineMatch extends Thread implements Match {
 
             this.m_WaitingToQuit.forEach((quitedPlayer) -> {
 
-                String playerUsername = quitedPlayer.GetUserName().replace("\"", "");
-
                 this.SendPlayerCommand(new PlayerCommand(MessageType.COMMAND,
-                        playerUsername, RIVAL_QUIT, new Location(0,0)));
+                        quitedPlayer.GetUserName(), RIVAL_QUIT, new Location(0,0)));
 
                 MatchLogger.Debug(GetMatchIdentifier(), "Player " + quitedPlayer.GetUserName() + " disconnected.");
             });
@@ -227,14 +223,14 @@ final class OnlineMatch extends Thread implements Match {
             if (!this.m_IsGameOver
                     && this.m_MatchPlayers.size() < GlobalSettings.MINIMUM_AMOUNT_OF_PLAYERS)
             {
-                throw new Exception(GlobalSettings.NOT_ENOUGH_PLAYERS_TO_CONTINUE);
+                throw new MatchTerminationException(this.GetMatchIdentifier(), GlobalSettings.NOT_ENOUGH_PLAYERS_TO_CONTINUE);
             }
         }
     }
 
     private void waitForPlayersToBeReady() throws Exception {
 
-        this.SendMessageToAll(new PlayerGeneralMessage(PlayerGeneralMessage.MessageType.CONFIRMATION, GlobalSettings.PLAYER_READY_MESSAGE).toString());
+        this.SendMessageToAll(new ServerGeneralMessage(ServerGeneralMessage.eActionType.CONFIRMATION, GlobalSettings.PLAYER_READY_MESSAGE).toString());
         MatchLogger.Debug(GetMatchIdentifier(), "Waiting for player to be ready...");
         AtomicBoolean isEveryoneReady = new AtomicBoolean(false);
 
@@ -317,15 +313,33 @@ final class OnlineMatch extends Thread implements Match {
 
         this.m_IsGameOver = true;
 
+        ServerGeneralMessage.eActionType actionType = null;
+
         if(!i_MatchEndedReason.equals(GlobalSettings.MATCH_ENDED))
+        {
+            actionType = ServerGeneralMessage.eActionType.MATCH_TERMINATION;
             MatchLogger.Error(GetMatchIdentifier(), i_MatchEndedReason);
+        }
         else
+        {
+            actionType = ServerGeneralMessage.eActionType.MATCH_TERMINATION;
             MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
+        }
 
         // TODO - update players coins and stats on database.
         //  /30.4/UPDATE - only stats left.
         //this.actionOnMatchPlayers(p -> DBHandler.updateStatsInDB(p.GetCharacter()));
-        this.actionOnMatchPlayers(p -> p.CloseConnection(GlobalSettings.MATCH_ENDED));
+        ServerGeneralMessage finalMatchEndedMessage
+                = new ServerGeneralMessage(actionType, i_MatchEndedReason);
+
+        this.actionOnMatchPlayers((player) -> {
+            try {
+                player.SendMessage(finalMatchEndedMessage.toString());
+            } catch (SocketTimeoutException e) {
+                MatchLogger.Warning(GetMatchIdentifier()
+                        , "Couldn't update player " + player.GetUserName() + " on match ending.");
+            }
+        });
 
         MatchMaking.RemoveActiveMatch(this);
         this.interrupt();

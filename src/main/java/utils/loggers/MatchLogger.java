@@ -20,4 +20,10 @@ public class MatchLogger {
         LoggerManager.debug(logMessage);
     }
 
+    public static void Warning(String i_MatchIdentifier, String i_LogMessage)
+    {
+        String logMessage = "Match #" + i_MatchIdentifier + " log: " + i_LogMessage;
+        LoggerManager.warning(logMessage);
+    }
+
 }
