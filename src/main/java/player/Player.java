@@ -23,6 +23,7 @@ public class Player implements Comparable<Player> {
     private Location m_Location;
     private String m_UserName;
     private boolean m_IsReady;
+    private boolean m_IsFinished;
     private int m_CoinsCollected;
 
     public Player(Socket i_SocketConnection) throws IOException
@@ -37,6 +38,7 @@ public class Player implements Comparable<Player> {
         LoggerManager.debug("Player " + this.GetUserName() + " log: fetched character data successfully.");
 
         this.m_IsReady = false;
+        this.m_IsFinished = false;
         LoggerManager.debug("Player " + this.m_UserName + " has been created!");
     }
 
@@ -155,6 +157,16 @@ public class Player implements Comparable<Player> {
     public boolean EqualByUsername(String i_Username)
     {
         return this.m_UserName.equals(i_Username);
+    }
+
+    public void MarkAsFinish()
+    {
+        this.m_IsFinished = true;
+    }
+
+    public boolean IsFinishedMatch()
+    {
+        return this.m_IsFinished;
     }
 
     @Override

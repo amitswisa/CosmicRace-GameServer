@@ -11,5 +11,6 @@ public class PlayerAction {
     public static final String RIVAL_QUIT = "RIVAL_QUIT";
     public static final String UPDATE_LOCATION = "UPDATE_LOCATION";
     public static final String COIN_COLLECT = "COIN_COLLECT";
+    public static final String COMPLETE_LEVEL = "COMPLETE_LEVEL";
 
 }

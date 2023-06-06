@@ -18,5 +18,6 @@ public class LoggerManager {
     public static void debug(String message) {logger.debug(message);}
 
     public static void warning(String message) {logger.warn(message);}
+
     public static void trace(String message) {logger.trace(message);}
 }

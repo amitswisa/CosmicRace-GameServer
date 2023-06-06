@@ -29,12 +29,14 @@ final class OnlineMatch extends Thread implements Match {
     private final List<Player> m_MatchQuitedPlayers;
     private final List<Player> m_WaitingToQuit;
     private final String m_MatchIdentifier;
+    private MatchScoreManager m_MatchScore;
     private boolean m_IsGameOver;
 
     public OnlineMatch(String i_MatchIdentifier, List<Player> i_MatchPlayers) {
 
         this.m_MatchIdentifier = i_MatchIdentifier;
         this.m_MatchPlayers = i_MatchPlayers;
+        this.m_MatchScore = new MatchScoreManager();
         this.m_MatchQuitedPlayers = new ArrayList<>(getNumOfPlayerInMatch());
         this.m_WaitingToQuit = new ArrayList<>(getNumOfPlayerInMatch());
         this.m_IsGameOver = false;
@@ -61,22 +63,23 @@ final class OnlineMatch extends Thread implements Match {
 
     @Override
     public void run() {
+
         PlayerCommand playerCommand = new PlayerCommand();
 
         try
         {
             this.initMatch();
 
-            while (!m_IsGameOver)
+            while (!isMatchOver())
             {
                 for(Player player : m_MatchPlayers)
                 {
                     try {
-                        String playerResponse = player.ReadMessage();
+                        String playerUpdate = player.ReadMessage();
 
-                        if(!playerResponse.equals(GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER)) {
-                            LoggerManager.info(playerResponse);
-                            playerCommand.ParseFromJson(playerResponse);
+                        if(!playerUpdate.equals(GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER)) {
+                            LoggerManager.info(playerUpdate);
+                            playerCommand.ParseFromJson(playerUpdate);
                             this.handlePlayerResponse(player, playerCommand);
                         }
                     }
@@ -113,13 +116,32 @@ final class OnlineMatch extends Thread implements Match {
             case JUMP: {
                 i_Player.UpdateLocation(i_PlayerCommand.GetLocation());
                 this.SendPlayerCommand(i_PlayerCommand);
-                LoggerManager.trace(i_PlayerCommand.toString());
                 break;
             }
             case COIN_COLLECT:
             {
                 updateCoinsOfPlayer(i_PlayerCommand.GetUsername());
-                LoggerManager.info(i_PlayerCommand.GetUsername() + " Collected a coin!");
+                break;
+            }
+            case COMPLETE_LEVEL: {
+
+                try
+                {
+                    i_Player.MarkAsFinish();
+                    int playerScorePosition = this.m_MatchScore.SetPlayerScore(i_Player);
+
+                    // Send score position to player.
+                    ServerGeneralMessage scorePositionAnnouncement
+                            = new ServerGeneralMessage(ServerGeneralMessage.eActionType.COMPLETE_MATCH, "Finished #"+playerScorePosition + " place!");
+                    i_Player.SendMessage(scorePositionAnnouncement.toString());
+                }
+                catch(IllegalArgumentException iae)
+                {
+                    LoggerManager.warning(i_Player.GetUserName() + " " + iae.getMessage());
+                } catch (SocketTimeoutException e) {
+                    throw new PlayerConnectionException(GlobalSettings.CLIENT_CLOSED_CONNECTION);
+                }
+
                 break;
             }
             case QUIT:
@@ -141,6 +163,7 @@ final class OnlineMatch extends Thread implements Match {
         if(playerToUpdate != null)
         {
             playerToUpdate.CoinCollected();
+            LoggerManager.trace(i_PlayerUsername + " Collected a coin!");
         }
     }
 
@@ -153,13 +176,20 @@ final class OnlineMatch extends Thread implements Match {
         return playerOptional.orElse(null);
     }
 
-    private boolean matchIsOver() {
+    private boolean isMatchOver()
+    {
         return (m_IsGameOver || this.isActivePlayersFinished());
     }
 
-    // TODO - Create that function.
-    private boolean isActivePlayersFinished() {
-        return false;
+    private boolean isActivePlayersFinished()
+    {
+        for(Player player : m_MatchPlayers)
+        {
+            if(!player.IsFinishedMatch())
+                return false;
+        }
+
+        return true;
     }
 
     @Override
@@ -196,6 +226,8 @@ final class OnlineMatch extends Thread implements Match {
                 }
             }
         });
+
+        LoggerManager.trace(i_PlayerCommand.toString());
     }
 
     public String GetMatchIdentifier() {
@@ -313,24 +345,21 @@ final class OnlineMatch extends Thread implements Match {
 
         this.m_IsGameOver = true;
 
-        ServerGeneralMessage.eActionType actionType = null;
-
         if(!i_MatchEndedReason.equals(GlobalSettings.MATCH_ENDED))
         {
-            actionType = ServerGeneralMessage.eActionType.MATCH_TERMINATION;
             MatchLogger.Error(GetMatchIdentifier(), i_MatchEndedReason);
         }
         else
         {
-            actionType = ServerGeneralMessage.eActionType.MATCH_TERMINATION;
             MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
         }
 
         // TODO - update players coins and stats on database.
         //  /30.4/UPDATE - only stats left.
         //this.actionOnMatchPlayers(p -> DBHandler.updateStatsInDB(p.GetCharacter()));
+
         ServerGeneralMessage finalMatchEndedMessage
-                = new ServerGeneralMessage(actionType, i_MatchEndedReason);
+                = new ServerGeneralMessage(ServerGeneralMessage.eActionType.MATCH_TERMINATION, i_MatchEndedReason);
 
         this.actionOnMatchPlayers((player) -> {
             try {

@@ -12,6 +12,7 @@ public final class ServerGeneralMessage {
         ERROR,
         CONFIRMATION,
         MATCH_TERMINATION,
+        COMPLETE_MATCH,
         MATCH_ENDED
     }
 
