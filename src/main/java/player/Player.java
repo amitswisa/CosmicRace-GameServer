@@ -2,11 +2,12 @@ package player;
 import com.google.gson.JsonObject;
 import dto.ServerGeneralMessage;
 import interfaces.Match;
+import interfaces.PlayerConnection;
 import utils.json.JsonFormatter;
 import okhttp3.*;
 import match_making.MatchMaking;
 import org.jetbrains.annotations.NotNull;
-import player.connection_handler.PlayerConnection;
+import player.connection_handler.PCConnection;
 import utils.GlobalSettings;
 import utils.loggers.LoggerManager;
 import utils.route.APIRoutes;
@@ -26,9 +27,9 @@ public class Player implements Comparable<Player> {
     private boolean m_IsFinished;
     private int m_CoinsCollected;
 
-    public Player(Socket i_SocketConnection) throws IOException
+    public Player(PlayerConnection i_SocketConnection) throws IOException
     {
-        this.m_PlayerConnection = new PlayerConnection(i_SocketConnection);
+        this.m_PlayerConnection = i_SocketConnection;
         this.m_CoinsCollected = 0;
 
         String initData = this.m_PlayerConnection.WaitForPlayerResponse();

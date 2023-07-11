@@ -1,6 +1,7 @@
 package player.connection_handler;
 
 import dto.ServerGeneralMessage;
+import interfaces.PlayerConnection;
 import utils.GlobalSettings;
 import utils.loggers.LoggerManager;
 import java.io.BufferedReader;
@@ -10,7 +11,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
-public final class PlayerConnection {
+public final class PCConnection implements PlayerConnection {
 
     private final Socket m_SocketConnection;
     private PrintWriter m_OutStream;
@@ -18,7 +19,7 @@ public final class PlayerConnection {
     private boolean m_IsConnected;
     private long m_LastClientConnectionTime;
 
-    public PlayerConnection(Socket i_Socket){
+    public PCConnection(Socket i_Socket){
 
         this.m_SocketConnection = i_Socket;
         this.m_IsConnected = true;
@@ -163,11 +164,6 @@ public final class PlayerConnection {
         throw new IOException(GlobalSettings.TERMINATE_DUE_TO_TIME_OUT);
     }
 
-    private boolean isTimedOut()
-    {
-        return (System.currentTimeMillis() - this.m_LastClientConnectionTime > GlobalSettings.MAX_TIME_OUT);
-    }
-
     public String getHost()
     {
         return this.m_SocketConnection.getInetAddress().getHostAddress();
@@ -176,6 +172,13 @@ public final class PlayerConnection {
     public BufferedReader GetInStream()
     {
         return m_InStream;
+    }
+
+    // * Cant be in interface.
+
+    private boolean isTimedOut()
+    {
+        return (System.currentTimeMillis() - this.m_LastClientConnectionTime > GlobalSettings.MAX_TIME_OUT);
     }
 
     private void updateLastClientConnectionTime()
