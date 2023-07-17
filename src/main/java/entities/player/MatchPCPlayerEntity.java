@@ -22,7 +22,7 @@ public class MatchPCPlayerEntity extends MatchPlayerEntity implements Comparable
     public MatchPCPlayerEntity(Connection i_SocketConnection) throws IOException
     {
         super(i_SocketConnection);
-        this.m_CoinsCollected = 0;
+
 
         String initData = this.m_Connection.WaitForPlayerResponse();
         LoggerManager.debug("Received data from socket " + this.m_Connection.getHost());
@@ -54,12 +54,12 @@ public class MatchPCPlayerEntity extends MatchPlayerEntity implements Comparable
         }
 
         JsonObject resData = JsonFormatter.createJsonFromString(response.body().string());
-        this.m_UserName = String.valueOf((resData).get("username")).replace("\"", "");
+        this.m_Username = String.valueOf((resData).get("username")).replace("\"", "");
         m_Character = JsonFormatter.GetGson().fromJson(resData, Character.class);
     }
 
     @Override
-    public final void CloseConnection(String i_ExceptionMessage)
+    public void CloseConnection(String i_ExceptionMessage)
     {
         if(this.m_CurrentMatch != null)
             this.m_CurrentMatch.RemovePlayerFromMatch(this);
@@ -70,35 +70,20 @@ public class MatchPCPlayerEntity extends MatchPlayerEntity implements Comparable
         try {
             this.SendMessage(new ServerGeneralMessage(ServerGeneralMessage.eActionType.NOTIFICATION, i_ExceptionMessage).toString());
         } catch(SocketTimeoutException ste) {
-            LoggerManager.warning("Couldn't notify player " + this.m_UserName + " on " + i_ExceptionMessage);
+            LoggerManager.warning("Couldn't notify player " + this.m_Username + " on " + i_ExceptionMessage);
         }
 
         this.m_Connection.CloseConnection(i_ExceptionMessage);
     }
 
-    public final void UpdateLocation(Location i_PlayerLastLocation)
-    {
-        this.m_Location = i_PlayerLastLocation;
-    }
-
-    public final void CoinCollected()
-    {
-        this.m_CoinsCollected += 1;
-    }
-
     public boolean EqualByUsername(String i_Username)
     {
-        return this.m_UserName.equals(i_Username);
+        return this.m_Username.equals(i_Username);
     }
 
     public void MarkAsFinish()
     {
         this.m_IsFinished = true;
-    }
-
-    public boolean IsFinishedMatch()
-    {
-        return this.m_IsFinished;
     }
 
     @Override
@@ -113,7 +98,7 @@ public class MatchPCPlayerEntity extends MatchPlayerEntity implements Comparable
     @Override
     public int hashCode()
     {
-        return Objects.hash(m_UserName);
+        return Objects.hash(m_Username);
     }
 
     @Override

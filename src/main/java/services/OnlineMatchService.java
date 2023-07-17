@@ -1,17 +1,23 @@
 package services;
 
 import com.google.gson.JsonSyntaxException;
+import dto.MessageType;
 import dto.PlayerCommand;
 import dto.ServerGeneralMessage;
+import exceptions.MatchTerminationException;
 import exceptions.PlayerConnectionException;
 import match.MatchMaking;
 import model.player.MatchPlayerEntity;
 import utils.GlobalSettings;
+import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
 import utils.loggers.MatchLogger;
+import utils.player.Location;
 
 import java.net.SocketTimeoutException;
 import java.util.List;
+
+import static dto.PlayerAction.RIVAL_QUIT;
 
 public final class OnlineMatchService extends MatchService {
 
@@ -71,6 +77,54 @@ public final class OnlineMatchService extends MatchService {
         }
     }
 
+    @Override
+    public void removeWaitingToQuitPlayers() throws Exception
+    {
+
+        if(this.m_WaitingToQuit.size() > 0)
+        {
+            this.m_MatchPlayerEntities.removeAll(this.m_WaitingToQuit);
+            this.m_MatchQuitedMatchPlayerEntities.addAll(this.m_WaitingToQuit);
+
+            this.m_WaitingToQuit.forEach((quitedPlayer) -> {
+
+                this.SendPlayerCommand(new PlayerCommand(MessageType.COMMAND,
+                        quitedPlayer.GetUserName(), RIVAL_QUIT, new Location(0,0)));
+
+                MatchLogger.Debug(GetMatchIdentifier(), "Player " + quitedPlayer.GetUserName() + " disconnected.");
+            });
+
+            this.m_WaitingToQuit.clear();
+
+            if (!this.m_IsGameOver
+                    && this.m_MatchPlayerEntities.size() < GlobalSettings.MINIMUM_AMOUNT_OF_PLAYERS)
+            {
+                throw new MatchTerminationException(this.GetMatchIdentifier(), GlobalSettings.NOT_ENOUGH_PLAYERS_TO_CONTINUE);
+            }
+        }
+    }
+
+    @Override
+    public void SendPlayerCommand(PlayerCommand i_PlayerCommand)
+    {
+        actionOnMatchPlayers((player) -> {
+
+            if(!player.GetUserName().equals(i_PlayerCommand.GetUsername()))
+            {
+                try {
+                    String command = JsonFormatter.GetGson().toJson(i_PlayerCommand, PlayerCommand.class);
+
+                    player.SendMessage(command);
+                } catch(SocketTimeoutException ste) {
+                    player.CloseConnection(ste.getMessage());
+                }
+            }
+        });
+
+        LoggerManager.trace(i_PlayerCommand.toString());
+    }
+
+    @Override
     public void EndMatch(String i_MatchEndedReason) {
 
         this.m_IsGameOver = true;

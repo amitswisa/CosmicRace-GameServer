@@ -11,4 +11,9 @@ public final class MatchHostEntity extends MatchPlayerEntity
         super(i_Connection);
     }
 
+    @Override
+    public void CloseConnection(String i_ExceptionMessage) {
+        return;
+    }
+
 }

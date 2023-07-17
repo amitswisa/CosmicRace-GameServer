@@ -43,7 +43,10 @@ public abstract class MatchService extends Thread
     }
 
     // Abstract methods.
-   abstract public void run();
+    abstract public void run();
+    abstract public void removeWaitingToQuitPlayers() throws Exception;
+    abstract public void SendPlayerCommand(PlayerCommand i_PlayerCommand);
+    abstract public void EndMatch(String i_MatchEndedReason);
 
     protected String getMatchPlayersAsJson()
     {
@@ -211,51 +214,6 @@ public abstract class MatchService extends Thread
             }
 
         });
-    }
-
-    public void SendPlayerCommand(PlayerCommand i_PlayerCommand)
-    {
-        actionOnMatchPlayers((player) -> {
-
-            if(!player.GetUserName().equals(i_PlayerCommand.GetUsername()))
-            {
-                try {
-                    String command = JsonFormatter.GetGson().toJson(i_PlayerCommand, PlayerCommand.class);
-
-                    player.SendMessage(command);
-                } catch(SocketTimeoutException ste) {
-                    player.CloseConnection(ste.getMessage());
-                }
-            }
-        });
-
-        LoggerManager.trace(i_PlayerCommand.toString());
-    }
-
-    protected void removeWaitingToQuitPlayers() throws Exception
-    {
-
-        if(this.m_WaitingToQuit.size() > 0)
-        {
-            this.m_MatchPlayerEntities.removeAll(this.m_WaitingToQuit);
-            this.m_MatchQuitedMatchPlayerEntities.addAll(this.m_WaitingToQuit);
-
-            this.m_WaitingToQuit.forEach((quitedPlayer) -> {
-
-                this.SendPlayerCommand(new PlayerCommand(MessageType.COMMAND,
-                        quitedPlayer.GetUserName(), RIVAL_QUIT, new Location(0,0)));
-
-                MatchLogger.Debug(GetMatchIdentifier(), "Player " + quitedPlayer.GetUserName() + " disconnected.");
-            });
-
-            this.m_WaitingToQuit.clear();
-
-            if (!this.m_IsGameOver
-                    && this.m_MatchPlayerEntities.size() < GlobalSettings.MINIMUM_AMOUNT_OF_PLAYERS)
-            {
-                throw new MatchTerminationException(this.GetMatchIdentifier(), GlobalSettings.NOT_ENOUGH_PLAYERS_TO_CONTINUE);
-            }
-        }
     }
 
     public String GetMatchIdentifier() {

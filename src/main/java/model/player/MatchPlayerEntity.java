@@ -16,7 +16,7 @@ public abstract class MatchPlayerEntity
     protected MatchService m_CurrentMatch;
     protected boolean m_IsReady;
     protected String m_Username;
-    private int m_CoinsCollected;
+    protected int m_CoinsCollected;
     protected boolean m_IsFinished;
     protected Location m_Location;
     protected Character m_Character;
@@ -85,5 +85,23 @@ public abstract class MatchPlayerEntity
         jsonObject.addProperty("playerUsername", this.GetUserName());
         jsonObject.addProperty("CharacterData", this.GetCharacter().GetAsJson());
         return jsonObject;
+    }
+
+    public final void CoinCollected()
+    {
+        this.m_CoinsCollected += 1;
+    }
+
+    public boolean IsFinishedMatch()
+    {
+        return this.m_IsFinished;
+    }
+
+    abstract public void CloseConnection(String i_ExceptionMessage);
+
+    public void SetMatch(MatchService i_MatchRef)
+    {
+        this.m_CurrentMatch = i_MatchRef;
+        this.m_Location = new Location(0,0);
     }
 }

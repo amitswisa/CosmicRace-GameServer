@@ -24,11 +24,11 @@ public final class MatchMaking
         // There are enough users to create a match.
         while (s_UsersWaiting >= GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS) {
 
-            List<MatchPlayerEntity> matchMatchPlayerEntities = new ArrayList<>(GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS);
+            List<MatchPlayerEntity> matchPlayersList = new ArrayList<>(GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS);
             LoggerManager.info("Match Making log: Looking for players...");
 
-            while(matchMatchPlayerEntities.size() < GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS
-                    && s_UsersWaiting >= GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS - matchMatchPlayerEntities.size()) {
+            while(matchPlayersList.size() < GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS
+                    && s_UsersWaiting >= GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS - matchPlayersList.size()) {
 
                 MatchPlayerEntity matchPlayer = s_PlayersQueue.poll();
                 DecreaseUserWaiting();
@@ -39,11 +39,11 @@ public final class MatchMaking
                     LoggerManager.info("Player " + matchPlayer.GetUserName()+ " log: Connection terminated or unreachable.");
             }
 
-            int numOfPlayersInList = matchMatchPlayerEntities.size();
+            int numOfPlayersInList = matchPlayersList.size();
             if(numOfPlayersInList != GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS)
             {
                 LoggerManager.info("Match Making log: Failed to create a match, not enough players.");
-                s_PlayersQueue.addAll(matchMatchPlayerEntities);
+                s_PlayersQueue.addAll(matchPlayersList);
                 s_UsersWaiting += numOfPlayersInList;
                 return;
             }
@@ -52,7 +52,7 @@ public final class MatchMaking
             String matchIdentifier = generateSessionIdentifier();
             LoggerManager.info("Match Making log: Players found, creating a match (#"+matchIdentifier+").");
 
-            OnlineMatchService newMatch = new OnlineMatchService(matchIdentifier, matchMatchPlayerEntities);
+            OnlineMatchService newMatch = new OnlineMatchService(matchIdentifier, matchPlayersList);
             s_ActiveMatches.put(matchIdentifier, newMatch);
 
             newMatch.start(); // Start Match.
@@ -65,7 +65,7 @@ public final class MatchMaking
     }
 
     // Only one sync function call it - no need to sync.
-    private static void addPlayerToQueue(MatchPCPlayerEntity i_Match_PlayerEntity)
+    private static void addPlayerToQueue(MatchPlayerEntity i_Match_PlayerEntity)
     {
         try {
             s_PlayersQueue.add(i_Match_PlayerEntity);
@@ -79,7 +79,7 @@ public final class MatchMaking
         }
     }
 
-    public static void RemovePlayerFromQueue(MatchPCPlayerEntity i_Match_PlayerEntity)
+    public static void RemovePlayerFromQueue(MatchPlayerEntity i_Match_PlayerEntity)
     {
         if(s_PlayersQueue.contains(i_Match_PlayerEntity))
         {
