@@ -3,7 +3,6 @@ package utils;
 public class GlobalSettings {
 
     // General settings
-    public static final int PORT = 6666;
     public static final Integer MAXIMUM_AMOUNT_OF_PLAYERS = 2;
     public static final Integer MINIMUM_AMOUNT_OF_PLAYERS = 2;
     public static final int MAX_TIME_OUT = 10000; // 10 Seconds

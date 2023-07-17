@@ -13,7 +13,8 @@ public final class ServerGeneralMessage {
         CONFIRMATION,
         MATCH_TERMINATION,
         COMPLETE_MATCH,
-        MATCH_ENDED
+        MATCH_ENDED,
+        ROOM_CREATED
     }
 
     private eActionType m_ActionType;

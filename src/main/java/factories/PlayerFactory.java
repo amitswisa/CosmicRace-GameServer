@@ -1,46 +1,59 @@
 package factories;
 
+import match.entities.match_host.MatchHostEntity;
 import jakarta.websocket.Session;
-import match_making.MatchMaking;
-import player.Player;
-import player.connection_handler.PCConnection;
-import player.connection_handler.WebConnection;
+import match.MatchMaking;
+import match.OfflineMatchManager;
+import match.entities.match_player.MatchPlayerEntity;
+import servers.connection.pcconnection.PCConnection;
 import utils.loggers.LoggerManager;
 
 import java.io.IOException;
 import java.net.Socket;
 
 public class PlayerFactory {
-    public static void createNewPlayer(Socket newSocketConnection) {
 
-        Thread newPlayerCreationThread = new Thread(() -> {
-            Player newPlayer = null;
-            try{
-                newPlayer = new Player(new PCConnection(newSocketConnection));
-                MatchMaking.AddPlayerToWaitingList(newPlayer);
+    public static void CreateNewPlayer(Socket newSocketConnection)
+    {
+        Thread connectionSetupThread = new Thread(() -> {
+
+            try
+            {
+                PCConnection newConnection = new PCConnection(newSocketConnection);
+
+                if(newConnection.IsHostConnection())
+                {
+                    MatchHostEntity hostEntity = new MatchHostEntity(newConnection);
+                    OfflineMatchManager.CreateNewMatchRoom(hostEntity);
+                }
+                else
+                {
+                    MatchPlayerEntity playerEntity = new MatchPlayerEntity(newConnection);
+                    MatchMaking.AddPlayerToWaitingList(playerEntity);
+                }
+
             } catch(IOException e) {
                 LoggerManager.error(e.getMessage());
             }
+
         });
 
-        newPlayerCreationThread.start();
-
+        connectionSetupThread.start();
     }
 
-    public static void createNewPlayer(Session newSessionConnection) {
-
+    public static void CreateNewPlayer(Session newSessionConnection)
+    {
         Thread newPlayerCreationThread = new Thread(() -> {
-            Player newPlayer = null;
+            /*MatchPlayerEntity newMatchPlayerEntity = null;
             try{
-                newPlayer = new Player(new WebConnection(newSessionConnection));
-                MatchMaking.AddPlayerToWaitingList(newPlayer);
+                newMatchPlayerEntity = new MatchPlayerEntity(new WebConnection(newSessionConnection));
+                MatchMaking.AddPlayerToWaitingList(newMatchPlayerEntity);
             } catch(IOException e) {
                 LoggerManager.error(e.getMessage());
-            }
+            }*/
         });
 
         newPlayerCreationThread.start();
-
     }
 
 }
