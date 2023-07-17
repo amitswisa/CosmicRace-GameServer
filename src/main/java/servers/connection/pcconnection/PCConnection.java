@@ -36,7 +36,7 @@ public class PCConnection extends Connection {
             String initPlayerConfiguration = this.WaitForPlayerResponse();
             JsonObject initDataJson = JsonFormatter.createJsonFromString(initPlayerConfiguration);
 
-            this.m_IsHost = initDataJson.get("gameType").getAsString().equals("Online");
+            this.m_IsHost = initDataJson.get("gameType").getAsString().equals("Offline");
 
         } catch(Exception e) {
             CloseConnection(e.getMessage());
