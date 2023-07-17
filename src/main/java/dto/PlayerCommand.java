@@ -1,6 +1,6 @@
 package dto;
 
-import match.entities.utils.Location;
+import utils.player.Location;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;

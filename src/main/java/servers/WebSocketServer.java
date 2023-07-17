@@ -1,54 +1,62 @@
 package servers;
 
-
-import factories.PlayerFactory;
 import jakarta.websocket.*;
 import jakarta.websocket.server.ServerEndpoint;
+import entities.player.MatchWebPlayerEntity;
+import entities.connection.WebConnection;
 import utils.loggers.LoggerManager;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @ServerEndpoint("/")
-public class WebSocketServer extends Thread
-{
-    private static int PORT = 8081;
+public class WebSocketServer extends Thread {
+    private static final int PORT = 8081;
+    private static final Map<String, MatchWebPlayerEntity> s_WebSocketsPlayerMap = new ConcurrentHashMap<>();
 
     @OnOpen
     public void onOpen(Session session) {
         // Handle WebSocket connection open event
         System.out.println("WebSocket connection opened: " + session.getId());
-        PlayerFactory.CreateNewPlayer(session);
+
+        // Create a new instance of MyWebSocket and add it to the collection
+        MatchWebPlayerEntity webPlayer = new MatchWebPlayerEntity(new WebConnection(session));
+        s_WebSocketsPlayerMap.put(session.getId(), webPlayer);
     }
 
     @OnMessage
     public void onMessage(String message, Session session) {
-        // Handle WebSocket message received event
-        System.out.println("Received message from " + session.getId() + ": " + message);
+        // Delegate message handling to the MyWebSocket instance associated with this session
+        MatchWebPlayerEntity webPlayer = getWebPlayerEntity(session);
 
-        // Echo the message back to the client
-        try {
-            session.getBasicRemote().sendText("Echo: " + message);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (webPlayer != null)
+        {
+            webPlayer.HandleMessageReceived(message);
         }
     }
 
     @OnClose
     public void onClose(Session session, CloseReason reason) {
         // Handle WebSocket connection close event
-        System.out.println("WebSocket connection closed: " + session.getId() + ", Reason: " + reason.getReasonPhrase());
+        MatchWebPlayerEntity webPlayer = getWebPlayerEntity(session);
+
+        if(webPlayer != null)
+        {
+            webPlayer.CloseConnection(reason.getReasonPhrase());
+        }
+
+        s_WebSocketsPlayerMap.remove(session.getId());
     }
 
     @OnError
     public void onError(Session session, Throwable throwable) {
         // Handle WebSocket error event
-        throwable.printStackTrace();
+        onClose(session, new CloseReason(CloseReason.CloseCodes.UNEXPECTED_CONDITION, throwable.getMessage()));
     }
 
     @Override
-    public void run(){
+    public void run() {
         Map<String, Object> map = new HashMap<>();
 
         org.glassfish.tyrus.server.Server server = new
@@ -67,4 +75,9 @@ public class WebSocketServer extends Thread
             server.stop();
         }
     }
+
+    private MatchWebPlayerEntity getWebPlayerEntity(Session session) {
+        return s_WebSocketsPlayerMap.get(session.getId());
+    }
+
 }

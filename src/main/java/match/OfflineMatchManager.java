@@ -1,10 +1,10 @@
 package match;
 
-import match.entities.match_host.MatchHostEntity;
-import match.services.OfflineMatchService;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import entities.player.MatchHostEntity;
+import model.player.MatchPlayerEntity;
+import services.OfflineMatchService;
+
+import java.util.*;
 
 public final class OfflineMatchManager
 {
@@ -34,8 +34,10 @@ public final class OfflineMatchManager
     public static void CreateNewMatchRoom(MatchHostEntity i_HostEntity)
     {
         String matchRoomIdentifier = generateMatchIdentifier();
+        List<MatchPlayerEntity> playersList = new ArrayList<>();
+        playersList.add(i_HostEntity);
 
-        OfflineMatchService matchService = new OfflineMatchService(i_HostEntity, matchRoomIdentifier); // Creation of match room.
+        OfflineMatchService matchService = new OfflineMatchService(i_HostEntity, playersList, matchRoomIdentifier); // Creation of match room.
 
         // Check if connection to host is still alive.
         if(!matchService.IsGameOver())

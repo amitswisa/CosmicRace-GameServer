@@ -1,6 +1,6 @@
 package utils.singletons;
 
-import match.entities.utils.Character;
+import utils.player.Character;
 import utils.GlobalSettings;
 
 import java.sql.Connection;

@@ -1,11 +1,12 @@
 package factories;
 
-import match.entities.match_host.MatchHostEntity;
 import jakarta.websocket.Session;
 import match.MatchMaking;
 import match.OfflineMatchManager;
-import match.entities.match_player.MatchPlayerEntity;
-import servers.connection.pcconnection.PCConnection;
+import entities.player.MatchHostEntity;
+import entities.player.MatchPCPlayerEntity;
+import entities.connection.PCConnection;
+import entities.connection.WebConnection;
 import utils.loggers.LoggerManager;
 
 import java.io.IOException;
@@ -28,7 +29,7 @@ public class PlayerFactory {
                 }
                 else
                 {
-                    MatchPlayerEntity playerEntity = new MatchPlayerEntity(newConnection);
+                    MatchPCPlayerEntity playerEntity = new MatchPCPlayerEntity(newConnection);
                     MatchMaking.AddPlayerToWaitingList(playerEntity);
                 }
 
@@ -44,13 +45,13 @@ public class PlayerFactory {
     public static void CreateNewPlayer(Session newSessionConnection)
     {
         Thread newPlayerCreationThread = new Thread(() -> {
-            /*MatchPlayerEntity newMatchPlayerEntity = null;
+            MatchPCPlayerEntity newMatchPCPlayerEntity = null;
             try{
-                newMatchPlayerEntity = new MatchPlayerEntity(new WebConnection(newSessionConnection));
-                MatchMaking.AddPlayerToWaitingList(newMatchPlayerEntity);
+                newMatchPCPlayerEntity = new MatchPCPlayerEntity(new WebConnection(newSessionConnection));
+
             } catch(IOException e) {
                 LoggerManager.error(e.getMessage());
-            }*/
+            }
         });
 
         newPlayerCreationThread.start();

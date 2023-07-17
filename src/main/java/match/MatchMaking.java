@@ -1,7 +1,8 @@
 package match;
 
-import match.services.OnlineMatchService;
-import match.entities.match_player.MatchPlayerEntity;
+import model.player.MatchPlayerEntity;
+import services.OnlineMatchService;
+import entities.player.MatchPCPlayerEntity;
 import dto.ServerGeneralMessage;
 import utils.loggers.LoggerManager;
 import utils.GlobalSettings;
@@ -16,9 +17,9 @@ public final class MatchMaking
     private static volatile Queue<MatchPlayerEntity> s_PlayersQueue = new PriorityQueue<>();
     private static volatile Map<String, OnlineMatchService> s_ActiveMatches = new HashMap<>();
 
-    public static synchronized void AddPlayerToWaitingList(MatchPlayerEntity i_NewMatchPlayerEntity)
+    public static synchronized void AddPlayerToWaitingList(MatchPCPlayerEntity i_NewPlayerEntity)
     {
-        addPlayerToQueue(i_NewMatchPlayerEntity);
+        addPlayerToQueue(i_NewPlayerEntity);
 
         // There are enough users to create a match.
         while (s_UsersWaiting >= GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS) {
@@ -29,13 +30,13 @@ public final class MatchMaking
             while(matchMatchPlayerEntities.size() < GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS
                     && s_UsersWaiting >= GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS - matchMatchPlayerEntities.size()) {
 
-                MatchPlayerEntity matchPlayerEntity = s_PlayersQueue.poll();
+                MatchPlayerEntity matchPlayer = s_PlayersQueue.poll();
                 DecreaseUserWaiting();
 
-                if (matchPlayerEntity != null && matchPlayerEntity.IsConnectionAlive())
-                    matchMatchPlayerEntities.add(matchPlayerEntity);
+                if (matchPlayer != null && matchPlayer.IsConnectionAlive())
+                    matchPlayersList.add(matchPlayer);
                 else
-                    LoggerManager.info("Player " + matchPlayerEntity.GetUserName()+ " log: Connection terminated or unreachable.");
+                    LoggerManager.info("Player " + matchPlayer.GetUserName()+ " log: Connection terminated or unreachable.");
             }
 
             int numOfPlayersInList = matchMatchPlayerEntities.size();
@@ -64,7 +65,7 @@ public final class MatchMaking
     }
 
     // Only one sync function call it - no need to sync.
-    private static void addPlayerToQueue(MatchPlayerEntity i_Match_PlayerEntity)
+    private static void addPlayerToQueue(MatchPCPlayerEntity i_Match_PlayerEntity)
     {
         try {
             s_PlayersQueue.add(i_Match_PlayerEntity);
@@ -78,7 +79,7 @@ public final class MatchMaking
         }
     }
 
-    public static void RemovePlayerFromQueue(MatchPlayerEntity i_Match_PlayerEntity)
+    public static void RemovePlayerFromQueue(MatchPCPlayerEntity i_Match_PlayerEntity)
     {
         if(s_PlayersQueue.contains(i_Match_PlayerEntity))
         {
