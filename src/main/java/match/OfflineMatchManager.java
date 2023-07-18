@@ -45,4 +45,9 @@ public final class OfflineMatchManager
             m_MatchMap.put(matchRoomIdentifier, matchService);
         }
     }
+
+    synchronized public static OfflineMatchService GetRoomById(String i_RoomIdentifier)
+    {
+        return m_MatchMap.get(i_RoomIdentifier);
+    }
 }

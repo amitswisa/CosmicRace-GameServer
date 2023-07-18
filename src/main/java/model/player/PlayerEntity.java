@@ -26,6 +26,7 @@ public abstract class PlayerEntity
         this.m_IsReady = false;
         this.m_IsFinished = false;
         this.m_CoinsCollected = 0;
+        this.m_CurrentMatch = null;
     }
 
     public final void SendMessage(String i_Message) throws SocketTimeoutException
@@ -102,5 +103,10 @@ public abstract class PlayerEntity
     {
         this.m_CurrentMatch = i_MatchRef;
         this.m_Location = new Location(0,0);
+    }
+
+    public boolean IsPlayerConnectedToAMatch()
+    {
+        return this.m_CurrentMatch != null;
     }
 }

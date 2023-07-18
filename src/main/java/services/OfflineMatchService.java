@@ -3,6 +3,7 @@ package services;
 import dto.PlayerCommand;
 import dto.ServerGeneralMessage;
 import entities.player.HostEntity;
+import entities.player.WebPlayerEntity;
 import model.player.PlayerEntity;
 import utils.GlobalSettings;
 import utils.json.JsonFormatter;
@@ -10,6 +11,7 @@ import utils.loggers.LoggerManager;
 
 import java.net.SocketTimeoutException;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class OfflineMatchService extends MatchService
 {
@@ -62,5 +64,13 @@ public class OfflineMatchService extends MatchService
         }
 
         LoggerManager.trace(i_PlayerCommand.toString());
+    }
+
+    public void AddPlayer(WebPlayerEntity i_NewWebPlayer, String sessionid)
+    {
+        this.m_MatchPlayerEntities.add(i_NewWebPlayer);
+        i_NewWebPlayer.SetMatch(this);
+
+        LoggerManager.info(sessionid + " has connected to room " + this.m_MatchIdentifier);
     }
 }

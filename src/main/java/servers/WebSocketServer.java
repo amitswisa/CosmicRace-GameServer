@@ -1,11 +1,16 @@
 package servers;
 
+import dto.ServerGeneralMessage;
 import jakarta.websocket.*;
 import jakarta.websocket.server.ServerEndpoint;
 import entities.player.WebPlayerEntity;
 import entities.connection.WebConnection;
+import match.OfflineMatchManager;
 import model.player.PlayerEntity;
+import services.OfflineMatchService;
 import utils.loggers.LoggerManager;
+
+import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,7 +39,21 @@ public class WebSocketServer extends Thread
 
         if (webPlayer != null)
         {
-            webPlayer.HandleMessageReceived(message);
+            if(webPlayer.IsPlayerConnectedToAMatch())
+                webPlayer.HandleMessageReceived(message);
+            else
+            {
+                OfflineMatchService matchService = OfflineMatchManager.GetRoomById(message);
+
+                if(matchService != null)
+                {
+                    matchService.AddPlayer(webPlayer, session.getId());
+                }
+                else
+                {
+                    onClose(session, new CloseReason(CloseReason.CloseCodes.UNEXPECTED_CONDITION, "Room doesn't exist."));
+                }
+            }
         }
     }
 
@@ -65,7 +84,7 @@ public class WebSocketServer extends Thread
         Map<String, Object> map = new HashMap<>();
 
         org.glassfish.tyrus.server.Server server = new
-                org.glassfish.tyrus.server.Server("localhost", PORT, "/offlinegame",
+                org.glassfish.tyrus.server.Server("localhost", PORT, "/",
                 map, WebSocketServer.class);
 
         try {
