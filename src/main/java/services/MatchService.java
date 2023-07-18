@@ -247,4 +247,11 @@ public abstract class MatchService extends Thread
     public boolean IsGameOver() {
         return this.m_IsGameOver;
     }
+
+
+
+
+
+
+    abstract public PlayerEntity GetHost(); //RAN
 }

@@ -8,6 +8,8 @@ import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
 import utils.player.Character;
 
+import java.net.SocketTimeoutException;
+
 public class WebPlayerEntity extends PlayerEntity
 {
 
@@ -43,5 +45,17 @@ public class WebPlayerEntity extends PlayerEntity
 
         // Your logic for handling other messages
         System.out.println("Received message: " + i_Text);
+    }
+
+
+
+    public void sendMessageToHost(String i_Message){ //RAN
+
+        try {
+            HostEntity hostEntity = (HostEntity)this.m_CurrentMatch.GetHost();
+            hostEntity.SendMessage(i_Message);
+        } catch (SocketTimeoutException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

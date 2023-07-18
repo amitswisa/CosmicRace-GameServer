@@ -10,6 +10,7 @@ public final class OfflineMatchManager
 {
     private static volatile Map<String, OfflineMatchService> m_MatchMap = new HashMap<>();
 
+
     synchronized private static String generateMatchIdentifier()
     {
         Random random = new Random();

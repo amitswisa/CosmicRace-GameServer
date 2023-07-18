@@ -75,4 +75,9 @@ public class OfflineMatchService extends MatchService
 
         LoggerManager.info(sessionid + " has connected to room " + this.m_MatchIdentifier);
     }
+
+    @Override
+    public HostEntity GetHost(){
+        return this.r_MatchHost;
+    }
 }

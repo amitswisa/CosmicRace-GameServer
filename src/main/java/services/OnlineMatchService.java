@@ -4,6 +4,7 @@ import com.google.gson.JsonSyntaxException;
 import dto.MessageType;
 import dto.PlayerCommand;
 import dto.ServerGeneralMessage;
+import entities.player.HostEntity;
 import exceptions.MatchTerminationException;
 import exceptions.PlayerConnectionException;
 import match.MatchMaking;
@@ -156,5 +157,10 @@ public final class OnlineMatchService extends MatchService {
 
         MatchMaking.RemoveActiveMatch(this);
         this.interrupt();
+    }
+
+    @Override //RAN
+    public HostEntity GetHost(){
+        return null;
     }
 }
