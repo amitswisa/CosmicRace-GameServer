@@ -1,16 +1,14 @@
 package servers;
 
-import dto.ServerGeneralMessage;
+import entities.connection.WebConnection;
+import entities.player.WebPlayerEntity;
 import jakarta.websocket.*;
 import jakarta.websocket.server.ServerEndpoint;
-import entities.player.WebPlayerEntity;
-import entities.connection.WebConnection;
 import match.OfflineMatchManager;
 import model.player.PlayerEntity;
 import services.OfflineMatchService;
 import utils.loggers.LoggerManager;
 
-import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,7 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @ServerEndpoint("/")
 public class WebSocketServer extends Thread
 {
-
     private static final int PORT = 8081;
     private static final Map<String, PlayerEntity> s_WebSocketsPlayerMap = new ConcurrentHashMap<>();
 

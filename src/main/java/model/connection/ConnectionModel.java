@@ -37,4 +37,5 @@ public abstract class ConnectionModel
     abstract public String ReadMessage() throws IOException;
     abstract public String getHost();
     abstract public String WaitForPlayerResponse() throws IOException;
+    abstract public void AddMessageToQueue(String i_Message);
 }

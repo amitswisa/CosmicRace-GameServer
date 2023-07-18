@@ -48,6 +48,7 @@ public abstract class MatchService extends Thread
     protected String getMatchPlayersAsJson()
     {
         Map<String, JsonElement> playersMap = new HashMap<>();
+
         this.actionOnMatchPlayers((player) -> {
             JsonElement playerData = player.GetPlayerMatchData();
             playersMap.put(player.GetUserName(), playerData);

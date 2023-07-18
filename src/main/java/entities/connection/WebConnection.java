@@ -60,6 +60,11 @@ public final class WebConnection extends ConnectionModel {
         return null;
     }
 
+    @Override
+    public void AddMessageToQueue(String i_Message) {
+        m_MessagesQueue.add(i_Message);
+    }
+
     public void HandleMessageReceived(String i_Message)
     {
         if(i_Message != null)

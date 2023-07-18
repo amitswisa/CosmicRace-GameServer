@@ -1,9 +1,15 @@
 package entities.player;
 
-import model.player.PlayerEntity;
+import com.google.gson.JsonObject;
+import dto.MessageType;
 import model.connection.ConnectionModel;
+import model.player.PlayerEntity;
+import utils.json.JsonFormatter;
+import utils.loggers.LoggerManager;
+import utils.player.Character;
 
-public class WebPlayerEntity extends PlayerEntity {
+public class WebPlayerEntity extends PlayerEntity
+{
 
     public WebPlayerEntity(ConnectionModel i_Connection)
     {
@@ -18,6 +24,23 @@ public class WebPlayerEntity extends PlayerEntity {
 
     public void HandleMessageReceived(String i_Text)
     {
+        JsonObject playerData = JsonFormatter.createJsonFromString(i_Text);
+        String messageType = playerData.get("messagetype").getAsString();
+
+        if(messageType.equals(MessageType.CONFIGURATION))
+        {
+            int characterId = playerData.get("characterid").getAsInt();
+            m_Username = playerData.get("username").getAsString().replace("\"", "");
+            m_Character = new Character(characterId, "None", 1, 0, 10, 50, 10, 3, 1, 0, 0);
+            this.MarkAsReady();
+
+            LoggerManager.info(m_Username + " is Ready.");
+        }
+        else
+        {
+            m_Connection.AddMessageToQueue(i_Text);
+        }
+
         // Your logic for handling other messages
         System.out.println("Received message: " + i_Text);
     }

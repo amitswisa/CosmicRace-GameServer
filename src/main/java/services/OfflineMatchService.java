@@ -11,7 +11,6 @@ import utils.loggers.LoggerManager;
 
 import java.net.SocketTimeoutException;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class OfflineMatchService extends MatchService
 {
@@ -70,6 +69,9 @@ public class OfflineMatchService extends MatchService
     {
         this.m_MatchPlayerEntities.add(i_NewWebPlayer);
         i_NewWebPlayer.SetMatch(this);
+
+        SendMessageToHost(new ServerGeneralMessage
+                (ServerGeneralMessage.eActionType.PLAYER_JOINED, "New player joined the room.").toString());
 
         LoggerManager.info(sessionid + " has connected to room " + this.m_MatchIdentifier);
     }
