@@ -1,5 +1,8 @@
 package servers;
 
+import com.google.gson.JsonObject;
+import dto.MessageType;
+import dto.ServerGeneralMessage;
 import entities.connection.WebConnection;
 import entities.player.WebPlayerEntity;
 import jakarta.websocket.*;
@@ -7,7 +10,9 @@ import jakarta.websocket.server.ServerEndpoint;
 import match.OfflineMatchManager;
 import model.player.PlayerEntity;
 import services.OfflineMatchService;
+import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
+import utils.player.Character;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,15 +45,31 @@ public class WebSocketServer extends Thread
                 webPlayer.HandleMessageReceived(message);
             else
             {
-                OfflineMatchService matchService = OfflineMatchManager.GetRoomById(message);
+                LoggerManager.info(message);
 
-                if(matchService != null)
+                JsonObject playerData = JsonFormatter.createJsonFromString(message);
+                String messageType = playerData.get("messagetype").getAsString();
+
+                if(messageType.equals(MessageType.CONFIGURATION))
                 {
-                    matchService.AddPlayer(webPlayer, session.getId());
+                    OfflineMatchService matchService = OfflineMatchManager.GetRoomById(playerData.get("roomid").getAsString());
+
+                    if (matchService != null)
+                    {
+                        webPlayer.SetInitData(playerData);
+                        matchService.AddPlayer(webPlayer, session.getId());
+                        webPlayer.MarkAsReady();
+                        webPlayer.sendMessageToHost(new ServerGeneralMessage(ServerGeneralMessage.eActionType.PLAYER_READY, webPlayer.GetUserName()).toString());
+                        LoggerManager.info(webPlayer.GetUserName() + " is Ready.");
+                    }
+                    else
+                    {
+                        onClose(session, new CloseReason(CloseReason.CloseCodes.UNEXPECTED_CONDITION, "Room doesn't exist."));
+                    }
                 }
                 else
                 {
-                    onClose(session, new CloseReason(CloseReason.CloseCodes.UNEXPECTED_CONDITION, "Room doesn't exist."));
+                    onClose(session, new CloseReason(CloseReason.CloseCodes.UNEXPECTED_CONDITION, "Problem with initial data configuration."));
                 }
             }
         }

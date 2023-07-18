@@ -2,6 +2,7 @@ package entities.player;
 
 import com.google.gson.JsonObject;
 import dto.MessageType;
+import dto.ServerGeneralMessage;
 import model.connection.ConnectionModel;
 import model.player.PlayerEntity;
 import utils.json.JsonFormatter;
@@ -26,36 +27,24 @@ public class WebPlayerEntity extends PlayerEntity
 
     public void HandleMessageReceived(String i_Text)
     {
-        JsonObject playerData = JsonFormatter.createJsonFromString(i_Text);
-        String messageType = playerData.get("messagetype").getAsString();
-
-        if(messageType.equals(MessageType.CONFIGURATION))
-        {
-            int characterId = playerData.get("characterid").getAsInt();
-            m_Username = playerData.get("username").getAsString().replace("\"", "");
-            m_Character = new Character(characterId, "None", 1, 0, 10, 50, 10, 3, 1, 0, 0);
-            this.MarkAsReady();
-
-            LoggerManager.info(m_Username + " is Ready.");
-        }
-        else
-        {
-            m_Connection.AddMessageToQueue(i_Text);
-        }
-
-        // Your logic for handling other messages
+        m_Connection.AddMessageToQueue(i_Text);
         System.out.println("Received message: " + i_Text);
     }
 
-
-
-    public void sendMessageToHost(String i_Message){ //RAN
-
+    public void sendMessageToHost(String i_Message)
+    {
         try {
-            HostEntity hostEntity = (HostEntity)this.m_CurrentMatch.GetHost();
+            PlayerEntity hostEntity = this.m_CurrentMatch.GetHost();
             hostEntity.SendMessage(i_Message);
         } catch (SocketTimeoutException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void SetInitData(JsonObject i_PlayerData)
+    {
+        int characterId = i_PlayerData.get("characterid").getAsInt();
+        m_Username = i_PlayerData.get("username").getAsString().replace("\"", "");
+        m_Character = new Character(characterId, "None", 1, 0, 10, 50, 10, 3, 1, 0, 0);
     }
 }

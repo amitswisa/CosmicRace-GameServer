@@ -31,7 +31,8 @@ public class OfflineMatchService extends MatchService
     }
 
     @Override
-    public void removeWaitingToQuitPlayers() throws Exception {
+    public void removeWaitingToQuitPlayers() throws Exception
+    {
         // TODO
     }
 
@@ -42,11 +43,11 @@ public class OfflineMatchService extends MatchService
         LoggerManager.warning(i_MatchEndedReason);
     }
 
-    private void SendMessageToHost(String i_Message)
+    synchronized private void SendMessageToHost(String i_Message)
     {
         try {
             this.r_MatchHost.SendMessage(i_Message);
-            LoggerManager.info("Match Room (" + super.m_MatchIdentifier + "): Room created!");
+            LoggerManager.info("Match Room (" + super.m_MatchIdentifier + "): " + i_Message);
         } catch(SocketTimeoutException ste) {
             EndMatch(ste.getMessage());
         }
@@ -55,17 +56,11 @@ public class OfflineMatchService extends MatchService
     @Override
     public void SendPlayerCommand(PlayerCommand i_PlayerCommand)
     {
-        try {
-            String command = JsonFormatter.GetGson().toJson(i_PlayerCommand, PlayerCommand.class);
-            this.r_MatchHost.SendMessage(command);
-        } catch(SocketTimeoutException ste) {
-            EndMatch(GlobalSettings.MATCH_TERMINATED);
-        }
-
-        LoggerManager.trace(i_PlayerCommand.toString());
+        String command = JsonFormatter.GetGson().toJson(i_PlayerCommand, PlayerCommand.class);
+        SendMessageToHost(command);
     }
 
-    public void AddPlayer(WebPlayerEntity i_NewWebPlayer, String sessionid)
+    synchronized public void AddPlayer(WebPlayerEntity i_NewWebPlayer, String sessionid)
     {
         this.m_MatchPlayerEntities.add(i_NewWebPlayer);
         i_NewWebPlayer.SetMatch(this);

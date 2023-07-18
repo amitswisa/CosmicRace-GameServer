@@ -187,4 +187,9 @@ public class PCConnection extends ConnectionModel {
     {
         return this.m_IsHost;
     }
+
+    @Override
+    public void AddMessageToQueue(String i_Message) {
+        // Empty
+    }
 }

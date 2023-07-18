@@ -15,7 +15,8 @@ public final class ServerGeneralMessage {
         COMPLETE_MATCH,
         MATCH_ENDED,
         ROOM_CREATED,
-        PLAYER_JOINED
+        PLAYER_JOINED,
+        PLAYER_READY
     }
 
     private eActionType m_ActionType;
