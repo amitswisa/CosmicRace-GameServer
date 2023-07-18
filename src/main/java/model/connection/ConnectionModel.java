@@ -2,16 +2,15 @@ package model.connection;
 
 import utils.GlobalSettings;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 
-public abstract class Connection
+public abstract class ConnectionModel
 {
     protected boolean m_IsConnected;
     private long m_LastConnectionTime;
 
-    public Connection()
+    public ConnectionModel()
     {
         this.m_IsConnected = true;
         this.UpdateLastConnectionTime();

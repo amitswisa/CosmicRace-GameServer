@@ -1,6 +1,6 @@
 package utils.match;
 
-import model.player.MatchPlayerEntity;
+import model.player.PlayerEntity;
 import utils.GlobalSettings;
 
 import java.util.ArrayList;
@@ -10,10 +10,10 @@ public final class MatchScoreManager {
 
     private class PlayerScore
     {
-        private final MatchPlayerEntity m_Match_PlayerEntity;
+        private final PlayerEntity m_Match_PlayerEntity;
         private final int m_MatchScorePosition;
 
-        public PlayerScore(MatchPlayerEntity i_Match_PlayerEntity, int i_MatchScorePosition)
+        public PlayerScore(PlayerEntity i_Match_PlayerEntity, int i_MatchScorePosition)
         {
             this.m_Match_PlayerEntity = i_Match_PlayerEntity;
             this.m_MatchScorePosition = i_MatchScorePosition;
@@ -34,7 +34,7 @@ public final class MatchScoreManager {
         m_BoardPosition = 1;
     }
 
-    public int SetPlayerScore(MatchPlayerEntity i_Match_PlayerEntity) throws  IllegalArgumentException
+    public int SetPlayerScore(PlayerEntity i_Match_PlayerEntity) throws  IllegalArgumentException
     {
         if(m_ScoreBoard.contains(i_Match_PlayerEntity))
             throw new IllegalArgumentException("Player already exists in score list");

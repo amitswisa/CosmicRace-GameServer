@@ -2,33 +2,35 @@ package servers;
 
 import jakarta.websocket.*;
 import jakarta.websocket.server.ServerEndpoint;
-import entities.player.MatchWebPlayerEntity;
+import entities.player.WebPlayerEntity;
 import entities.connection.WebConnection;
+import model.player.PlayerEntity;
 import utils.loggers.LoggerManager;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ServerEndpoint("/")
-public class WebSocketServer extends Thread {
+public class WebSocketServer extends Thread
+{
+
     private static final int PORT = 8081;
-    private static final Map<String, MatchWebPlayerEntity> s_WebSocketsPlayerMap = new ConcurrentHashMap<>();
+    private static final Map<String, PlayerEntity> s_WebSocketsPlayerMap = new ConcurrentHashMap<>();
 
     @OnOpen
-    public void onOpen(Session session) {
+    public void onOpen(Session session)
+    {
         // Handle WebSocket connection open event
         System.out.println("WebSocket connection opened: " + session.getId());
 
-        // Create a new instance of MyWebSocket and add it to the collection
-        MatchWebPlayerEntity webPlayer = new MatchWebPlayerEntity(new WebConnection(session));
+        PlayerEntity webPlayer = new WebPlayerEntity(new WebConnection(session));
         s_WebSocketsPlayerMap.put(session.getId(), webPlayer);
     }
 
     @OnMessage
-    public void onMessage(String message, Session session) {
-        // Delegate message handling to the MyWebSocket instance associated with this session
-        MatchWebPlayerEntity webPlayer = getWebPlayerEntity(session);
+    public void onMessage(String message, Session session)
+    {
+        WebPlayerEntity webPlayer = (WebPlayerEntity) getPlayerEntity(session); // Down casting to original object entity.
 
         if (webPlayer != null)
         {
@@ -37,9 +39,10 @@ public class WebSocketServer extends Thread {
     }
 
     @OnClose
-    public void onClose(Session session, CloseReason reason) {
+    public void onClose(Session session, CloseReason reason)
+    {
         // Handle WebSocket connection close event
-        MatchWebPlayerEntity webPlayer = getWebPlayerEntity(session);
+        PlayerEntity webPlayer = getPlayerEntity(session);
 
         if(webPlayer != null)
         {
@@ -50,13 +53,15 @@ public class WebSocketServer extends Thread {
     }
 
     @OnError
-    public void onError(Session session, Throwable throwable) {
+    public void onError(Session session, Throwable throwable)
+    {
         // Handle WebSocket error event
         onClose(session, new CloseReason(CloseReason.CloseCodes.UNEXPECTED_CONDITION, throwable.getMessage()));
     }
 
     @Override
-    public void run() {
+    public void run()
+    {
         Map<String, Object> map = new HashMap<>();
 
         org.glassfish.tyrus.server.Server server = new
@@ -76,7 +81,8 @@ public class WebSocketServer extends Thread {
         }
     }
 
-    private MatchWebPlayerEntity getWebPlayerEntity(Session session) {
+    private PlayerEntity getPlayerEntity(Session session)
+    {
         return s_WebSocketsPlayerMap.get(session.getId());
     }
 

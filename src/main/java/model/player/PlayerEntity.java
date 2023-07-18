@@ -1,18 +1,17 @@
 package model.player;
 
 import com.google.gson.JsonObject;
-import model.connection.Connection;
+import model.connection.ConnectionModel;
 import services.MatchService;
-import services.OnlineMatchService;
 import utils.player.Character;
 import utils.player.Location;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 
-public abstract class MatchPlayerEntity
+public abstract class PlayerEntity
 {
-    protected final Connection m_Connection;
+    protected final ConnectionModel m_Connection;
     protected MatchService m_CurrentMatch;
     protected boolean m_IsReady;
     protected String m_Username;
@@ -21,7 +20,7 @@ public abstract class MatchPlayerEntity
     protected Location m_Location;
     protected Character m_Character;
 
-    public MatchPlayerEntity(Connection i_Connection)
+    public PlayerEntity(ConnectionModel i_Connection)
     {
         this.m_Connection = i_Connection;
         this.m_IsReady = false;

@@ -1,11 +1,11 @@
 package entities.player;
 
-import model.player.MatchPlayerEntity;
-import model.connection.Connection;
+import model.player.PlayerEntity;
+import model.connection.ConnectionModel;
 
-public class MatchWebPlayerEntity extends MatchPlayerEntity {
+public class WebPlayerEntity extends PlayerEntity {
 
-    public MatchWebPlayerEntity(Connection i_Connection) {
+    public WebPlayerEntity(ConnectionModel i_Connection) {
 
         super(i_Connection);
     }

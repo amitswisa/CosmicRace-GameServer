@@ -2,8 +2,8 @@ package entities.player;
 
 import com.google.gson.JsonObject;
 import dto.ServerGeneralMessage;
-import model.player.MatchPlayerEntity;
-import model.connection.Connection;
+import model.player.PlayerEntity;
+import model.connection.ConnectionModel;
 import utils.player.Character;
 import utils.json.JsonFormatter;
 import okhttp3.*;
@@ -16,13 +16,12 @@ import java.io.*;
 import java.net.SocketTimeoutException;
 import java.util.Objects;
 
-public class MatchPCPlayerEntity extends MatchPlayerEntity implements Comparable<MatchPCPlayerEntity>
+public class PCPlayerEntity extends PlayerEntity implements Comparable<PCPlayerEntity>
 {
 
-    public MatchPCPlayerEntity(Connection i_SocketConnection) throws IOException
+    public PCPlayerEntity(ConnectionModel i_SocketConnection) throws IOException
     {
         super(i_SocketConnection);
-
 
         String initData = this.m_Connection.WaitForPlayerResponse();
         LoggerManager.debug("Received data from socket " + this.m_Connection.getHost());
@@ -91,7 +90,7 @@ public class MatchPCPlayerEntity extends MatchPlayerEntity implements Comparable
     {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        MatchPCPlayerEntity matchPCPlayerEntity = (MatchPCPlayerEntity) o;
+        PCPlayerEntity matchPCPlayerEntity = (PCPlayerEntity) o;
         return m_Username.equals(matchPCPlayerEntity.m_Username);
     }
 
@@ -102,7 +101,7 @@ public class MatchPCPlayerEntity extends MatchPlayerEntity implements Comparable
     }
 
     @Override
-    public int compareTo(@NotNull MatchPCPlayerEntity o) {
+    public int compareTo(@NotNull PCPlayerEntity o) {
         return 0;
     }
 }

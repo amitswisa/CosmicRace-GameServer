@@ -2,18 +2,15 @@ package services;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import dto.MessageType;
 import dto.PlayerCommand;
 import dto.ServerGeneralMessage;
-import exceptions.MatchTerminationException;
 import exceptions.PlayerConnectionException;
-import model.player.MatchPlayerEntity;
+import model.player.PlayerEntity;
 import utils.GlobalSettings;
 import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
 import utils.loggers.MatchLogger;
 import utils.match.MatchScoreManager;
-import utils.player.Location;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -26,13 +23,13 @@ import static dto.PlayerAction.*;
 public abstract class MatchService extends Thread
 {
     protected final String m_MatchIdentifier;
-    protected final List<MatchPlayerEntity> m_MatchPlayerEntities;
-    protected final List<MatchPlayerEntity> m_MatchQuitedMatchPlayerEntities;
-    protected final List<MatchPlayerEntity> m_WaitingToQuit;
+    protected final List<PlayerEntity> m_MatchPlayerEntities;
+    protected final List<PlayerEntity> m_MatchQuitedMatchPlayerEntities;
+    protected final List<PlayerEntity> m_WaitingToQuit;
     protected MatchScoreManager m_MatchScore;
     protected boolean m_IsGameOver;
 
-    protected MatchService(String i_MatchIdentifier, List<MatchPlayerEntity> i_MatchPlayersList)
+    protected MatchService(String i_MatchIdentifier, List<PlayerEntity> i_MatchPlayersList)
     {
         this.m_MatchIdentifier = i_MatchIdentifier;
         this.m_MatchPlayerEntities = i_MatchPlayersList;
@@ -65,9 +62,9 @@ public abstract class MatchService extends Thread
         return JsonFormatter.GetGson().toJson(mainObject);
     }
 
-    protected MatchPlayerEntity findPlayerInList(String i_PlayerUsername)
+    protected PlayerEntity findPlayerInList(String i_PlayerUsername)
     {
-        Optional<MatchPlayerEntity> playerOptional = this.m_MatchPlayerEntities.stream()
+        Optional<PlayerEntity> playerOptional = this.m_MatchPlayerEntities.stream()
                 .filter(p -> p.EqualByUsername(i_PlayerUsername))
                 .findFirst();
 
@@ -76,7 +73,7 @@ public abstract class MatchService extends Thread
 
     protected void updateCoinsOfPlayer(String i_PlayerUsername)
     {
-        MatchPlayerEntity matchPlayer = findPlayerInList(i_PlayerUsername);
+        PlayerEntity matchPlayer = findPlayerInList(i_PlayerUsername);
 
         if(matchPlayer != null)
         {
@@ -85,7 +82,7 @@ public abstract class MatchService extends Thread
         }
     }
 
-    protected void handlePlayerResponse(MatchPlayerEntity i_Match_PlayerEntity, PlayerCommand i_PlayerCommand) throws PlayerConnectionException {
+    protected void handlePlayerResponse(PlayerEntity i_Match_PlayerEntity, PlayerCommand i_PlayerCommand) throws PlayerConnectionException {
 
         switch (i_PlayerCommand.GetAction())
         {
@@ -150,9 +147,9 @@ public abstract class MatchService extends Thread
         MatchLogger.Info(GetMatchIdentifier(), "Starting game.");
     }
 
-    protected void actionOnMatchPlayers(Consumer<MatchPlayerEntity> processor) {
+    protected void actionOnMatchPlayers(Consumer<PlayerEntity> processor) {
 
-        for (MatchPlayerEntity matchEntity : m_MatchPlayerEntities) {
+        for (PlayerEntity matchEntity : m_MatchPlayerEntities) {
             if (matchEntity.IsConnectionAlive()) {
                 try {
                     processor.accept(matchEntity);
@@ -227,7 +224,7 @@ public abstract class MatchService extends Thread
 
     protected boolean isActivePlayersFinished()
     {
-        for(MatchPlayerEntity matchPlayer : m_MatchPlayerEntities)
+        for(PlayerEntity matchPlayer : m_MatchPlayerEntities)
         {
             if(!matchPlayer.IsFinishedMatch())
                 return false;
@@ -241,7 +238,7 @@ public abstract class MatchService extends Thread
         return this.m_MatchPlayerEntities.size();
     }
 
-    public synchronized void RemovePlayerFromMatch(MatchPlayerEntity i_MatchPlayer)
+    public synchronized void RemovePlayerFromMatch(PlayerEntity i_MatchPlayer)
     {
         this.m_WaitingToQuit.add(i_MatchPlayer);
     }

@@ -1,7 +1,7 @@
 package match;
 
-import entities.player.MatchHostEntity;
-import model.player.MatchPlayerEntity;
+import entities.player.HostEntity;
+import model.player.PlayerEntity;
 import services.OfflineMatchService;
 
 import java.util.*;
@@ -31,10 +31,10 @@ public final class OfflineMatchManager
         return String.valueOf(identifier);
     }
 
-    public static void CreateNewMatchRoom(MatchHostEntity i_HostEntity)
+    public static void CreateNewMatchRoom(HostEntity i_HostEntity)
     {
         String matchRoomIdentifier = generateMatchIdentifier();
-        List<MatchPlayerEntity> playersList = new ArrayList<>();
+        List<PlayerEntity> playersList = new ArrayList<>();
         playersList.add(i_HostEntity);
 
         OfflineMatchService matchService = new OfflineMatchService(i_HostEntity, playersList, matchRoomIdentifier); // Creation of match room.

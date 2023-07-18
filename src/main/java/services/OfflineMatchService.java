@@ -2,8 +2,8 @@ package services;
 
 import dto.PlayerCommand;
 import dto.ServerGeneralMessage;
-import entities.player.MatchHostEntity;
-import model.player.MatchPlayerEntity;
+import entities.player.HostEntity;
+import model.player.PlayerEntity;
 import utils.GlobalSettings;
 import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
@@ -13,9 +13,9 @@ import java.util.List;
 
 public class OfflineMatchService extends MatchService
 {
-    private final MatchHostEntity r_MatchHost;
+    private final HostEntity r_MatchHost;
 
-    public OfflineMatchService(MatchHostEntity i_HostEntity, List<MatchPlayerEntity> i_MatchPlayersList, String i_MatchIdentifier)
+    public OfflineMatchService(HostEntity i_HostEntity, List<PlayerEntity> i_MatchPlayersList, String i_MatchIdentifier)
     {
         super(i_MatchIdentifier, i_MatchPlayersList);
         this.r_MatchHost = i_HostEntity;

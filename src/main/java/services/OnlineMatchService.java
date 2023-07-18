@@ -7,7 +7,7 @@ import dto.ServerGeneralMessage;
 import exceptions.MatchTerminationException;
 import exceptions.PlayerConnectionException;
 import match.MatchMaking;
-import model.player.MatchPlayerEntity;
+import model.player.PlayerEntity;
 import utils.GlobalSettings;
 import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
@@ -21,7 +21,7 @@ import static dto.PlayerAction.RIVAL_QUIT;
 
 public final class OnlineMatchService extends MatchService {
 
-    public OnlineMatchService(String i_MatchIdentifier, List<MatchPlayerEntity> i_MatchPlayersList)
+    public OnlineMatchService(String i_MatchIdentifier, List<PlayerEntity> i_MatchPlayersList)
     {
         super(i_MatchIdentifier, i_MatchPlayersList);
 
@@ -45,7 +45,7 @@ public final class OnlineMatchService extends MatchService {
 
             while (!isMatchOver())
             {
-                for(MatchPlayerEntity matchPlayer : m_MatchPlayerEntities)
+                for(PlayerEntity matchPlayer : m_MatchPlayerEntities)
                 {
                     try {
                         String playerUpdate = matchPlayer.ReadMessage();

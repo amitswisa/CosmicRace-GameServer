@@ -1,8 +1,8 @@
 package match;
 
-import model.player.MatchPlayerEntity;
+import model.player.PlayerEntity;
 import services.OnlineMatchService;
-import entities.player.MatchPCPlayerEntity;
+import entities.player.PCPlayerEntity;
 import dto.ServerGeneralMessage;
 import utils.loggers.LoggerManager;
 import utils.GlobalSettings;
@@ -14,23 +14,23 @@ public final class MatchMaking
 
     private static final Object incOrDecLock = new Object();
     private static volatile int s_UsersWaiting = 0;
-    private static volatile Queue<MatchPlayerEntity> s_PlayersQueue = new PriorityQueue<>();
+    private static volatile Queue<PlayerEntity> s_PlayersQueue = new PriorityQueue<>();
     private static volatile Map<String, OnlineMatchService> s_ActiveMatches = new HashMap<>();
 
-    public static synchronized void AddPlayerToWaitingList(MatchPCPlayerEntity i_NewPlayerEntity)
+    public static synchronized void AddPlayerToWaitingList(PCPlayerEntity i_NewPlayerEntity)
     {
         addPlayerToQueue(i_NewPlayerEntity);
 
         // There are enough users to create a match.
         while (s_UsersWaiting >= GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS) {
 
-            List<MatchPlayerEntity> matchPlayersList = new ArrayList<>(GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS);
+            List<PlayerEntity> matchPlayersList = new ArrayList<>(GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS);
             LoggerManager.info("Match Making log: Looking for players...");
 
             while(matchPlayersList.size() < GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS
                     && s_UsersWaiting >= GlobalSettings.MAXIMUM_AMOUNT_OF_PLAYERS - matchPlayersList.size()) {
 
-                MatchPlayerEntity matchPlayer = s_PlayersQueue.poll();
+                PlayerEntity matchPlayer = s_PlayersQueue.poll();
                 DecreaseUserWaiting();
 
                 if (matchPlayer != null && matchPlayer.IsConnectionAlive())
@@ -65,7 +65,7 @@ public final class MatchMaking
     }
 
     // Only one sync function call it - no need to sync.
-    private static void addPlayerToQueue(MatchPlayerEntity i_Match_PlayerEntity)
+    private static void addPlayerToQueue(PlayerEntity i_Match_PlayerEntity)
     {
         try {
             s_PlayersQueue.add(i_Match_PlayerEntity);
@@ -79,7 +79,7 @@ public final class MatchMaking
         }
     }
 
-    public static void RemovePlayerFromQueue(MatchPlayerEntity i_Match_PlayerEntity)
+    public static void RemovePlayerFromQueue(PlayerEntity i_Match_PlayerEntity)
     {
         if(s_PlayersQueue.contains(i_Match_PlayerEntity))
         {

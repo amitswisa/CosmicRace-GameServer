@@ -2,7 +2,7 @@ package entities.connection;
 
 import com.google.gson.JsonObject;
 import dto.ServerGeneralMessage;
-import model.connection.Connection;
+import model.connection.ConnectionModel;
 import utils.GlobalSettings;
 import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
@@ -13,7 +13,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
-public class PCConnection extends Connection {
+public class PCConnection extends ConnectionModel {
 
     private final Socket m_SocketConnection;
     private PrintWriter m_OutStream;
