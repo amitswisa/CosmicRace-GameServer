@@ -2,8 +2,10 @@ package services;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import dto.MessageType;
 import dto.PlayerCommand;
 import dto.ServerGeneralMessage;
+import exceptions.MatchTerminationException;
 import exceptions.PlayerConnectionException;
 import model.player.PlayerEntity;
 import utils.GlobalSettings;
@@ -11,6 +13,7 @@ import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
 import utils.loggers.MatchLogger;
 import utils.match.MatchScoreManager;
+import utils.player.Location;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -29,6 +32,8 @@ public abstract class MatchService extends Thread
     protected MatchScoreManager m_MatchScore;
     protected boolean m_IsGameOver;
 
+    protected boolean m_IsGameStarted;
+
     protected MatchService(String i_MatchIdentifier, List<PlayerEntity> i_MatchPlayersList)
     {
         this.m_MatchIdentifier = i_MatchIdentifier;
@@ -37,11 +42,11 @@ public abstract class MatchService extends Thread
         this.m_MatchQuitedMatchPlayerEntities = new ArrayList<>();
         this.m_WaitingToQuit = new ArrayList<>();
         this.m_IsGameOver = false;
+        this.m_IsGameStarted = false;
     }
 
     // Abstract methods.
     abstract public void run();
-    abstract public void removeWaitingToQuitPlayers() throws Exception;
     abstract public void SendPlayerCommand(PlayerCommand i_PlayerCommand);
     abstract public void EndMatch(String i_MatchEndedReason);
 
@@ -201,6 +206,33 @@ public abstract class MatchService extends Thread
         while (!isEveryoneReady.get());
     }
 
+    protected void removeWaitingToQuitPlayers() throws Exception
+    {
+
+        if(this.m_WaitingToQuit.size() > 0)
+        {
+            this.m_MatchPlayerEntities.removeAll(this.m_WaitingToQuit);
+            this.m_MatchQuitedMatchPlayerEntities.addAll(this.m_WaitingToQuit);
+
+            this.m_WaitingToQuit.forEach((quitedPlayer) -> {
+
+                this.SendPlayerCommand(new PlayerCommand(MessageType.COMMAND,
+                        quitedPlayer.GetUserName(), RIVAL_QUIT, new Location(0,0)));
+
+                MatchLogger.Debug(GetMatchIdentifier(), "Player " + quitedPlayer.GetUserName() + " disconnected.");
+            });
+
+            this.m_WaitingToQuit.clear();
+
+            if (!this.m_IsGameOver
+                    && this.m_MatchPlayerEntities.size() < GlobalSettings.MINIMUM_AMOUNT_OF_PLAYERS
+                    && this.m_IsGameStarted)
+            {
+                throw new MatchTerminationException(this.GetMatchIdentifier(), GlobalSettings.NOT_ENOUGH_PLAYERS_TO_CONTINUE);
+            }
+        }
+    }
+
     public void SendMessageToAll(String i_Message)
     {
         actionOnMatchPlayers(player -> {
@@ -234,6 +266,9 @@ public abstract class MatchService extends Thread
         return true;
     }
 
+    protected void setMatchStarted(){
+        this.m_IsGameStarted = true;
+    }
     protected int getNumOfPlayerInMatch()
     {
         return this.m_MatchPlayerEntities.size();

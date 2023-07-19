@@ -31,9 +31,27 @@ public class OfflineMatchService extends MatchService
     }
 
     @Override
-    public void removeWaitingToQuitPlayers() throws Exception
+    protected void actionOnMatchPlayers(Consumer<PlayerEntity> processor)
     {
-        // TODO
+        boolean isHost = true;
+
+        for (PlayerEntity matchEntity : m_MatchPlayerEntities)
+        {
+            if(isHost)
+            {
+                isHost = false;
+                continue;
+            }
+
+            if (matchEntity.IsConnectionAlive())
+            {
+                try {
+                    processor.accept(matchEntity);
+                } catch (Exception e) {
+                    LoggerManager.error("Player " + matchEntity.GetUserName() + " " + e.getMessage());
+                }
+            }
+        }
     }
 
     @Override
@@ -60,15 +78,15 @@ public class OfflineMatchService extends MatchService
         SendMessageToHost(command);
     }
 
-    synchronized public void AddPlayer(WebPlayerEntity i_NewWebPlayer, String sessionid)
+    synchronized public void AddPlayer(WebPlayerEntity i_NewWebPlayer)
     {
         this.m_MatchPlayerEntities.add(i_NewWebPlayer);
         i_NewWebPlayer.SetMatch(this);
 
         SendMessageToHost(new ServerGeneralMessage
-                (ServerGeneralMessage.eActionType.PLAYER_JOINED, "New player joined the room.").toString());
+                (ServerGeneralMessage.eActionType.PLAYER_JOINED, i_NewWebPlayer.GetUserName()).toString());
 
-        LoggerManager.info(sessionid + " has connected to room " + this.m_MatchIdentifier);
+        LoggerManager.info(i_NewWebPlayer.GetUserName() + " has connected to room " + this.m_MatchIdentifier);
     }
 
     @Override

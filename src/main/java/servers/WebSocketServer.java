@@ -12,7 +12,6 @@ import model.player.PlayerEntity;
 import services.OfflineMatchService;
 import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
-import utils.player.Character;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -57,7 +56,7 @@ public class WebSocketServer extends Thread
                     if (matchService != null)
                     {
                         webPlayer.SetInitData(playerData);
-                        matchService.AddPlayer(webPlayer, session.getId());
+                        matchService.AddPlayer(webPlayer);
                         webPlayer.MarkAsReady();
                         webPlayer.sendMessageToHost(new ServerGeneralMessage(ServerGeneralMessage.eActionType.PLAYER_READY, webPlayer.GetUserName()).toString());
                         LoggerManager.info(webPlayer.GetUserName() + " is Ready.");

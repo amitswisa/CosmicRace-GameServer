@@ -1,11 +1,9 @@
 package entities.player;
 
 import com.google.gson.JsonObject;
-import dto.MessageType;
 import dto.ServerGeneralMessage;
 import model.connection.ConnectionModel;
 import model.player.PlayerEntity;
-import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
 import utils.player.Character;
 
@@ -22,13 +20,25 @@ public class WebPlayerEntity extends PlayerEntity
     @Override
     public void CloseConnection(String i_ExceptionMessage)
     {
+        if(this.m_CurrentMatch != null)
+            this.m_CurrentMatch.RemovePlayerFromMatch(this);
+
+        // Notify player on connection close.
+        if(this.m_CurrentMatch.IsGameOver()) {
+            try {
+                this.SendMessage(new ServerGeneralMessage(ServerGeneralMessage.eActionType.NOTIFICATION, i_ExceptionMessage).toString());
+            } catch (SocketTimeoutException ste) {
+                LoggerManager.warning("Couldn't notify player " + this.m_Username + " on " + i_ExceptionMessage);
+            }
+        }
+
         this.m_Connection.CloseConnection(i_ExceptionMessage);
+
     }
 
     public void HandleMessageReceived(String i_Text)
     {
         m_Connection.AddMessageToQueue(i_Text);
-        System.out.println("Received message: " + i_Text);
     }
 
     public void sendMessageToHost(String i_Message)

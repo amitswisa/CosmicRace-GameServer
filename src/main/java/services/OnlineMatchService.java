@@ -37,7 +37,7 @@ public final class OnlineMatchService extends MatchService {
 
     @Override
     public void run() {
-
+        setMatchStarted();
         PlayerCommand playerCommand = new PlayerCommand();
 
         try
@@ -78,32 +78,6 @@ public final class OnlineMatchService extends MatchService {
         }
     }
 
-    @Override
-    public void removeWaitingToQuitPlayers() throws Exception
-    {
-
-        if(this.m_WaitingToQuit.size() > 0)
-        {
-            this.m_MatchPlayerEntities.removeAll(this.m_WaitingToQuit);
-            this.m_MatchQuitedMatchPlayerEntities.addAll(this.m_WaitingToQuit);
-
-            this.m_WaitingToQuit.forEach((quitedPlayer) -> {
-
-                this.SendPlayerCommand(new PlayerCommand(MessageType.COMMAND,
-                        quitedPlayer.GetUserName(), RIVAL_QUIT, new Location(0,0)));
-
-                MatchLogger.Debug(GetMatchIdentifier(), "Player " + quitedPlayer.GetUserName() + " disconnected.");
-            });
-
-            this.m_WaitingToQuit.clear();
-
-            if (!this.m_IsGameOver
-                    && this.m_MatchPlayerEntities.size() < GlobalSettings.MINIMUM_AMOUNT_OF_PLAYERS)
-            {
-                throw new MatchTerminationException(this.GetMatchIdentifier(), GlobalSettings.NOT_ENOUGH_PLAYERS_TO_CONTINUE);
-            }
-        }
-    }
 
     @Override
     public void SendPlayerCommand(PlayerCommand i_PlayerCommand)
