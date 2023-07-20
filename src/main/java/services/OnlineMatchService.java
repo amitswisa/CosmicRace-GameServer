@@ -1,11 +1,9 @@
 package services;
 
 import com.google.gson.JsonSyntaxException;
-import dto.MessageType;
 import dto.PlayerCommand;
 import dto.ServerGeneralMessage;
 import entities.player.HostEntity;
-import exceptions.MatchTerminationException;
 import exceptions.PlayerConnectionException;
 import match.MatchMaking;
 import model.player.PlayerEntity;
@@ -13,12 +11,10 @@ import utils.GlobalSettings;
 import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
 import utils.loggers.MatchLogger;
-import utils.player.Location;
 
 import java.net.SocketTimeoutException;
 import java.util.List;
-
-import static dto.PlayerAction.RIVAL_QUIT;
+import java.util.function.Consumer;
 
 public final class OnlineMatchService extends MatchService {
 
@@ -33,6 +29,20 @@ public final class OnlineMatchService extends MatchService {
 
         SendMessageToAll(new ServerGeneralMessage(ServerGeneralMessage.eActionType.DATA, getMatchPlayersAsJson()).toString());
         MatchLogger.Debug(GetMatchIdentifier(), "Players initial data sent!");
+    }
+
+    @Override
+    protected void initMatch() throws Exception
+    {
+
+        this.waitForPlayersToBeReady();
+        MatchLogger.Debug(GetMatchIdentifier(), "Players ready.");
+
+        this.SendMessageToAll(new ServerGeneralMessage(ServerGeneralMessage.eActionType.NOTIFICATION, "Starting match..").toString());
+        MatchLogger.Debug(GetMatchIdentifier(), "Start message sent.");
+
+        this.SendMessageToAll(new ServerGeneralMessage(ServerGeneralMessage.eActionType.ACTION, "START").toString());
+        MatchLogger.Info(GetMatchIdentifier(), "Starting game.");
     }
 
     @Override
@@ -75,6 +85,21 @@ public final class OnlineMatchService extends MatchService {
 
         } catch(Exception e){
             this.EndMatch(e.getMessage());
+        }
+    }
+
+    @Override
+    protected void actionOnMatchPlayers(Consumer<PlayerEntity> processor)
+    {
+
+        for (PlayerEntity matchEntity : m_MatchPlayerEntities) {
+            if (matchEntity.IsConnectionAlive()) {
+                try {
+                    processor.accept(matchEntity);
+                } catch (Exception e) {
+                    LoggerManager.error("Player " + matchEntity.GetUserName() + " " + e.getMessage());
+                }
+            }
         }
     }
 

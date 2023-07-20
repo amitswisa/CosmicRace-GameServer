@@ -43,6 +43,7 @@ public final class OfflineMatchManager
         if(!matchService.IsGameOver())
         {
             m_MatchMap.put(matchRoomIdentifier, matchService);
+            matchService.start();
         }
     }
 

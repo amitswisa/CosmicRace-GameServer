@@ -107,9 +107,8 @@ public class PCConnection extends ConnectionModel {
         if (!this.m_IsConnected)
             return false;
 
-        if(!ValidateConnectionNeeded()){
+        if(!ValidateConnectionNeeded())
            return true;
-        }
 
         try {
             ServerGeneralMessage heartbeat = new ServerGeneralMessage(ServerGeneralMessage.eActionType.CONFIRMATION, GlobalSettings.SERVER_HEARTBEAT_MESSAGE);

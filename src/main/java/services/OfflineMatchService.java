@@ -8,7 +8,9 @@ import model.player.PlayerEntity;
 import utils.GlobalSettings;
 import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
+import utils.loggers.MatchLogger;
 
+import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.function.Consumer;
@@ -21,14 +23,75 @@ public class OfflineMatchService extends MatchService
     {
         super(i_MatchIdentifier, i_MatchPlayersList);
         this.r_MatchHost = i_HostEntity;
-
         SendMessageToHost(new ServerGeneralMessage(ServerGeneralMessage.eActionType.ROOM_CREATED, i_MatchIdentifier).toString());
+    }
+
+    @Override
+    protected void initMatch() throws Exception
+    {
+        this.waitForPlayersToBeReady();
+        MatchLogger.Debug(GetMatchIdentifier(), "Players ready.");
+
+        SendMessageToHost(new ServerGeneralMessage(ServerGeneralMessage.eActionType.DATA, getMatchPlayersAsJson()).toString());
+
+        this.SendMessageToAll(new ServerGeneralMessage(ServerGeneralMessage.eActionType.NOTIFICATION, "Starting match..").toString());
+        MatchLogger.Debug(GetMatchIdentifier(), "Start message sent.");
     }
 
     @Override
     public void run()
     {
-        // TODO
+        try {
+            managePreGameStage();
+
+            initMatch();
+
+            setMatchStarted();
+
+
+            //......
+        } catch(Exception e) {
+            LoggerManager.info("Room " + this.m_MatchIdentifier + ": " + e.getMessage());
+        }
+    }
+
+    // while -> heartbeats for all players connected
+    // WebPlayer -> when sends message it goes into queue.
+    // read players queue and host buffer.
+
+    private void managePreGameStage() throws Exception {
+        boolean m_IsPreStageRunning = true;
+
+        while(m_IsPreStageRunning)
+        {
+            try {
+                String hostMessage = r_MatchHost.ReadMessage();
+
+                if(hostMessage != null && hostMessage.equals("START\n"))
+                {
+                    m_IsPreStageRunning = false;
+                }
+
+            } catch (IOException e) {
+                EndMatch(GlobalSettings.MATCH_TERMINATED);
+            }
+
+            actionOnMatchPlayers((playerEntity) -> {
+                try {
+                    String playerMessage = playerEntity.ReadMessage();
+
+                    if(playerMessage != null)
+                    {
+                        LoggerManager.info("Player " + playerEntity.GetUserName() + ": " + playerMessage);
+                    }
+
+                } catch (IOException e) {
+                    RemovePlayerFromMatch(playerEntity);
+                }
+            });
+
+            removeWaitingToQuitPlayers();
+        }
     }
 
     @Override

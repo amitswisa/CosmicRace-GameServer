@@ -140,32 +140,6 @@ public abstract class MatchService extends Thread
 
     }
 
-    // Implementation of shared  methods.
-    protected void initMatch() throws Exception {
-
-        this.waitForPlayersToBeReady();
-        MatchLogger.Debug(GetMatchIdentifier(), "Players ready.");
-
-        this.SendMessageToAll(new ServerGeneralMessage(ServerGeneralMessage.eActionType.NOTIFICATION, "Starting match..").toString());
-        MatchLogger.Debug(GetMatchIdentifier(), "Start message sent.");
-
-        this.SendMessageToAll(new ServerGeneralMessage(ServerGeneralMessage.eActionType.ACTION, "START").toString());
-        MatchLogger.Info(GetMatchIdentifier(), "Starting game.");
-    }
-
-    protected void actionOnMatchPlayers(Consumer<PlayerEntity> processor) {
-
-        for (PlayerEntity matchEntity : m_MatchPlayerEntities) {
-            if (matchEntity.IsConnectionAlive()) {
-                try {
-                    processor.accept(matchEntity);
-                } catch (Exception e) {
-                    LoggerManager.error("Player " + matchEntity.GetUserName() + " " + e.getMessage());
-                }
-            }
-        }
-    }
-
     protected void waitForPlayersToBeReady() throws Exception {
 
         this.SendMessageToAll(new ServerGeneralMessage(ServerGeneralMessage.eActionType.CONFIRMATION, GlobalSettings.PLAYER_READY_MESSAGE).toString());
@@ -283,10 +257,9 @@ public abstract class MatchService extends Thread
         return this.m_IsGameOver;
     }
 
+    abstract protected void initMatch() throws Exception;
 
-
-
-
+    abstract protected void actionOnMatchPlayers(Consumer<PlayerEntity> processor);
 
     abstract public PlayerEntity GetHost(); //RAN
 }

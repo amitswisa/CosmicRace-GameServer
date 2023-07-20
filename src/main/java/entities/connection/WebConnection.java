@@ -1,6 +1,7 @@
 package entities.connection;
 
 
+import dto.ServerGeneralMessage;
 import jakarta.websocket.CloseReason;
 import jakarta.websocket.Session;
 import model.connection.ConnectionModel;
@@ -35,9 +36,32 @@ public final class WebConnection extends ConnectionModel {
         }
     }
 
-    @Override //Moses said.
-    public boolean IsConnectionAlive() {
-        return this.m_IsConnected;
+    @Override
+    public boolean IsConnectionAlive()
+    {
+        if (!this.m_IsConnected)
+            return false;
+
+        if(!ValidateConnectionNeeded())
+            return true;
+
+        try {
+            ServerGeneralMessage heartbeat = new ServerGeneralMessage(ServerGeneralMessage.eActionType.CONFIRMATION, GlobalSettings.SERVER_HEARTBEAT_MESSAGE);
+            String heartbeatJson = heartbeat.toString() + "\n";
+
+            this.SendMessage(heartbeatJson);
+
+            this.UpdateLastConnectionTime();
+        } catch (Exception e) {
+
+            // Client timed out.
+            if(isTimedOut())
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override
@@ -46,6 +70,7 @@ public final class WebConnection extends ConnectionModel {
         if(m_MessagesQueue.isEmpty())
             return null;
 
+        UpdateLastConnectionTime();
         return m_MessagesQueue.poll();
     }
 
