@@ -1,5 +1,3 @@
-entities\player\MatchHostEntity.class
-model\player\MatchPlayerEntity.class
 utils\GlobalSettings.class
 utils\route\APIRoutes.class
 match\OfflineMatchManager.class
@@ -16,14 +14,12 @@ match\MatchMaking.class
 dto\PlayerAction.class
 servers\GameSocketServer.class
 services\OfflineMatchService.class
-entities\player\MatchPCPlayerEntity.class
 utils\player\Location.class
 servers\WebSocketServer.class
 utils\match\MatchScoreManager$PlayerScore.class
 dto\ServerGeneralMessage.class
 dto\ServerGeneralMessage$eActionType.class
 exceptions\MatchTerminationException.class
-model\connection\Connection.class
 utils\loggers\MatchLogger.class
 services\OnlineMatchService.class
 utils\ServerManager.class
@@ -31,4 +27,3 @@ factories\PlayerFactory.class
 entities\connection\PCConnection.class
 exceptions\PlayerConnectionException.class
 services\MatchService.class
-entities\player\MatchWebPlayerEntity.class
