@@ -13,6 +13,7 @@ import services.OfflineMatchService;
 import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
 
+import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,8 +35,7 @@ public class WebSocketServer extends Thread
     }
 
     @OnMessage
-    public void onMessage(String message, Session session)
-    {
+    public void onMessage(String message, Session session) throws SocketTimeoutException {
         WebPlayerEntity webPlayer = (WebPlayerEntity) getPlayerEntity(session); // Down casting to original object entity.
 
         if (webPlayer != null)
@@ -60,6 +60,7 @@ public class WebSocketServer extends Thread
                         webPlayer.MarkAsReady();
                         webPlayer.sendMessageToHost(new ServerGeneralMessage(ServerGeneralMessage.eActionType.PLAYER_READY, webPlayer.GetUserName()).toString());
                         LoggerManager.info(webPlayer.GetUserName() + " is Ready.");
+                        webPlayer.SendMessage("OK");
                     }
                     else
                     {

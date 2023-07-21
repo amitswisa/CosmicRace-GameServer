@@ -24,7 +24,8 @@ public class WebPlayerEntity extends PlayerEntity
             this.m_CurrentMatch.RemovePlayerFromMatch(this);
 
         // Notify player on connection close.
-        if(this.m_CurrentMatch.IsGameOver()) {
+        if(this.m_CurrentMatch != null
+                && this.m_CurrentMatch.IsGameOver()) {
             try {
                 this.SendMessage(new ServerGeneralMessage(ServerGeneralMessage.eActionType.NOTIFICATION, i_ExceptionMessage).toString());
             } catch (SocketTimeoutException ste) {
