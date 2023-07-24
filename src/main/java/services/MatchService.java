@@ -2,9 +2,11 @@ package services;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import dto.MessageType;
 import dto.PlayerCommand;
 import dto.ServerGeneralMessage;
+import entities.player.HostEntity;
 import exceptions.MatchTerminationException;
 import exceptions.PlayerConnectionException;
 import model.player.PlayerEntity;
@@ -243,9 +245,48 @@ public abstract class MatchService extends Thread
     protected void setMatchStarted(){
         this.m_IsGameStarted = true;
     }
+
     protected int getNumOfPlayerInMatch()
     {
         return this.m_MatchPlayerEntities.size();
+    }
+
+    protected void runGame() throws Exception
+    {
+        PlayerCommand playerCommand = new PlayerCommand();
+
+        while (!isMatchOver())
+        {
+            for(PlayerEntity matchPlayer : m_MatchPlayerEntities)
+            {
+                if(matchPlayer instanceof HostEntity)
+                    continue;
+
+                try {
+                    String playerUpdate = matchPlayer.ReadMessage();
+
+                    if(!playerUpdate.equals(GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER))
+                    {
+                        LoggerManager.info(playerUpdate);
+                        playerCommand.ParseFromJson(playerUpdate);
+                        this.handlePlayerResponse(matchPlayer, playerCommand);
+                    }
+                }
+                catch(PlayerConnectionException pqe)
+                {
+                    matchPlayer.CloseConnection(pqe.getMessage());
+                }
+                catch(JsonSyntaxException jse)
+                {
+                    MatchLogger.Error(this.GetMatchIdentifier()
+                            , "Player " + matchPlayer.GetUserName() + " command error: " + jse.getMessage());
+                }
+            }
+
+            this.removeWaitingToQuitPlayers();
+        }
+
+        this.EndMatch(GlobalSettings.MATCH_ENDED);
     }
 
     public synchronized void RemovePlayerFromMatch(PlayerEntity i_MatchPlayer)

@@ -29,13 +29,15 @@ public class OfflineMatchService extends MatchService
     @Override
     protected void initMatch() throws Exception
     {
-        this.waitForPlayersToBeReady();
-        MatchLogger.Debug(GetMatchIdentifier(), "Players ready.");
-
         SendMessageToHost(new ServerGeneralMessage(ServerGeneralMessage.eActionType.DATA, getMatchPlayersAsJson()).toString());
 
         this.SendMessageToAll(new ServerGeneralMessage(ServerGeneralMessage.eActionType.NOTIFICATION, "Starting match..").toString());
         MatchLogger.Debug(GetMatchIdentifier(), "Start message sent.");
+
+        this.SendMessageToHost(new ServerGeneralMessage(ServerGeneralMessage.eActionType.ACTION, "START").toString());
+        MatchLogger.Info(GetMatchIdentifier(), "Starting game.");
+
+        setMatchStarted();
     }
 
     @Override
@@ -46,12 +48,11 @@ public class OfflineMatchService extends MatchService
 
             initMatch();
 
-            setMatchStarted();
+            runGame();
 
-
-            //......
         } catch(Exception e) {
             LoggerManager.info("Room " + this.m_MatchIdentifier + ": " + e.getMessage());
+            EndMatch(e.getMessage());
         }
     }
 
@@ -59,7 +60,8 @@ public class OfflineMatchService extends MatchService
     // WebPlayer -> when sends message it goes into queue.
     // read players queue and host buffer.
 
-    private void managePreGameStage() throws Exception {
+    private void managePreGameStage() throws Exception
+    {
         boolean m_IsPreStageRunning = true;
 
         while(m_IsPreStageRunning)
@@ -97,13 +99,10 @@ public class OfflineMatchService extends MatchService
     @Override
     protected void actionOnMatchPlayers(Consumer<PlayerEntity> processor)
     {
-        boolean isHost = true;
-
         for (PlayerEntity matchEntity : m_MatchPlayerEntities)
         {
-            if(isHost)
+            if(matchEntity instanceof HostEntity)
             {
-                isHost = false;
                 continue;
             }
 

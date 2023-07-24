@@ -29,10 +29,9 @@ public final class WebConnection extends ConnectionModel {
     {
         try {
             r_Connection.getBasicRemote().sendText(i_Message);
+            this.UpdateLastConnectionTime();
         } catch (IOException e) {
-
-            //maybe should throw a SocketTimeoutException.
-            CloseConnection(e.getMessage());
+            throw new SocketTimeoutException(GlobalSettings.NO_CONNECTION);
         }
     }
 
@@ -67,11 +66,24 @@ public final class WebConnection extends ConnectionModel {
     @Override
     public String ReadMessage() throws IOException
     {
+        if(isTimedOut() || !IsConnectionAlive())
+            throw new SocketTimeoutException(GlobalSettings.TERMINATE_DUE_TO_TIME_OUT);
+
         if(m_MessagesQueue.isEmpty())
-            return null;
+            return GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER;
+
+        String message = m_MessagesQueue.poll();
 
         UpdateLastConnectionTime();
-        return m_MessagesQueue.poll();
+
+        if(message.equals(GlobalSettings.CLIENT_HEARTBEAT_RESPONSE))
+        {
+            return GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER;
+        }
+        else
+        {
+            return message;
+        }
     }
 
     @Override

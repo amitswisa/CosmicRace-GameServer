@@ -46,40 +46,12 @@ public final class OnlineMatchService extends MatchService {
     @Override
     public void run() {
         setMatchStarted();
-        PlayerCommand playerCommand = new PlayerCommand();
 
         try
         {
             this.initMatch();
 
-            while (!isMatchOver())
-            {
-                for(PlayerEntity matchPlayer : m_MatchPlayerEntities)
-                {
-                    try {
-                        String playerUpdate = matchPlayer.ReadMessage();
-
-                        if(!playerUpdate.equals(GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER)) {
-                            LoggerManager.info(playerUpdate);
-                            playerCommand.ParseFromJson(playerUpdate);
-                            this.handlePlayerResponse(matchPlayer, playerCommand);
-                        }
-                    }
-                    catch(PlayerConnectionException pqe)
-                    {
-                        matchPlayer.CloseConnection(pqe.getMessage());
-                    }
-                    catch(JsonSyntaxException jse)
-                    {
-                        MatchLogger.Error(this.GetMatchIdentifier()
-                                , "Player " + matchPlayer.GetUserName() + " command error: " + jse.getMessage());
-                    }
-                }
-
-                this.removeWaitingToQuitPlayers();
-            }
-
-            this.EndMatch(GlobalSettings.MATCH_ENDED);
+            this.runGame();
 
         } catch(Exception e){
             this.EndMatch(e.getMessage());
