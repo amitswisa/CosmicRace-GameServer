@@ -1,10 +1,8 @@
 package services;
 
-import com.google.gson.JsonSyntaxException;
 import dto.PlayerCommand;
 import dto.ServerGeneralMessage;
 import entities.player.HostEntity;
-import exceptions.PlayerConnectionException;
 import match.MatchMaking;
 import model.player.PlayerEntity;
 import utils.GlobalSettings;
