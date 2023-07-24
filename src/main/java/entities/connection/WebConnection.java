@@ -20,6 +20,7 @@ public final class WebConnection extends ConnectionModel {
 
     public WebConnection(Session i_Session)
     {
+        super();
         this.r_Connection = i_Session;
         m_MessagesQueue = new PriorityQueue<>();
     }

@@ -66,44 +66,32 @@ public class OfflineMatchService extends MatchService
 
         while(m_IsPreStageRunning)
         {
-            try {
-                String hostMessage = r_MatchHost.ReadMessage();
+            String hostMessage = r_MatchHost.ReadMessage();
 
-                if(hostMessage != null && hostMessage.equals("START\n"))
-                {
-                    m_IsPreStageRunning = false;
-                }
-
-            } catch (IOException e) {
-                EndMatch(GlobalSettings.MATCH_TERMINATED);
+            if(hostMessage != null && hostMessage.equals("START"))
+            {
+                m_IsPreStageRunning = false;
+                continue;
             }
-
-            actionOnMatchPlayers((playerEntity) -> {
-                try {
-                    String playerMessage = playerEntity.ReadMessage();
-
-                    if(playerMessage != null)
-                    {
-                        LoggerManager.info("Player " + playerEntity.GetUserName() + ": " + playerMessage);
-                    }
-
-                } catch (IOException e) {
-                    RemovePlayerFromMatch(playerEntity);
-                }
-            });
 
             removeWaitingToQuitPlayers();
         }
     }
 
     @Override
-    protected void actionOnMatchPlayers(Consumer<PlayerEntity> processor)
-    {
+    protected void actionOnMatchPlayers(Consumer<PlayerEntity> processor)  {
         for (PlayerEntity matchEntity : m_MatchPlayerEntities)
         {
             if(matchEntity instanceof HostEntity)
             {
-                continue;
+                if(!matchEntity.IsConnectionAlive())
+                {
+                    try {
+                        matchEntity.ReadMessage();
+                    } catch(Exception e) {
+                        RemovePlayerFromMatch(matchEntity);
+                    }
+                }
             }
 
             if (matchEntity.IsConnectionAlive())
@@ -112,6 +100,7 @@ public class OfflineMatchService extends MatchService
                     processor.accept(matchEntity);
                 } catch (Exception e) {
                     LoggerManager.error("Player " + matchEntity.GetUserName() + " " + e.getMessage());
+                    RemovePlayerFromMatch(matchEntity);
                 }
             }
         }
