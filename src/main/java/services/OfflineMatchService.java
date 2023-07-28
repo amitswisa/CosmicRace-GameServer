@@ -4,6 +4,8 @@ import dto.PlayerCommand;
 import dto.ServerGeneralMessage;
 import entities.player.HostEntity;
 import entities.player.WebPlayerEntity;
+import match.MatchMaking;
+import match.OfflineMatchManager;
 import model.player.PlayerEntity;
 import utils.GlobalSettings;
 import utils.json.JsonFormatter;
@@ -56,10 +58,6 @@ public class OfflineMatchService extends MatchService
         }
     }
 
-    // while -> heartbeats for all players connected
-    // WebPlayer -> when sends message it goes into queue.
-    // read players queue and host buffer.
-
     private void managePreGameStage() throws Exception
     {
         boolean m_IsPreStageRunning = true;
@@ -79,19 +77,13 @@ public class OfflineMatchService extends MatchService
     }
 
     @Override
-    protected void actionOnMatchPlayers(Consumer<PlayerEntity> processor)  {
+    protected void actionOnMatchPlayers(Consumer<PlayerEntity> processor)
+    {
         for (PlayerEntity matchEntity : m_MatchPlayerEntities)
         {
             if(matchEntity instanceof HostEntity)
             {
-                if(!matchEntity.IsConnectionAlive())
-                {
-                    try {
-                        matchEntity.ReadMessage();
-                    } catch(Exception e) {
-                        RemovePlayerFromMatch(matchEntity);
-                    }
-                }
+                continue;
             }
 
             if (matchEntity.IsConnectionAlive())
@@ -107,10 +99,45 @@ public class OfflineMatchService extends MatchService
     }
 
     @Override
-    public void EndMatch(String i_MatchEndedReason)
-    {
+    public void EndMatch(String i_MatchEndedReason) {
+
         this.m_IsGameOver = true;
-        LoggerManager.warning(i_MatchEndedReason);
+
+        if(!i_MatchEndedReason.equals(GlobalSettings.MATCH_ENDED))
+        {
+            MatchLogger.Error(GetMatchIdentifier(), i_MatchEndedReason);
+        }
+        else
+        {
+            MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
+        }
+
+        // TODO - update players coins and stats on database.
+        //  /30.4/UPDATE - only stats left.
+        //this.actionOnMatchPlayers(p -> DBHandler.updateStatsInDB(p.GetCharacter()));
+
+        ServerGeneralMessage finalMatchEndedMessage
+                = new ServerGeneralMessage(ServerGeneralMessage.eActionType.MATCH_TERMINATION, i_MatchEndedReason);
+
+        // Notify host.
+        try
+        {
+            this.r_MatchHost.SendMessage(finalMatchEndedMessage.toString());
+        } catch (SocketTimeoutException ste) {
+            MatchLogger.Info(this.m_MatchIdentifier,"Couldn't update host on match ending.");
+        }
+
+        this.actionOnMatchPlayers((player) -> {
+            try {
+                player.SendMessage(finalMatchEndedMessage.toString());
+            } catch (SocketTimeoutException e) {
+                MatchLogger.Warning(GetMatchIdentifier()
+                        , "Couldn't update player " + player.GetUserName() + " on match ending.");
+            }
+        });
+
+        OfflineMatchManager.RemoveActiveMatch(this.m_MatchIdentifier);
+        this.interrupt();
     }
 
     synchronized private void SendMessageToHost(String i_Message)
@@ -119,6 +146,7 @@ public class OfflineMatchService extends MatchService
             this.r_MatchHost.SendMessage(i_Message);
             LoggerManager.info("Match Room (" + super.m_MatchIdentifier + "): " + i_Message);
         } catch(SocketTimeoutException ste) {
+            LoggerManager.info("Match Room (" + super.m_MatchIdentifier + "): Couldn't notify host - ending match.");
             EndMatch(ste.getMessage());
         }
     }
@@ -142,7 +170,8 @@ public class OfflineMatchService extends MatchService
     }
 
     @Override
-    public HostEntity GetHost(){
+    public HostEntity GetHost()
+    {
         return this.r_MatchHost;
     }
 }

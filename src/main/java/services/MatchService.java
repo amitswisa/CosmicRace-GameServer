@@ -51,6 +51,9 @@ public abstract class MatchService extends Thread
     abstract public void run();
     abstract public void SendPlayerCommand(PlayerCommand i_PlayerCommand);
     abstract public void EndMatch(String i_MatchEndedReason);
+    abstract protected void initMatch() throws Exception;
+    abstract protected void actionOnMatchPlayers(Consumer<PlayerEntity> processor);
+    abstract public PlayerEntity GetHost();
 
     protected String getMatchPlayersAsJson()
     {
@@ -90,39 +93,30 @@ public abstract class MatchService extends Thread
         }
     }
 
-    protected void handlePlayerResponse(PlayerEntity i_Match_PlayerEntity, PlayerCommand i_PlayerCommand) throws PlayerConnectionException {
+    protected void handlePlayerResponse(PlayerEntity i_Match_PlayerEntity, PlayerCommand i_PlayerCommand) throws PlayerConnectionException
+    {
 
-        switch (i_PlayerCommand.GetAction())
-        {
-            case IDLE:
-            case RUN_RIGHT:
-            case RUN_LEFT:
-            case DEATH:
-            case UPDATE_LOCATION:
-            case JUMP: {
+        switch (i_PlayerCommand.GetAction()) {
+            case IDLE, RUN_RIGHT, RUN_LEFT, DEATH, UPDATE_LOCATION, JUMP -> {
                 i_Match_PlayerEntity.UpdateLocation(i_PlayerCommand.GetLocation());
                 this.SendPlayerCommand(i_PlayerCommand);
                 break;
             }
-            case COIN_COLLECT:
-            {
+            case COIN_COLLECT -> {
                 updateCoinsOfPlayer(i_PlayerCommand.GetUsername());
                 break;
             }
-            case COMPLETE_LEVEL: {
+            case COMPLETE_LEVEL -> {
 
-                try
-                {
+                try {
                     i_Match_PlayerEntity.MarkAsFinish();
                     int playerScorePosition = this.m_MatchScore.SetPlayerScore(i_Match_PlayerEntity);
 
                     // Send score position to player.
                     ServerGeneralMessage scorePositionAnnouncement
-                            = new ServerGeneralMessage(ServerGeneralMessage.eActionType.COMPLETE_MATCH, "Finished #"+playerScorePosition + " place!");
+                            = new ServerGeneralMessage(ServerGeneralMessage.eActionType.COMPLETE_MATCH, "Finished #" + playerScorePosition + " place!");
                     i_Match_PlayerEntity.SendMessage(scorePositionAnnouncement.toString());
-                }
-                catch(IllegalArgumentException iae)
-                {
+                } catch (IllegalArgumentException iae) {
                     LoggerManager.warning(i_Match_PlayerEntity.GetUserName() + " " + iae.getMessage());
                 } catch (SocketTimeoutException e) {
                     throw new PlayerConnectionException(GlobalSettings.CLIENT_CLOSED_CONNECTION);
@@ -130,19 +124,18 @@ public abstract class MatchService extends Thread
 
                 break;
             }
-            case QUIT:
-            {
+            case QUIT -> {
                 throw new PlayerConnectionException(GlobalSettings.CLIENT_CLOSED_CONNECTION);
             }
-            default:
-            {
+            default -> {
                 LoggerManager.warning("Player " + i_PlayerCommand.GetUsername() + " command not found");
             }
         }
 
     }
 
-    protected void waitForPlayersToBeReady() throws Exception {
+    protected void waitForPlayersToBeReady() throws Exception
+    {
 
         this.SendMessageToAll(new ServerGeneralMessage(ServerGeneralMessage.eActionType.CONFIRMATION, GlobalSettings.PLAYER_READY_MESSAGE).toString());
         MatchLogger.Debug(GetMatchIdentifier(), "Waiting for player to be ready...");
@@ -242,7 +235,8 @@ public abstract class MatchService extends Thread
         return true;
     }
 
-    protected void setMatchStarted(){
+    protected void setMatchStarted()
+    {
         this.m_IsGameStarted = true;
     }
 
@@ -259,9 +253,6 @@ public abstract class MatchService extends Thread
         {
             for(PlayerEntity matchPlayer : m_MatchPlayerEntities)
             {
-                if(matchPlayer instanceof HostEntity)
-                    continue;
-
                 try {
                     String playerUpdate = matchPlayer.ReadMessage();
 
@@ -274,7 +265,14 @@ public abstract class MatchService extends Thread
                 }
                 catch(PlayerConnectionException pqe)
                 {
-                    matchPlayer.CloseConnection(pqe.getMessage());
+                    if(matchPlayer instanceof HostEntity)
+                    {
+                        throw new SocketTimeoutException("Host closed the game session.");
+                    }
+                    else
+                    {
+                        matchPlayer.CloseConnection(pqe.getMessage());
+                    }
                 }
                 catch(JsonSyntaxException jse)
                 {
@@ -297,10 +295,4 @@ public abstract class MatchService extends Thread
     public boolean IsGameOver() {
         return this.m_IsGameOver;
     }
-
-    abstract protected void initMatch() throws Exception;
-
-    abstract protected void actionOnMatchPlayers(Consumer<PlayerEntity> processor);
-
-    abstract public PlayerEntity GetHost(); //RAN
 }

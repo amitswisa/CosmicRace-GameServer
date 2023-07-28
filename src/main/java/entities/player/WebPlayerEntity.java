@@ -30,6 +30,8 @@ public class WebPlayerEntity extends PlayerEntity
                 this.SendMessage(new ServerGeneralMessage(ServerGeneralMessage.eActionType.NOTIFICATION, i_ExceptionMessage).toString());
             } catch (SocketTimeoutException ste) {
                 LoggerManager.warning("Couldn't notify player " + this.m_Username + " on " + i_ExceptionMessage);
+            } catch(Exception e) {
+                LoggerManager.warning("Unknown exception: " + this.m_Username + " - " + e.getMessage());
             }
         }
 

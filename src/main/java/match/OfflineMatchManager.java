@@ -51,4 +51,9 @@ public final class OfflineMatchManager
     {
         return m_MatchMap.get(i_RoomIdentifier);
     }
+
+    synchronized public static void RemoveActiveMatch(String i_MatchIdentifier)
+    {
+        m_MatchMap.remove(i_MatchIdentifier);
+    }
 }
