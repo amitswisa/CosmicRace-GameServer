@@ -6,6 +6,7 @@ public class GlobalSettings {
     public static final Integer MAXIMUM_AMOUNT_OF_PLAYERS = 2;
     public static final Integer MINIMUM_AMOUNT_OF_PLAYERS = 2;
     public static final int MAX_TIME_OUT = 10000; // 10 Seconds
+    public static final long ATTACK_COOLDOWN = 5000; // 5 Seconds
 
     // API Routes
     public static final String FETCH_CHARACTER_ROUTE = "";

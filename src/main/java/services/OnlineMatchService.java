@@ -36,6 +36,8 @@ public final class OnlineMatchService extends MatchService {
         this.waitForPlayersToBeReady();
         MatchLogger.Debug(GetMatchIdentifier(), "Players ready.");
 
+        SetAllPlayerAlive();
+
         this.SendMessageToAll(new ServerGeneralMessage(ServerGeneralMessage.eActionType.NOTIFICATION, "Starting match..").toString());
         MatchLogger.Debug(GetMatchIdentifier(), "Start message sent.");
 
@@ -72,7 +74,6 @@ public final class OnlineMatchService extends MatchService {
             }
         }
     }
-
 
     @Override
     public void SendPlayerCommand(PlayerCommand i_PlayerCommand)

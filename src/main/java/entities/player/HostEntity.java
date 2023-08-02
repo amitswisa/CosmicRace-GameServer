@@ -13,7 +13,7 @@ public final class HostEntity extends PlayerEntity
 
     @Override
     public void CloseConnection(String i_ExceptionMessage) {
-        return;
+        return; //TODO
     }
 
 }

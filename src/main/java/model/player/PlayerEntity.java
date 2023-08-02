@@ -19,6 +19,8 @@ public abstract class PlayerEntity
     protected boolean m_IsFinished;
     protected Location m_Location;
     protected Character m_Character;
+    private boolean m_IsDead;
+    private long m_LastAttackTime;
 
     public PlayerEntity(ConnectionModel i_Connection)
     {
@@ -27,6 +29,8 @@ public abstract class PlayerEntity
         this.m_IsFinished = false;
         this.m_CoinsCollected = 0;
         this.m_CurrentMatch = null;
+        this.m_IsDead = false;
+        this.m_LastAttackTime = 0;
     }
 
     public final void SendMessage(String i_Message) throws SocketTimeoutException
@@ -108,5 +112,25 @@ public abstract class PlayerEntity
     public boolean IsPlayerConnectedToAMatch()
     {
         return this.m_CurrentMatch != null;
+    }
+
+    public synchronized void MarkDead() {
+        this.m_IsDead = true;
+    }
+
+    public synchronized void MarkAlive(){
+        this.m_IsDead = false;
+    }
+
+    public boolean IsDead() {
+        return this.m_IsDead;
+    }
+
+    public void SetLastAttackTime(){
+        this.m_LastAttackTime = System.currentTimeMillis();
+    }
+
+    public long GetLastAttackTime(){
+        return this.m_LastAttackTime;
     }
 }

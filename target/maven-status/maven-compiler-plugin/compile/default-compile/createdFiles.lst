@@ -9,6 +9,7 @@ Main.class
 utils\match\MatchScoreManager.class
 utils\singletons\DBHandler.class
 entities\connection\WebConnection.class
+utils\player\AttackInfo.class
 utils\loggers\LoggerManager.class
 match\MatchMaking.class
 dto\PlayerAction.class

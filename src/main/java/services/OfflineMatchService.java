@@ -4,7 +4,6 @@ import dto.PlayerCommand;
 import dto.ServerGeneralMessage;
 import entities.player.HostEntity;
 import entities.player.WebPlayerEntity;
-import match.MatchMaking;
 import match.OfflineMatchManager;
 import model.player.PlayerEntity;
 import utils.GlobalSettings;
@@ -12,7 +11,6 @@ import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
 import utils.loggers.MatchLogger;
 
-import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.function.Consumer;
@@ -32,6 +30,8 @@ public class OfflineMatchService extends MatchService
     protected void initMatch() throws Exception
     {
         SendMessageToHost(new ServerGeneralMessage(ServerGeneralMessage.eActionType.DATA, getMatchPlayersAsJson()).toString());
+
+        SetAllPlayerAlive();
 
         this.SendMessageToAll(new ServerGeneralMessage(ServerGeneralMessage.eActionType.NOTIFICATION, "Starting match..").toString());
         MatchLogger.Debug(GetMatchIdentifier(), "Start message sent.");

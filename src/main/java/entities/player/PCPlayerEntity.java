@@ -72,6 +72,7 @@ public class PCPlayerEntity extends PlayerEntity implements Comparable<PCPlayerE
             LoggerManager.warning("Couldn't notify player " + this.m_Username + " on " + i_ExceptionMessage);
         }
 
+        MarkDead();
         this.m_Connection.CloseConnection(i_ExceptionMessage);
     }
 

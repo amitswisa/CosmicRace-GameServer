@@ -35,6 +35,7 @@ public class WebPlayerEntity extends PlayerEntity
             }
         }
 
+        MarkDead();
         this.m_Connection.CloseConnection(i_ExceptionMessage);
 
     }

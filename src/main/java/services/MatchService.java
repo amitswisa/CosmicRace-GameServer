@@ -15,6 +15,7 @@ import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
 import utils.loggers.MatchLogger;
 import utils.match.MatchScoreManager;
+import utils.player.AttackInfo;
 import utils.player.Location;
 
 import java.io.IOException;
@@ -33,7 +34,6 @@ public abstract class MatchService extends Thread
     protected final List<PlayerEntity> m_WaitingToQuit;
     protected MatchScoreManager m_MatchScore;
     protected boolean m_IsGameOver;
-
     protected boolean m_IsGameStarted;
 
     protected MatchService(String i_MatchIdentifier, List<PlayerEntity> i_MatchPlayersList)
@@ -98,11 +98,19 @@ public abstract class MatchService extends Thread
 
         switch (i_PlayerCommand.GetAction()) {
             case IDLE, RUN_RIGHT, RUN_LEFT, DEATH, UPDATE_LOCATION, JUMP -> {
+                i_Match_PlayerEntity.MarkAlive();
                 i_Match_PlayerEntity.UpdateLocation(i_PlayerCommand.GetLocation());
                 this.SendPlayerCommand(i_PlayerCommand);
                 break;
             }
+            //TODO: PAY ATTENTION TO MARKALIVE METHOD IN THE DIFFERENT CASES
+            case ATTACK -> {
+                i_PlayerCommand.SetAttackInfo(AttackInfo.GenerateAttackInfo(i_PlayerCommand, m_MatchPlayerEntities));
+                this.SendPlayerCommand(i_PlayerCommand);
+                break;
+            }
             case COIN_COLLECT -> {
+                i_Match_PlayerEntity.MarkAlive();
                 updateCoinsOfPlayer(i_PlayerCommand.GetUsername());
                 break;
             }
@@ -295,4 +303,11 @@ public abstract class MatchService extends Thread
     public boolean IsGameOver() {
         return this.m_IsGameOver;
     }
+
+    protected void SetAllPlayerAlive(){
+        m_MatchPlayerEntities.stream().forEach(player ->{
+            player.MarkAlive();
+        });
+    }
+
 }
