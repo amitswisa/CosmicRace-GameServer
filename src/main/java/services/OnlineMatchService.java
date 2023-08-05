@@ -109,11 +109,6 @@ public final class OnlineMatchService extends MatchService {
             MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
         }
 
-        // TODO - update players coins and stats on database.
-        //  /30.4/UPDATE - only stats left.
-        //this.actionOnMatchPlayers(p -> DBHandler.updateStatsInDB(p.GetCharacter()));
-
-        UpdateGameStatistics();
         ServerGeneralMessage finalMatchEndedMessage
                 = new ServerGeneralMessage(ServerGeneralMessage.eActionType.MATCH_TERMINATION, i_MatchEndedReason);
 
@@ -125,6 +120,8 @@ public final class OnlineMatchService extends MatchService {
                         , "Couldn't update player " + player.GetUserName() + " on match ending.");
             }
         });
+
+        UpdateGameStatistics();
 
         MatchMaking.RemoveActiveMatch(this);
         this.interrupt();
