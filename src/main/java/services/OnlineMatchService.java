@@ -113,6 +113,7 @@ public final class OnlineMatchService extends MatchService {
         //  /30.4/UPDATE - only stats left.
         //this.actionOnMatchPlayers(p -> DBHandler.updateStatsInDB(p.GetCharacter()));
 
+        UpdateGameStatistics();
         ServerGeneralMessage finalMatchEndedMessage
                 = new ServerGeneralMessage(ServerGeneralMessage.eActionType.MATCH_TERMINATION, i_MatchEndedReason);
 
@@ -131,6 +132,6 @@ public final class OnlineMatchService extends MatchService {
 
     @Override //RAN
     public HostEntity GetHost(){
-        return null;
+        return (HostEntity) this.m_MatchPlayerEntities.get(0);
     }
 }

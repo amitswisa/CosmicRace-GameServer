@@ -19,7 +19,7 @@ public final class MatchScoreManager {
             this.m_MatchScorePosition = i_MatchScorePosition;
         }
 
-        public int GetScorePositoin()
+        public int GetScorePosition()
         {
             return this.m_MatchScorePosition;
         }
@@ -44,6 +44,15 @@ public final class MatchScoreManager {
 
         this.m_BoardPosition += 1;
 
-        return playerScore.GetScorePositoin();
+        return playerScore.GetScorePosition();
+    }
+
+    public int GetFinalLocation(String i_UserName){
+        for (PlayerScore player : m_ScoreBoard) {
+            if(player.m_Match_PlayerEntity.GetUserName().equals(i_UserName)){
+                return player.GetScorePosition();
+            }
+        }
+        return -1;
     }
 }

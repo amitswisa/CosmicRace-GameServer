@@ -1,15 +1,21 @@
 package services;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import dto.MessageType;
 import dto.PlayerCommand;
+import dto.PlayerSummary;
 import dto.ServerGeneralMessage;
 import entities.player.HostEntity;
 import exceptions.MatchTerminationException;
 import exceptions.PlayerConnectionException;
 import model.player.PlayerEntity;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import utils.GlobalSettings;
 import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
@@ -17,6 +23,7 @@ import utils.loggers.MatchLogger;
 import utils.match.MatchScoreManager;
 import utils.player.AttackInfo;
 import utils.player.Location;
+import utils.route.APIRoutes;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -310,4 +317,46 @@ public abstract class MatchService extends Thread
         });
     }
 
+    protected void UpdateGameStatistics(){
+
+        List<PlayerSummary> playerSummaries = new ArrayList<>();
+
+        for (PlayerEntity player : m_MatchPlayerEntities) {
+            PlayerSummary playerSummary = new PlayerSummary
+                                                (player.GetUserName(),
+                                                GetFinalLocation(player.GetUserName()),
+                                                player.GetCollectedCoinsAmount());
+        }
+
+        //Publish Details.
+
+        String json = new Gson().
+                        toJson(playerSummaries, List.class);
+        String apiUrl = APIRoutes.HOST_BASE_URL + "/PlayerSummaries";
+
+        OkHttpClient client = new OkHttpClient();
+
+        RequestBody requestBody = RequestBody.create(json.getBytes());
+
+        Request request = new Request.Builder()
+                .url(apiUrl)
+                .post(requestBody)
+                .build();
+
+        // Send the request and process the response
+        try (Response response = client.newCall(request).execute()) {
+            // Check if the request was successful (200 OK)
+            if (response.isSuccessful()) {
+                LoggerManager.info("Player information sent successfully!");
+            } else {
+                LoggerManager.info("Failed to send player information. Status Code: " + response.code());
+            }
+        } catch (IOException e) {
+            LoggerManager.error("An error occurred: " + e.getMessage());
+        }
+    }
+
+    protected int GetFinalLocation(String i_Username){
+        return m_MatchScore.GetFinalLocation(i_Username);
+    }
 }

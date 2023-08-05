@@ -133,4 +133,9 @@ public abstract class PlayerEntity
     public long GetLastAttackTime(){
         return this.m_LastAttackTime;
     }
+
+    public int GetCollectedCoinsAmount() {
+        return m_CoinsCollected;
+    }
+
 }
