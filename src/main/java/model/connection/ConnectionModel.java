@@ -28,7 +28,7 @@ public abstract class ConnectionModel
 
     protected boolean ValidateConnectionNeeded()
     {
-        return (System.currentTimeMillis() - this.m_LastConnectionTime > 5000);
+        return (System.currentTimeMillis() - this.m_LastConnectionTime <= 5000);
     }
 
     abstract public void SendMessage(String i_Message) throws SocketTimeoutException;

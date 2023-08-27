@@ -8,7 +8,7 @@ import java.util.List;
 
 public final class MatchScoreManager {
 
-    private class PlayerScore
+    public class PlayerScore
     {
         private final PlayerEntity m_Match_PlayerEntity;
         private final int m_MatchScorePosition;
@@ -22,6 +22,11 @@ public final class MatchScoreManager {
         public int GetScorePosition()
         {
             return this.m_MatchScorePosition;
+        }
+
+        public PlayerEntity GetPlayer()
+        {
+            return this.m_Match_PlayerEntity;
         }
     }
 
@@ -54,5 +59,10 @@ public final class MatchScoreManager {
             }
         }
         return -1;
+    }
+
+    public List<PlayerScore> GetPlayersMatchScoreList()
+    {
+        return this.m_ScoreBoard;
     }
 }

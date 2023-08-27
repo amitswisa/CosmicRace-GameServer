@@ -42,7 +42,7 @@ public final class WebConnection extends ConnectionModel {
         if (!this.m_IsConnected)
             return false;
 
-        if(!ValidateConnectionNeeded())
+        if(ValidateConnectionNeeded())
             return true;
 
         try {
@@ -101,14 +101,6 @@ public final class WebConnection extends ConnectionModel {
     @Override
     public void AddMessageToQueue(String i_Message) {
         m_MessagesQueue.add(i_Message);
-    }
-
-    public void HandleMessageReceived(String i_Message)
-    {
-        if(i_Message != null)
-        {
-            m_MessagesQueue.add(i_Message);
-        }
     }
 
     @Override

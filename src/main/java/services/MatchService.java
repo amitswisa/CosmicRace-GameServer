@@ -129,7 +129,7 @@ public abstract class MatchService extends Thread
 
                     // Send score position to player.
                     ServerGeneralMessage scorePositionAnnouncement
-                            = new ServerGeneralMessage(ServerGeneralMessage.eActionType.COMPLETE_MATCH, "Finished #" + playerScorePosition + " place!");
+                            = new ServerGeneralMessage(ServerGeneralMessage.eActionType.COMPLETE_MATCH, playerScorePosition+"");
                     i_Match_PlayerEntity.SendMessage(scorePositionAnnouncement.toString());
                 } catch (IllegalArgumentException iae) {
                     LoggerManager.warning(i_Match_PlayerEntity.GetUserName() + " " + iae.getMessage());
@@ -312,9 +312,7 @@ public abstract class MatchService extends Thread
     }
 
     protected void SetAllPlayerAlive(){
-        m_MatchPlayerEntities.stream().forEach(player ->{
-            player.MarkAlive();
-        });
+        m_MatchPlayerEntities.forEach(PlayerEntity::MarkAlive);
     }
 
     protected void UpdateGameStatistics(){

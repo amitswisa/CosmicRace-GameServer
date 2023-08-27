@@ -10,6 +10,7 @@ import utils.GlobalSettings;
 import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
 import utils.loggers.MatchLogger;
+import utils.singletons.DBHandler;
 
 import java.net.SocketTimeoutException;
 import java.util.List;
@@ -34,7 +35,8 @@ public class OfflineMatchService extends MatchService
         SetAllPlayerAlive();
 
         this.SendMessageToAll(new ServerGeneralMessage(ServerGeneralMessage.eActionType.NOTIFICATION, "Starting match..").toString());
-        MatchLogger.Debug(GetMatchIdentifier(), "Start message sent.");
+
+        this.SendMessageToAll(new ServerGeneralMessage(ServerGeneralMessage.eActionType.ACTION, "START").toString());
 
         this.SendMessageToHost(new ServerGeneralMessage(ServerGeneralMessage.eActionType.ACTION, "START").toString());
         MatchLogger.Info(GetMatchIdentifier(), "Starting game.");
@@ -82,9 +84,7 @@ public class OfflineMatchService extends MatchService
         for (PlayerEntity matchEntity : m_MatchPlayerEntities)
         {
             if(matchEntity instanceof HostEntity)
-            {
                 continue;
-            }
 
             if (matchEntity.IsConnectionAlive())
             {
@@ -102,6 +102,7 @@ public class OfflineMatchService extends MatchService
     public void EndMatch(String i_MatchEndedReason) {
 
         this.m_IsGameOver = true;
+        MatchLogger.Info(GetMatchIdentifier(), "Terminating match...");
 
         if(!i_MatchEndedReason.equals(GlobalSettings.MATCH_ENDED))
         {
@@ -112,9 +113,7 @@ public class OfflineMatchService extends MatchService
             MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
         }
 
-        // TODO - update players coins and stats on database.
-        //  /30.4/UPDATE - only stats left.
-        //this.actionOnMatchPlayers(p -> DBHandler.updateStatsInDB(p.GetCharacter()));
+        //DBHandler.UpdatePlayersStats(this.m_MatchScore);
 
         ServerGeneralMessage finalMatchEndedMessage
                 = new ServerGeneralMessage(ServerGeneralMessage.eActionType.MATCH_TERMINATION, i_MatchEndedReason);
@@ -124,7 +123,7 @@ public class OfflineMatchService extends MatchService
         {
             this.r_MatchHost.SendMessage(finalMatchEndedMessage.toString());
         } catch (SocketTimeoutException ste) {
-            MatchLogger.Info(this.m_MatchIdentifier,"Couldn't update host on match ending.");
+            MatchLogger.Info(this.m_MatchIdentifier,"Couldn't notify host on match ending.");
         }
 
         this.actionOnMatchPlayers((player) -> {
@@ -137,7 +136,6 @@ public class OfflineMatchService extends MatchService
         });
 
         OfflineMatchManager.RemoveActiveMatch(this.m_MatchIdentifier);
-        this.interrupt();
     }
 
     synchronized private void SendMessageToHost(String i_Message)

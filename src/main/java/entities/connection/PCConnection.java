@@ -107,7 +107,7 @@ public class PCConnection extends ConnectionModel {
         if (!this.m_IsConnected)
             return false;
 
-        if(!ValidateConnectionNeeded())
+        if(ValidateConnectionNeeded())
            return true;
 
         try {

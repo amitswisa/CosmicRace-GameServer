@@ -10,6 +10,7 @@ import jakarta.websocket.server.ServerEndpoint;
 import match.OfflineMatchManager;
 import model.player.PlayerEntity;
 import services.OfflineMatchService;
+import utils.GlobalSettings;
 import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
 
@@ -83,7 +84,7 @@ public class WebSocketServer extends Thread
 
         if(webPlayer != null)
         {
-            webPlayer.CloseConnection(reason.getReasonPhrase());
+            webPlayer.CloseConnection(GlobalSettings.CLIENT_CLOSED_CONNECTION);
         }
 
         s_WebSocketsPlayerMap.remove(session.getId());

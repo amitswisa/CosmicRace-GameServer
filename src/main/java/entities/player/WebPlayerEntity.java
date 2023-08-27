@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import dto.ServerGeneralMessage;
 import model.connection.ConnectionModel;
 import model.player.PlayerEntity;
+import utils.GlobalSettings;
 import utils.loggers.LoggerManager;
 import utils.player.Character;
 
@@ -25,7 +26,8 @@ public class WebPlayerEntity extends PlayerEntity
 
         // Notify player on connection close.
         if(this.m_CurrentMatch != null
-                && this.m_CurrentMatch.IsGameOver()) {
+                && this.m_CurrentMatch.IsGameOver()
+                    && !i_ExceptionMessage.equals(GlobalSettings.CLIENT_CLOSED_CONNECTION)) {
             try {
                 this.SendMessage(new ServerGeneralMessage(ServerGeneralMessage.eActionType.NOTIFICATION, i_ExceptionMessage).toString());
             } catch (SocketTimeoutException ste) {
@@ -37,7 +39,6 @@ public class WebPlayerEntity extends PlayerEntity
 
         MarkDead();
         this.m_Connection.CloseConnection(i_ExceptionMessage);
-
     }
 
     public void HandleMessageReceived(String i_Text)

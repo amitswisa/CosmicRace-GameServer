@@ -3,6 +3,7 @@ package match;
 import entities.player.HostEntity;
 import model.player.PlayerEntity;
 import services.OfflineMatchService;
+import utils.loggers.MatchLogger;
 
 import java.util.*;
 
@@ -55,5 +56,6 @@ public final class OfflineMatchManager
     synchronized public static void RemoveActiveMatch(String i_MatchIdentifier)
     {
         m_MatchMap.remove(i_MatchIdentifier);
+        MatchLogger.Info(i_MatchIdentifier, "Match Terminated!");
     }
 }
