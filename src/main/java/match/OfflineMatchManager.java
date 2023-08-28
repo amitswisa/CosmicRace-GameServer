@@ -9,7 +9,7 @@ import java.util.*;
 
 public final class OfflineMatchManager
 {
-    private static volatile Map<String, OfflineMatchService> m_MatchMap = new HashMap<>();
+    private static final Map<String, OfflineMatchService> m_MatchMap = new HashMap<>();
 
     synchronized private static String generateMatchIdentifier()
     {

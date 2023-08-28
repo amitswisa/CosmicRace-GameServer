@@ -6,6 +6,7 @@ import model.connection.ConnectionModel;
 import model.player.PlayerEntity;
 import utils.GlobalSettings;
 import utils.loggers.LoggerManager;
+import utils.loggers.MatchLogger;
 import utils.player.Character;
 
 import java.net.SocketTimeoutException;
@@ -38,7 +39,10 @@ public class WebPlayerEntity extends PlayerEntity
         }
 
         MarkDead();
+        
+        MatchLogger.Info(this.m_CurrentMatch.GetMatchIdentifier(), "Closing connection for player: " + this.m_Username);
         this.m_Connection.CloseConnection(i_ExceptionMessage);
+        MatchLogger.Info(this.m_CurrentMatch.GetMatchIdentifier(), this.m_Username + " Connection closed!");
     }
 
     public void HandleMessageReceived(String i_Text)

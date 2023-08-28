@@ -132,6 +132,8 @@ public class OfflineMatchService extends MatchService
             } catch (SocketTimeoutException e) {
                 MatchLogger.Warning(GetMatchIdentifier()
                         , "Couldn't update player " + player.GetUserName() + " on match ending.");
+            } finally {
+                player.CloseConnection(i_MatchEndedReason);
             }
         });
 
