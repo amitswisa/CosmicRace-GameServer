@@ -4,10 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import dto.MessageType;
-import dto.PlayerCommand;
-import dto.PlayerSummary;
-import dto.ServerGeneralMessage;
+import dto.*;
 import entities.player.HostEntity;
 import exceptions.MatchTerminationException;
 import exceptions.PlayerConnectionException;
@@ -108,6 +105,7 @@ public abstract class MatchService extends Thread
                 i_Match_PlayerEntity.MarkAlive();
                 i_Match_PlayerEntity.UpdateLocation(i_PlayerCommand.GetLocation());
                 this.SendPlayerCommand(i_PlayerCommand);
+                i_PlayerCommand.SetAttackInfo(null); //Dvir asked to add it.
                 break;
             }
             //TODO: PAY ATTENTION TO MARKALIVE METHOD IN THE DIFFERENT CASES
@@ -129,13 +127,17 @@ public abstract class MatchService extends Thread
 
                     // Send score position to player.
                     ServerGeneralMessage scorePositionAnnouncement
-                            = new ServerGeneralMessage(ServerGeneralMessage.eActionType.COMPLETE_MATCH, playerScorePosition+"");
-                    i_Match_PlayerEntity.SendMessage(scorePositionAnnouncement.toString());
+                            = new ServerGeneralMessage
+                                    (ServerGeneralMessage.eActionType.COMPLETE_MATCH,
+                                            (new PlayerMatchInfo(i_Match_PlayerEntity.GetUserName(), playerScorePosition).toString()));
+
+//                    i_Match_PlayerEntity.SendMessage(scorePositionAnnouncement.toString());
+                    SendMessageToAll(scorePositionAnnouncement.toString());
                 } catch (IllegalArgumentException iae) {
                     LoggerManager.warning(i_Match_PlayerEntity.GetUserName() + " " + iae.getMessage());
-                } catch (SocketTimeoutException e) {
+                } /*catch (SocketTimeoutException e) {
                     throw new PlayerConnectionException(GlobalSettings.CLIENT_CLOSED_CONNECTION);
-                }
+                }*/
 
                 break;
             }
@@ -324,6 +326,8 @@ public abstract class MatchService extends Thread
                                                 (player.GetUserName(),
                                                 GetFinalLocation(player.GetUserName()),
                                                 player.GetCollectedCoinsAmount());
+
+            playerSummaries.add(playerSummary);
         }
 
         //Publish Details.
