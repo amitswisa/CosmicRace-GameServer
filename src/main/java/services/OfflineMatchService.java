@@ -10,7 +10,6 @@ import utils.GlobalSettings;
 import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
 import utils.loggers.MatchLogger;
-import utils.singletons.DBHandler;
 
 import java.net.SocketTimeoutException;
 import java.util.List;
@@ -68,10 +67,15 @@ public class OfflineMatchService extends MatchService
         {
             String hostMessage = r_MatchHost.ReadMessage();
 
-            if(hostMessage != null && hostMessage.equals("START"))
+            if(hostMessage != null)
             {
-                m_IsPreStageRunning = false;
-                continue;
+                if(hostMessage.equals("START"))
+                {
+                    m_IsPreStageRunning = false;
+                    continue;
+                } else if(hostMessage.equals("QUIT")) {
+                    this.EndMatch("Host closed match room.");
+                }
             }
 
             removeWaitingToQuitPlayers();

@@ -1,3 +1,4 @@
+C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\utils\player\AttackInfo.java
 C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\utils\route\APIRoutes.java
 C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\model\player\PlayerEntity.java
 C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\match\OfflineMatchManager.java
@@ -17,6 +18,7 @@ C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\dto\ServerGeneralMes
 C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\servers\GameSocketServer.java
 C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\exceptions\MatchTerminationException.java
 C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\servers\WebSocketServer.java
+C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\dto\PlayerSummary.java
 C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\utils\GlobalSettings.java
 C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\utils\json\JsonFormatter.java
 C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\match\MatchMaking.java
