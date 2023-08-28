@@ -106,18 +106,21 @@ public final class WebConnection extends ConnectionModel {
     @Override
     public void CloseConnection(String i_ExceptionMessage) {
 
-        if (!this.m_IsConnected)
-            return;
+        this.m_IsConnected = false; // Set to false immediately
+
+        if (r_Connection == null || !r_Connection.isOpen()) {
+            return; // Check if the connection is already closed or null
+        }
 
         try {
-            this.m_IsConnected = false;
-            r_Connection.close(new CloseReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY, i_ExceptionMessage));
+            r_Connection.close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, i_ExceptionMessage));
 
-            if(!i_ExceptionMessage.equals(GlobalSettings.MATCH_ENDED))
+            if (!i_ExceptionMessage.equals(GlobalSettings.MATCH_ENDED))
                 LoggerManager.error("WebSocket (" + this.getHost() + "): " + i_ExceptionMessage);
-
+        } catch (IOException e) {
+            LoggerManager.error("WebSocket IO Exception (" + this.getHost() + "): " + e.getMessage());
         } catch (Exception e) {
-            LoggerManager.error("WebSocket (" + this.getHost() + "): " + e.getMessage());
+            LoggerManager.error("WebSocket General Exception (" + this.getHost() + "): " + e.getMessage());
         }
     }
 }
