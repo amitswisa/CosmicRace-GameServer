@@ -13,6 +13,7 @@ public final class ServerGeneralMessage {
         CONFIRMATION,
         MATCH_TERMINATION,
         COMPLETE_MATCH,
+        COMPLETE_LEVEL,
         MATCH_ENDED,
         ROOM_CREATED,
         PLAYER_JOINED,

@@ -128,7 +128,7 @@ public abstract class MatchService extends Thread
                     // Send score position to player.
                     ServerGeneralMessage scorePositionAnnouncement
                             = new ServerGeneralMessage
-                                    (ServerGeneralMessage.eActionType.COMPLETE_MATCH,
+                                    (ServerGeneralMessage.eActionType.COMPLETE_LEVEL,
                                             (new PlayerMatchInfo(i_Match_PlayerEntity.GetUserName(), playerScorePosition).toString()));
 
 //                    i_Match_PlayerEntity.SendMessage(scorePositionAnnouncement.toString());
