@@ -15,6 +15,7 @@ C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\entities\player\WebP
 C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\utils\loggers\LoggerManager.java
 C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\utils\ServerManager.java
 C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\dto\ServerGeneralMessage.java
+C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\dto\PlayerMatchInfo.java
 C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\servers\GameSocketServer.java
 C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\exceptions\MatchTerminationException.java
 C:\Users\Amit\Desktop\UnityPorject\GameServer\src\main\java\servers\WebSocketServer.java
