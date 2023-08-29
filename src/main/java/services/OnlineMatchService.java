@@ -63,7 +63,6 @@ public final class OnlineMatchService extends MatchService {
     @Override
     protected void actionOnMatchPlayers(Consumer<PlayerEntity> processor)
     {
-
         for (PlayerEntity matchEntity : m_MatchPlayerEntities) {
             if (matchEntity.IsConnectionAlive()) {
                 try {
@@ -99,18 +98,20 @@ public final class OnlineMatchService extends MatchService {
     public void EndMatch(String i_MatchEndedReason) {
 
         this.m_IsGameOver = true;
+        ServerGeneralMessage finalMatchEndedMessage;
 
         if(!i_MatchEndedReason.equals(GlobalSettings.MATCH_ENDED))
         {
             MatchLogger.Error(GetMatchIdentifier(), i_MatchEndedReason);
+            finalMatchEndedMessage
+                    = new ServerGeneralMessage(ServerGeneralMessage.eActionType.MATCH_TERMINATION, i_MatchEndedReason);
         }
         else
         {
+            finalMatchEndedMessage
+                    = new ServerGeneralMessage(ServerGeneralMessage.eActionType.COMPLETE_MATCH, i_MatchEndedReason);
             MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
         }
-
-        ServerGeneralMessage finalMatchEndedMessage
-                = new ServerGeneralMessage(ServerGeneralMessage.eActionType.MATCH_TERMINATION, i_MatchEndedReason);
 
         this.actionOnMatchPlayers((player) -> {
             try {
