@@ -1,6 +1,7 @@
 package services;
 
 import dto.PlayerCommand;
+import dto.PlayerMatchInfo;
 import dto.ServerGeneralMessage;
 import entities.player.HostEntity;
 import match.MatchMaking;
@@ -124,6 +125,16 @@ public final class OnlineMatchService extends MatchService {
             } finally {
                 player.CloseConnection(i_MatchEndedReason);
             }
+        }
+
+        for (PlayerEntity player : m_MatchPlayerEntities) {
+            ServerGeneralMessage scorePositionAnnouncement
+                    = new ServerGeneralMessage
+                    (ServerGeneralMessage.eActionType.COMPLETE_LEVEL,
+                            (new PlayerMatchInfo(player.GetUserName(), this.m_MatchScore.GetFinalLocation(player.GetUserName())).toString()));
+
+//                    i_Match_PlayerEntity.SendMessage(scorePositionAnnouncement.toString());
+            SendMessageToAll(scorePositionAnnouncement.toString());
         }
 
 //        this.actionOnMatchPlayers((player) -> {
