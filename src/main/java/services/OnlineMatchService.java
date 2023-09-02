@@ -1,6 +1,7 @@
 package services;
 
 import dto.PlayerCommand;
+import dto.PlayerMatchInfo;
 import dto.ServerGeneralMessage;
 import entities.player.HostEntity;
 import match.MatchMaking;
@@ -113,16 +114,40 @@ public final class OnlineMatchService extends MatchService {
             MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
         }
 
-        this.actionOnMatchPlayers((player) -> {
+
+        for (PlayerEntity player : m_MatchPlayerEntities) {
+            ServerGeneralMessage scorePositionAnnouncement
+                    = new ServerGeneralMessage
+                    (ServerGeneralMessage.eActionType.COMPLETE_LEVEL,
+                            (new PlayerMatchInfo(player.GetUserName(), this.m_MatchScore.GetFinalLocation(player.GetUserName())).toString()));
+
+            SendMessageToAll(scorePositionAnnouncement.toString());
+        }
+
+        for (PlayerEntity player : m_MatchPlayerEntities) {
             try {
                 player.SendMessage(finalMatchEndedMessage.toString());
+                MatchLogger.Info(this.m_MatchIdentifier, "End match message to " + player.GetUserName() + " " + finalMatchEndedMessage.toString());
             } catch (SocketTimeoutException e) {
                 MatchLogger.Warning(GetMatchIdentifier()
                         , "Couldn't update player " + player.GetUserName() + " on match ending.");
             } finally {
                 player.CloseConnection(i_MatchEndedReason);
             }
-        });
+        }
+
+
+
+//        this.actionOnMatchPlayers((player) -> {
+//            try {
+//                player.SendMessage(finalMatchEndedMessage.toString());
+//            } catch (SocketTimeoutException e) {
+//                MatchLogger.Warning(GetMatchIdentifier()
+//                        , "Couldn't update player " + player.GetUserName() + " on match ending.");
+//            } finally {
+//                player.CloseConnection(i_MatchEndedReason);
+//            }
+//        });
 
         UpdateGameStatistics();
 
