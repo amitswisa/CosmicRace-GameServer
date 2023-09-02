@@ -1,11 +1,11 @@
 package dto;
 
-import player.Location;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import utils.json.JsonFormatter;
+import utils.player.AttackInfo;
+import utils.player.Location;
 
 public class PlayerCommand {
 
@@ -13,6 +13,7 @@ public class PlayerCommand {
     private String m_Username;
     private Location m_Location;
     private String m_Action;
+    private AttackInfo m_AttackInfo;
 
     public PlayerCommand(String i_MessageType, String i_Username, String i_Action, Location i_Location) {
         this.m_MessageType = i_MessageType;
@@ -54,6 +55,10 @@ public class PlayerCommand {
 
     public void SetMessageType(String m_MessageType) {
         this.m_MessageType = m_MessageType;
+    }
+
+    public void SetAttackInfo(AttackInfo i_AttackInfo){
+        this.m_AttackInfo = i_AttackInfo;
     }
 
     public void ParseFromJson(String jsonString) {

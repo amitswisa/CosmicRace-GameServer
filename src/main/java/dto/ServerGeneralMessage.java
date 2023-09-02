@@ -13,7 +13,11 @@ public final class ServerGeneralMessage {
         CONFIRMATION,
         MATCH_TERMINATION,
         COMPLETE_MATCH,
-        MATCH_ENDED
+        COMPLETE_LEVEL,
+        MATCH_ENDED,
+        ROOM_CREATED,
+        PLAYER_JOINED,
+        PLAYER_READY
     }
 
     private eActionType m_ActionType;

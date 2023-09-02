@@ -1,18 +1,10 @@
-import factories.PlayerFactory;
-import utils.GlobalSettings;
-
-import java.net.ServerSocket;
-import java.net.Socket;
+import utils.ServerManager;
 
 public class Main {
 
-    public static void main(String[] args) throws Exception {
-
-        ServerSocket serverSocket = new ServerSocket(GlobalSettings.PORT);
-
-        while(true) {
-            Socket newSocketConnection = serverSocket.accept();
-            PlayerFactory.createNewPlayer(newSocketConnection);
-        }
+    public static void main(String[] args)
+    {
+        ServerManager serverManager = new ServerManager();
+        serverManager.Start();
     }
 }

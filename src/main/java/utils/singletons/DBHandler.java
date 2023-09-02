@@ -1,6 +1,8 @@
 package utils.singletons;
 
-import player.Character;
+import model.player.PlayerEntity;
+import utils.match.MatchScoreManager;
+import utils.player.Character;
 import utils.GlobalSettings;
 
 import java.sql.Connection;
@@ -10,15 +12,13 @@ import java.sql.SQLException;
 
 public class DBHandler {
 
-    public static void updateStatsInDB(Character character) {
-        updateUsersCharactersDataTable(character);
-        updateGameUsersTable(character);
+    public static void UpdatePlayersStats(MatchScoreManager i_MScore)
+    {
+        for(MatchScoreManager.PlayerScore playerScore : i_MScore.GetPlayersMatchScoreList())
+        {
+            // TODO
+        }
     }
-
-    private static void updateUsersCharactersDataTable(Character character) {
-        //TODO
-    }
-
 
     private static void updateGameUsersTable(Character character) {
         StringBuilder sqlQuery = new StringBuilder();
