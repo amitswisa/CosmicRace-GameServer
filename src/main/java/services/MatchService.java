@@ -111,7 +111,8 @@ public abstract class MatchService extends Thread
             //TODO: PAY ATTENTION TO MARKALIVE METHOD IN THE DIFFERENT CASES
             case ATTACK -> {
                 i_PlayerCommand.SetAttackInfo(AttackInfo.GenerateAttackInfo(i_PlayerCommand, m_MatchPlayerEntities));
-                this.SendPlayerCommand(i_PlayerCommand);
+                String command = JsonFormatter.GetGson().toJson(i_PlayerCommand, PlayerCommand.class);
+                this.SendMessageToAll(command);
                 break;
             }
             case COIN_COLLECT -> {
@@ -275,7 +276,6 @@ public abstract class MatchService extends Thread
 
                     if(!playerUpdate.equals(GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER))
                     {
-                        LoggerManager.info(playerUpdate);
                         playerCommand.ParseFromJson(playerUpdate);
                         this.handlePlayerResponse(matchPlayer, playerCommand);
                     }
