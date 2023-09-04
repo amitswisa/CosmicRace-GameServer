@@ -119,7 +119,7 @@ public final class OnlineMatchService extends MatchService {
             ServerGeneralMessage scorePositionAnnouncement
                     = new ServerGeneralMessage
                     (ServerGeneralMessage.eActionType.COMPLETE_LEVEL,
-                            (new PlayerMatchInfo(player.GetUserName(), this.m_MatchScore.GetFinalLocation(player.GetUserName())).toString()));
+                            (new PlayerMatchInfo(player.GetUserName(), this.m_MatchScore.GetFinalLocation(player.GetUserName()), player.GetCollectedCoinsAmount()).toString()));
 
             SendMessageToAll(scorePositionAnnouncement.toString());
         }
@@ -135,19 +135,6 @@ public final class OnlineMatchService extends MatchService {
                 player.CloseConnection(i_MatchEndedReason);
             }
         }
-
-
-
-//        this.actionOnMatchPlayers((player) -> {
-//            try {
-//                player.SendMessage(finalMatchEndedMessage.toString());
-//            } catch (SocketTimeoutException e) {
-//                MatchLogger.Warning(GetMatchIdentifier()
-//                        , "Couldn't update player " + player.GetUserName() + " on match ending.");
-//            } finally {
-//                player.CloseConnection(i_MatchEndedReason);
-//            }
-//        });
 
         UpdateGameStatistics();
 

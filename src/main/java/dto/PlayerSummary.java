@@ -10,4 +10,16 @@ public class PlayerSummary {
         this.position = position;
         this.coinsCollected = coinsCollected;
     }
+
+    public String getPlayerName() {
+        return playerName;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public int getCoinsCollected() {
+        return coinsCollected;
+    }
 }

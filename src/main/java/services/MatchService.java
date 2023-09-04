@@ -4,15 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 import dto.*;
 import entities.player.HostEntity;
 import exceptions.MatchTerminationException;
 import exceptions.PlayerConnectionException;
 import model.player.PlayerEntity;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import okhttp3.*;
 import utils.GlobalSettings;
 import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
@@ -130,7 +128,7 @@ public abstract class MatchService extends Thread
                     ServerGeneralMessage scorePositionAnnouncement
                             = new ServerGeneralMessage
                                     (ServerGeneralMessage.eActionType.COMPLETE_LEVEL,
-                                            (new PlayerMatchInfo(i_Match_PlayerEntity.GetUserName(), playerScorePosition).toString()));
+                                            (new PlayerMatchInfo(i_Match_PlayerEntity.GetUserName(), playerScorePosition, i_Match_PlayerEntity.GetCollectedCoinsAmount()).toString()));
 
 //                    i_Match_PlayerEntity.SendMessage(scorePositionAnnouncement.toString());
                     SendMessageToAll(scorePositionAnnouncement.toString());
@@ -317,28 +315,28 @@ public abstract class MatchService extends Thread
         m_MatchPlayerEntities.forEach(PlayerEntity::MarkAlive);
     }
 
-    protected void UpdateGameStatistics(){
+    protected void UpdateGameStatistics() {
 
         List<PlayerSummary> playerSummaries = new ArrayList<>();
 
         for (PlayerEntity player : m_MatchPlayerEntities) {
             PlayerSummary playerSummary = new PlayerSummary
-                                                (player.GetUserName(),
-                                                GetFinalLocation(player.GetUserName()),
-                                                player.GetCollectedCoinsAmount());
+                    (player.GetUserName(),
+                            GetFinalLocation(player.GetUserName()),
+                            player.GetCollectedCoinsAmount());
 
             playerSummaries.add(playerSummary);
         }
 
-        //Publish Details.
+        // Publish Details.
+        String json = new Gson().toJson(playerSummaries, new TypeToken<List<PlayerSummary>>(){}.getType());
 
-        String json = new Gson().
-                        toJson(playerSummaries, List.class);
+        LoggerManager.info(json.toString());
         String apiUrl = APIRoutes.HOST_BASE_URL + "/PlayerSummaries";
 
         OkHttpClient client = new OkHttpClient();
 
-        RequestBody requestBody = RequestBody.create(json.getBytes());
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);
 
         Request request = new Request.Builder()
                 .url(apiUrl)
