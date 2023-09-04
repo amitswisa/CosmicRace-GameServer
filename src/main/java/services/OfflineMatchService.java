@@ -117,8 +117,6 @@ public class OfflineMatchService extends MatchService
             MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
         }
 
-        //DBHandler.UpdatePlayersStats(this.m_MatchScore);
-
         ServerGeneralMessage finalMatchEndedMessage
                 = new ServerGeneralMessage(ServerGeneralMessage.eActionType.MATCH_TERMINATION, i_MatchEndedReason);
 
