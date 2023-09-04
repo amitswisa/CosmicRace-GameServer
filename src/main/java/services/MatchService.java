@@ -98,7 +98,8 @@ public abstract class MatchService extends Thread
     protected void handlePlayerResponse(PlayerEntity i_Match_PlayerEntity, PlayerCommand i_PlayerCommand) throws PlayerConnectionException
     {
 
-        switch (i_PlayerCommand.GetAction()) {
+        switch (i_PlayerCommand.GetAction())
+        {
             case IDLE, RUN_RIGHT, RUN_LEFT, DEATH, UPDATE_LOCATION, JUMP -> {
                 i_Match_PlayerEntity.MarkAlive();
                 i_Match_PlayerEntity.UpdateLocation(i_PlayerCommand.GetLocation());
@@ -108,6 +109,9 @@ public abstract class MatchService extends Thread
             }
             //TODO: PAY ATTENTION TO MARKALIVE METHOD IN THE DIFFERENT CASES
             case ATTACK -> {
+                
+                LoggerManager.error("Attack is in MatchService.handlePlayerResponse"); // TODO - DELETE
+
                 i_PlayerCommand.SetAttackInfo(AttackInfo.GenerateAttackInfo(i_PlayerCommand, m_MatchPlayerEntities));
                 this.SendPlayerCommand(i_PlayerCommand);
                 break;

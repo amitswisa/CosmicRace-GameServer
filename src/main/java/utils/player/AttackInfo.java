@@ -1,6 +1,7 @@
 package utils.player;
 
 import dto.PlayerCommand;
+import entities.player.WebPlayerEntity;
 import model.player.PlayerEntity;
 import utils.loggers.LoggerManager;
 
@@ -36,8 +37,11 @@ public class AttackInfo {
     }
 
     public static PlayerEntity GetPlayer(String i_Name, List<PlayerEntity> m_MatchPlayerEntities){
-        for (PlayerEntity player : m_MatchPlayerEntities) {
-            if(player.GetUserName().equals(i_Name)){
+        for (PlayerEntity player : m_MatchPlayerEntities)
+        {
+            if(player.GetUserName() != null
+                    && player.GetUserName().equals(i_Name))
+            {
                 return player;
             }
         }
