@@ -56,6 +56,7 @@ public abstract class MatchService extends Thread
     abstract protected void initMatch() throws Exception;
     abstract protected void actionOnMatchPlayers(Consumer<PlayerEntity> processor);
     abstract public PlayerEntity GetHost();
+    abstract public int GetNumOfActivePlayers();
 
     protected String getMatchPlayersAsJson()
     {
@@ -213,7 +214,7 @@ public abstract class MatchService extends Thread
             this.m_WaitingToQuit.clear();
 
             if (!this.m_IsGameOver
-                    && this.m_MatchPlayerEntities.size() < GlobalSettings.MINIMUM_AMOUNT_OF_PLAYERS
+                    && GetNumOfActivePlayers() < GlobalSettings.MINIMUM_AMOUNT_OF_PLAYERS
                     && this.m_IsGameStarted)
             {
                 throw new MatchTerminationException(this.GetMatchIdentifier(), GlobalSettings.NOT_ENOUGH_PLAYERS_TO_CONTINUE);

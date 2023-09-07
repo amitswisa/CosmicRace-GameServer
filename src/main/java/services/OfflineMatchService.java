@@ -176,4 +176,10 @@ public class OfflineMatchService extends MatchService
     {
         return this.r_MatchHost;
     }
+
+    @Override
+    public int GetNumOfActivePlayers()
+    {
+        return this.m_MatchPlayerEntities.size() - 1;
+    }
 }

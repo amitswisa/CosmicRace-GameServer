@@ -146,4 +146,10 @@ public final class OnlineMatchService extends MatchService {
     public HostEntity GetHost(){
         return (HostEntity) this.m_MatchPlayerEntities.get(0);
     }
+
+    @Override
+    public int GetNumOfActivePlayers()
+    {
+        return this.m_MatchPlayerEntities.size();
+    }
 }
