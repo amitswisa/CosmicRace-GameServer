@@ -108,11 +108,7 @@ public abstract class MatchService extends Thread
                 i_PlayerCommand.SetAttackInfo(null); //Dvir asked to add it.
                 break;
             }
-            //TODO: PAY ATTENTION TO MARKALIVE METHOD IN THE DIFFERENT CASES
             case ATTACK -> {
-                
-                LoggerManager.error("Attack is in MatchService.handlePlayerResponse"); // TODO - DELETE
-
                 i_PlayerCommand.SetAttackInfo(AttackInfo.GenerateAttackInfo(i_PlayerCommand, m_MatchPlayerEntities));
                 this.SendPlayerCommand(i_PlayerCommand);
                 break;

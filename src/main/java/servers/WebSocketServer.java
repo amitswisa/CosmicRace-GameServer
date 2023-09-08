@@ -17,13 +17,12 @@ import utils.loggers.LoggerManager;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @ServerEndpoint("/")
 public class WebSocketServer extends Thread
 {
     private static final int PORT = 8081;
-    private static final Map<String, PlayerEntity> s_WebSocketsPlayerMap = new ConcurrentHashMap<>();
+    private static final Map<String, PlayerEntity> s_WebSocketsPlayerMap = new HashMap<>();
 
     @OnOpen
     public void onOpen(Session session)
@@ -37,7 +36,8 @@ public class WebSocketServer extends Thread
 
     @OnMessage
     public void onMessage(String message, Session session) throws SocketTimeoutException {
-        WebPlayerEntity webPlayer = (WebPlayerEntity) getPlayerEntity(session); // Down casting to original object entity.
+        LoggerManager.info("Message: " + message);
+        WebPlayerEntity webPlayer = (WebPlayerEntity) getPlayerEntity(session);
 
         if (webPlayer != null)
         {
