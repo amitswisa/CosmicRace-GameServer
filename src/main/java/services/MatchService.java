@@ -138,6 +138,7 @@ public abstract class MatchService extends Thread
                 break;
             }
             case ELIMINATION -> {
+                MatchLogger.Debug(m_MatchIdentifier, "Elimination message arrived!");
                 if(GetNumOfActivePlayers() <= 2)
                 {
                     for(PlayerEntity pe : this.m_MatchPlayerEntities)
