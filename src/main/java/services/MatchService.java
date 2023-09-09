@@ -163,8 +163,6 @@ public abstract class MatchService extends Thread
                     i_Match_PlayerEntity.SendMessage(eliminationNotification.toString());
                 } catch(SocketTimeoutException ste) {
                     LoggerManager.warning("Couldn't notify " + i_Match_PlayerEntity.GetUserName() + " of his elimination.");
-                } finally {
-                    RemovePlayerFromMatch(i_Match_PlayerEntity);
                 }
 
             }
