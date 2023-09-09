@@ -7,6 +7,7 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import dto.*;
 import entities.player.HostEntity;
+import entities.player.PCPlayerEntity;
 import exceptions.MatchTerminationException;
 import exceptions.PlayerConnectionException;
 import model.player.PlayerEntity;
@@ -121,8 +122,7 @@ public abstract class MatchService extends Thread
             case COMPLETE_LEVEL -> {
 
                 try {
-                    i_Match_PlayerEntity.MarkAsFinish();
-                    int playerScorePosition = this.m_MatchScore.SetPlayerScore(i_Match_PlayerEntity);
+                    int playerScorePosition = SetCompleteLevelPlayer(i_Match_PlayerEntity);
 
                     // Send score position to player.
                     ServerGeneralMessage scorePositionAnnouncement
@@ -130,15 +130,43 @@ public abstract class MatchService extends Thread
                                     (ServerGeneralMessage.eActionType.COMPLETE_LEVEL,
                                             (new PlayerMatchInfo(i_Match_PlayerEntity.GetUserName(), playerScorePosition, i_Match_PlayerEntity.GetCollectedCoinsAmount()).toString()));
 
-//                    i_Match_PlayerEntity.SendMessage(scorePositionAnnouncement.toString());
                     SendMessageToAll(scorePositionAnnouncement.toString());
                 } catch (IllegalArgumentException iae) {
                     LoggerManager.warning(i_Match_PlayerEntity.GetUserName() + " " + iae.getMessage());
-                } /*catch (SocketTimeoutException e) {
-                    throw new PlayerConnectionException(GlobalSettings.CLIENT_CLOSED_CONNECTION);
-                }*/
+                }
 
                 break;
+            }
+            case ELIMINATION -> {
+                if(getNumOfPlayerInMatch() <= 2)
+                {
+                    for(PlayerEntity pe : this.m_MatchPlayerEntities)
+                    {
+                       if(pe instanceof HostEntity)
+                           continue;
+
+                       if(!pe.GetUserName().equals(i_Match_PlayerEntity.GetUserName()))
+                       {
+                           SetCompleteLevelPlayer(i_Match_PlayerEntity);
+                       }
+                       else
+                       {
+                           pe.MarkAsFinish();
+                       }
+                    }
+                }
+
+                ServerGeneralMessage eliminationNotification
+                        = new ServerGeneralMessage(ServerGeneralMessage.eActionType.ELIMINATION, "ELIMINATION");
+
+                try {
+                    i_Match_PlayerEntity.SendMessage(eliminationNotification.toString());
+                } catch(SocketTimeoutException ste) {
+                    LoggerManager.warning("Couldn't notify " + i_Match_PlayerEntity.GetUserName() + " of his elimination.");
+                } finally {
+                    RemovePlayerFromMatch(i_Match_PlayerEntity);
+                }
+
             }
             case QUIT -> {
                 throw new PlayerConnectionException(GlobalSettings.CLIENT_CLOSED_CONNECTION);
@@ -148,6 +176,12 @@ public abstract class MatchService extends Thread
             }
         }
 
+    }
+
+    private int SetCompleteLevelPlayer(PlayerEntity i_Match_PlayerEntity)
+    {
+        i_Match_PlayerEntity.MarkAsFinish();
+        return this.m_MatchScore.SetPlayerScore(i_Match_PlayerEntity);
     }
 
     protected void waitForPlayersToBeReady() throws Exception

@@ -23,6 +23,7 @@ public class OfflineMatchService extends MatchService
     {
         super(i_MatchIdentifier, i_MatchPlayersList);
         this.r_MatchHost = i_HostEntity;
+        this.r_MatchHost.MarkAsFinish();
         SendMessageToHost(new ServerGeneralMessage(ServerGeneralMessage.eActionType.ROOM_CREATED, i_MatchIdentifier).toString());
     }
 

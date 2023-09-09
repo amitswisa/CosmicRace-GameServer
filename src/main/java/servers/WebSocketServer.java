@@ -36,7 +36,7 @@ public class WebSocketServer extends Thread
 
     @OnMessage
     public void onMessage(String message, Session session) throws SocketTimeoutException {
-        LoggerManager.info("Message: " + message);
+
         WebPlayerEntity webPlayer = (WebPlayerEntity) getPlayerEntity(session);
 
         if (webPlayer != null)
