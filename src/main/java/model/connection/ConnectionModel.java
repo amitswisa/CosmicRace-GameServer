@@ -31,6 +31,11 @@ public abstract class ConnectionModel
         return (System.currentTimeMillis() - this.m_LastConnectionTime <= 5000);
     }
 
+    public boolean IsConnected()
+    {
+        return this.m_IsConnected;
+    }
+
     abstract public void SendMessage(String i_Message) throws SocketTimeoutException;
     abstract public void CloseConnection(String i_ExceptionMessage);
     abstract public boolean IsConnectionAlive();

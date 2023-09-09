@@ -8,6 +8,7 @@ import com.google.gson.reflect.TypeToken;
 import dto.*;
 import entities.player.HostEntity;
 import entities.player.PCPlayerEntity;
+import entities.player.WebPlayerEntity;
 import exceptions.MatchTerminationException;
 import exceptions.PlayerConnectionException;
 import model.player.PlayerEntity;
@@ -138,7 +139,6 @@ public abstract class MatchService extends Thread
                 break;
             }
             case ELIMINATION -> {
-                MatchLogger.Debug(m_MatchIdentifier, "Elimination message arrived!");
                 if(GetNumOfActivePlayers() <= 2)
                 {
                     for(PlayerEntity pe : this.m_MatchPlayerEntities)
@@ -148,7 +148,7 @@ public abstract class MatchService extends Thread
                             continue;
                         }
 
-                       if(!pe.GetUserName().equals(i_Match_PlayerEntity.GetUserName()))
+                       if(!pe.GetUserName().equals(i_PlayerCommand.GetUsername()))
                        {
                            SetCompleteLevelPlayer(i_Match_PlayerEntity);
                        }
@@ -159,15 +159,18 @@ public abstract class MatchService extends Thread
                     }
                 }
 
-                ServerGeneralMessage eliminationNotification
-                        = new ServerGeneralMessage(ServerGeneralMessage.eActionType.ELIMINATION, "ELIMINATION");
-
-                try {
-                    i_Match_PlayerEntity.SendMessage(eliminationNotification.toString());
-                } catch(SocketTimeoutException ste) {
-                    LoggerManager.warning("Couldn't notify " + i_Match_PlayerEntity.GetUserName() + " of his elimination.");
-                }
-
+                Optional<PlayerEntity> spe = m_MatchPlayerEntities.stream().filter((p) -> p instanceof WebPlayerEntity && p.GetUserName().equals(i_PlayerCommand.GetUsername())).findFirst();
+                spe.ifPresent(player -> {
+                    try {
+                        ServerGeneralMessage eliminationNotification
+                                = new ServerGeneralMessage(ServerGeneralMessage.eActionType.ELIMINATION, "ELIMINATION");
+                        player.SendMessage(eliminationNotification.toString());
+                    } catch(SocketTimeoutException ste) {
+                        LoggerManager.warning("Couldn't notify " + player.GetUserName() + " of his elimination.");
+                    } finally {
+                        RemovePlayerFromMatch(player);
+                    }
+                });
             }
             case QUIT -> {
                 throw new PlayerConnectionException(GlobalSettings.CLIENT_CLOSED_CONNECTION);
@@ -238,6 +241,8 @@ public abstract class MatchService extends Thread
 
                 this.SendPlayerCommand(new PlayerCommand(MessageType.COMMAND,
                         quitedPlayer.GetUserName(), RIVAL_QUIT, new Location(0,0)));
+
+                quitedPlayer.CloseConnection(GlobalSettings.CLIENT_CLOSED_CONNECTION);
 
                 MatchLogger.Debug(GetMatchIdentifier(), "Player " + quitedPlayer.GetUserName() + " disconnected.");
             });
