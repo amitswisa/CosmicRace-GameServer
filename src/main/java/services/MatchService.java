@@ -278,6 +278,9 @@ public abstract class MatchService extends Thread
     {
         for(PlayerEntity matchPlayer : m_MatchPlayerEntities)
         {
+            if(matchPlayer instanceof HostEntity)
+                continue;
+
             if(!matchPlayer.IsFinishedMatch())
                 return false;
         }
