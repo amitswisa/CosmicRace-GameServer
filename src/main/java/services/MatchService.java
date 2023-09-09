@@ -138,13 +138,10 @@ public abstract class MatchService extends Thread
                 break;
             }
             case ELIMINATION -> {
-                if(getNumOfPlayerInMatch() <= 2)
+                if(GetNumOfActivePlayers() <= 2)
                 {
                     for(PlayerEntity pe : this.m_MatchPlayerEntities)
                     {
-                       if(pe instanceof HostEntity)
-                           continue;
-
                        if(!pe.GetUserName().equals(i_Match_PlayerEntity.GetUserName()))
                        {
                            SetCompleteLevelPlayer(i_Match_PlayerEntity);
