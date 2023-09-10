@@ -56,7 +56,7 @@ public final class OnlineMatchService extends MatchService {
 
             this.runGame();
 
-        } catch(Exception e){
+        } catch(Exception e) {
             this.EndMatch(e.getMessage());
         }
     }

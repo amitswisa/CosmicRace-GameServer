@@ -6,6 +6,8 @@ import entities.player.PCPlayerEntity;
 import dto.ServerGeneralMessage;
 import utils.loggers.LoggerManager;
 import utils.GlobalSettings;
+import utils.loggers.MatchLogger;
+
 import java.net.SocketTimeoutException;
 import java.util.*;
 
@@ -61,6 +63,7 @@ public final class MatchMaking
 
     public static synchronized void RemoveActiveMatch(OnlineMatchService i_Match)
     {
+        MatchLogger.Info(i_Match.GetMatchIdentifier(), "Match Terminated!");
         s_ActiveMatches.remove(i_Match.GetMatchIdentifier());
     }
 
