@@ -134,26 +134,6 @@ public abstract class MatchService extends Thread
 
             }
             case ELIMINATION -> {
-                if(GetNumOfActivePlayers() <= 2)
-                {
-                    for(PlayerEntity pe : this.m_MatchPlayerEntities)
-                    {
-                        if(pe instanceof HostEntity)
-                        {
-                            continue;
-                        }
-
-                       if(!pe.GetUserName().equals(i_PlayerCommand.GetUsername()))
-                       {
-                           SetCompleteLevelPlayer(i_Match_PlayerEntity);
-                       }
-                       else
-                       {
-                           pe.MarkAsFinish();
-                       }
-                    }
-                }
-
                 Optional<PlayerEntity> spe = m_MatchPlayerEntities.stream().filter((p) -> p instanceof WebPlayerEntity && p.GetUserName().equals(i_PlayerCommand.GetUsername())).findFirst();
                 spe.ifPresent(player -> {
                     try {

@@ -1,6 +1,7 @@
 package services;
 
 import dto.PlayerCommand;
+import dto.PlayerMatchInfo;
 import dto.ServerGeneralMessage;
 import entities.player.HostEntity;
 import entities.player.WebPlayerEntity;
@@ -10,6 +11,7 @@ import utils.GlobalSettings;
 import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
 import utils.loggers.MatchLogger;
+import utils.match.MatchScoreManager;
 
 import java.net.SocketTimeoutException;
 import java.util.List;
@@ -132,15 +134,32 @@ public class OfflineMatchService extends MatchService
                 this.m_MatchScore.SetPlayerScore(lastPlayer);
         }
 
+        this.m_MatchScore.UnionScoreBoards(); // Union disconnected stack and players finished list.
+        List<MatchScoreManager.PlayerScore> finalScoreTable = this.m_MatchScore.GetPlayersMatchScoreList();
+
         ServerGeneralMessage finalMatchEndedMessage
-                = new ServerGeneralMessage(ServerGeneralMessage.eActionType.MATCH_TERMINATION, i_MatchEndedReason);
+                = new ServerGeneralMessage(ServerGeneralMessage.eActionType.COMPLETE_MATCH, i_MatchEndedReason);
+
+
 
         try
         {
+            for (MatchScoreManager.PlayerScore player : finalScoreTable)
+            {
+                ServerGeneralMessage scorePositionAnnouncement
+                        = new ServerGeneralMessage
+                        (ServerGeneralMessage.eActionType.COMPLETE_LEVEL,
+                                (new PlayerMatchInfo(player.GetPlayer().GetUserName(), this.m_MatchScore.GetFinalLocation(player.GetPlayer().GetUserName()), player.GetPlayer().GetCollectedCoinsAmount()).toString()));
+
+                SendMessageToHost(scorePositionAnnouncement.toString());
+            }
+
             this.r_MatchHost.SendMessage(finalMatchEndedMessage.toString());
-            this.r_MatchHost.CloseConnection(i_MatchEndedReason);
+
         } catch (SocketTimeoutException ste) {
             MatchLogger.Info(this.m_MatchIdentifier,"Couldn't notify host on match ending.");
+        } finally {
+            this.r_MatchHost.CloseConnection(i_MatchEndedReason);
         }
 
         String finalI_MatchEndedReason = i_MatchEndedReason;
@@ -197,5 +216,10 @@ public class OfflineMatchService extends MatchService
     public int GetNumOfActivePlayers()
     {
         return this.m_MatchPlayerEntities.size() - 1;
+    }
+
+    synchronized public boolean IsGameStarted()
+    {
+        return this.m_IsGameStarted;
     }
 }

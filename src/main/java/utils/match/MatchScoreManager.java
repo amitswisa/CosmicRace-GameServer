@@ -1,5 +1,6 @@
 package utils.match;
 
+import entities.player.HostEntity;
 import model.player.PlayerEntity;
 import utils.GlobalSettings;
 
@@ -65,7 +66,12 @@ public final class MatchScoreManager {
     {
 
         for (PlayerScore player : m_ScoreBoard) {
-            if(player.m_Match_PlayerEntity.GetUserName().equals(i_UserName)){
+
+            if(player.m_Match_PlayerEntity instanceof HostEntity)
+                continue;
+
+            if(player.m_Match_PlayerEntity.GetUserName().equals(i_UserName))
+            {
                 return player.GetScorePosition();
             }
         }

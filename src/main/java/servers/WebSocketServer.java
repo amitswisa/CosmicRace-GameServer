@@ -5,6 +5,7 @@ import dto.MessageType;
 import dto.ServerGeneralMessage;
 import entities.connection.WebConnection;
 import entities.player.WebPlayerEntity;
+import exceptions.PlayerConnectionException;
 import jakarta.websocket.*;
 import jakarta.websocket.server.ServerEndpoint;
 import match.OfflineMatchManager;
@@ -35,7 +36,7 @@ public class WebSocketServer extends Thread
     }
 
     @OnMessage
-    public void onMessage(String message, Session session) throws SocketTimeoutException {
+    public void onMessage(String message, Session session) throws SocketTimeoutException, PlayerConnectionException {
 
         WebPlayerEntity webPlayer = (WebPlayerEntity) getPlayerEntity(session);
 
@@ -56,6 +57,10 @@ public class WebSocketServer extends Thread
 
                     if (matchService != null)
                     {
+
+                        if(matchService.IsGameStarted())
+                            throw new PlayerConnectionException("Match already started!");
+
                         webPlayer.SetInitData(playerData);
                         matchService.AddPlayer(webPlayer);
                         webPlayer.MarkAsReady();
