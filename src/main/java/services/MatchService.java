@@ -108,17 +108,14 @@ public abstract class MatchService extends Thread
                 i_Match_PlayerEntity.UpdateLocation(i_PlayerCommand.GetLocation());
                 this.SendPlayerCommand(i_PlayerCommand);
                 i_PlayerCommand.SetAttackInfo(null); //Dvir asked to add it.
-                break;
             }
             case ATTACK -> {
                 i_PlayerCommand.SetAttackInfo(AttackInfo.GenerateAttackInfo(i_PlayerCommand, m_MatchPlayerEntities));
                 this.SendPlayerCommand(i_PlayerCommand);
-                break;
             }
             case COIN_COLLECT -> {
                 i_Match_PlayerEntity.MarkAlive();
                 updateCoinsOfPlayer(i_PlayerCommand.GetUsername());
-                break;
             }
             case COMPLETE_LEVEL -> {
 
@@ -136,7 +133,6 @@ public abstract class MatchService extends Thread
                     LoggerManager.warning(i_Match_PlayerEntity.GetUserName() + " " + iae.getMessage());
                 }
 
-                break;
             }
             case ELIMINATION -> {
                 if(GetNumOfActivePlayers() <= 2)
@@ -297,11 +293,6 @@ public abstract class MatchService extends Thread
     protected void setMatchStarted()
     {
         this.m_IsGameStarted = true;
-    }
-
-    protected int getNumOfPlayerInMatch()
-    {
-        return this.m_MatchPlayerEntities.size();
     }
 
     protected void runGame() throws Exception

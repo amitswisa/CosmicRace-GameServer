@@ -21,12 +21,10 @@ public abstract class PlayerEntity
     protected Character m_Character;
     private boolean m_IsDead;
     private long m_LastAttackTime;
-    private boolean elimination;
 
     public PlayerEntity(ConnectionModel i_Connection)
     {
         this.m_Connection = i_Connection;
-        this.elimination = false;
         this.m_IsReady = false;
         this.m_IsFinished = false;
         this.m_CoinsCollected = 0;

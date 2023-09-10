@@ -112,8 +112,7 @@ public class OfflineMatchService extends MatchService
         {
             i_MatchEndedReason = GlobalSettings.NOT_ENOUGH_PLAYERS_TO_CONTINUE;
         }
-
-        if(!i_MatchEndedReason.equals(GlobalSettings.MATCH_ENDED))
+        else if(!i_MatchEndedReason.equals(GlobalSettings.MATCH_ENDED))
         {
             MatchLogger.Error(GetMatchIdentifier(), i_MatchEndedReason);
         }
@@ -125,7 +124,6 @@ public class OfflineMatchService extends MatchService
         ServerGeneralMessage finalMatchEndedMessage
                 = new ServerGeneralMessage(ServerGeneralMessage.eActionType.MATCH_TERMINATION, i_MatchEndedReason);
 
-        // Notify host.
         try
         {
             this.r_MatchHost.SendMessage(finalMatchEndedMessage.toString());
