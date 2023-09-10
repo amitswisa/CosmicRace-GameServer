@@ -137,9 +137,12 @@ public class OfflineMatchService extends MatchService
         this.m_MatchScore.UnionScoreBoards(); // Union disconnected stack and players finished list.
         List<MatchScoreManager.PlayerScore> finalScoreTable = this.m_MatchScore.GetPlayersMatchScoreList();
 
-        ServerGeneralMessage finalMatchEndedMessage
-                = new ServerGeneralMessage(ServerGeneralMessage.eActionType.COMPLETE_MATCH, i_MatchEndedReason);
+        ServerGeneralMessage finalMatchEndedMessage;
 
+        if(!i_MatchEndedReason.equals(GlobalSettings.HOST_CLOSED_MATCH))
+            finalMatchEndedMessage = new ServerGeneralMessage(ServerGeneralMessage.eActionType.COMPLETE_MATCH, i_MatchEndedReason);
+        else
+            finalMatchEndedMessage = new ServerGeneralMessage(ServerGeneralMessage.eActionType.MATCH_TERMINATION, i_MatchEndedReason);
 
 
         try

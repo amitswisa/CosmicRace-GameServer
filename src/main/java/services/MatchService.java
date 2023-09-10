@@ -295,7 +295,7 @@ public abstract class MatchService extends Thread
                 {
                     if(matchPlayer instanceof HostEntity)
                     {
-                        throw new SocketTimeoutException("Host closed the game session.");
+                        throw new SocketTimeoutException(GlobalSettings.HOST_CLOSED_MATCH);
                     }
                     else
                     {
