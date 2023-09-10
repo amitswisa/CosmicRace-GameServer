@@ -123,6 +123,15 @@ public class OfflineMatchService extends MatchService
             MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
         }
 
+        //Ran
+        if(this.GetNumOfActivePlayers() == 1) //if there's only 1 player left - EXCLUDING HOST
+        {
+            PlayerEntity lastPlayer = this.m_MatchPlayerEntities.get(1); //this.m_MatchPlayerEntities.get(0) is THE HOST.
+
+            if(lastPlayer.IsConnectionAlive() && !lastPlayer.IsFinishedMatch())
+                this.m_MatchScore.SetPlayerScore(lastPlayer);
+        }
+
         ServerGeneralMessage finalMatchEndedMessage
                 = new ServerGeneralMessage(ServerGeneralMessage.eActionType.MATCH_TERMINATION, i_MatchEndedReason);
 
