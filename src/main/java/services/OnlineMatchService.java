@@ -114,6 +114,7 @@ public final class OnlineMatchService extends MatchService {
             finalMatchEndedMessage
                     = new ServerGeneralMessage(ServerGeneralMessage.eActionType.COMPLETE_MATCH, i_MatchEndedReason);
             MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
+            UpdateGameStatistics();
         }
 
         for (PlayerEntity player : m_MatchPlayerEntities) {
@@ -136,8 +137,6 @@ public final class OnlineMatchService extends MatchService {
                 player.CloseConnection(i_MatchEndedReason);
             }
         }
-
-        UpdateGameStatistics();
 
         MatchMaking.RemoveActiveMatch(this);
         this.interrupt();

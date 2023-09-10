@@ -129,6 +129,7 @@ public class OfflineMatchService extends MatchService
         try
         {
             this.r_MatchHost.SendMessage(finalMatchEndedMessage.toString());
+            this.r_MatchHost.CloseConnection(i_MatchEndedReason);
         } catch (SocketTimeoutException ste) {
             MatchLogger.Info(this.m_MatchIdentifier,"Couldn't notify host on match ending.");
         }
