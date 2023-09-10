@@ -6,7 +6,6 @@ import dto.ServerGeneralMessage;
 import entities.player.HostEntity;
 import match.MatchMaking;
 import model.player.PlayerEntity;
-import utils.GlobalSettings;
 import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
 import utils.loggers.MatchLogger;
@@ -101,21 +100,11 @@ public final class OnlineMatchService extends MatchService {
         if(this.m_IsGameOver) return;
 
         this.m_IsGameOver = true;
-        ServerGeneralMessage finalMatchEndedMessage;
+        MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
 
-        if(!i_MatchEndedReason.equals(GlobalSettings.MATCH_ENDED))
-        {
-            MatchLogger.Error(GetMatchIdentifier(), i_MatchEndedReason);
-            finalMatchEndedMessage
-                    = new ServerGeneralMessage(ServerGeneralMessage.eActionType.MATCH_TERMINATION, i_MatchEndedReason);
-        }
-        else
-        {
-            finalMatchEndedMessage
-                    = new ServerGeneralMessage(ServerGeneralMessage.eActionType.COMPLETE_MATCH, i_MatchEndedReason);
-            MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
-            UpdateGameStatistics();
-        }
+        this.m_MatchScore.UnionScoreBoards(); // Union disconnected stack and players finished list.
+
+        UpdateGameStatistics(); // Update query.
 
         for (PlayerEntity player : m_MatchPlayerEntities) {
             ServerGeneralMessage scorePositionAnnouncement
@@ -125,6 +114,9 @@ public final class OnlineMatchService extends MatchService {
 
             SendMessageToAll(scorePositionAnnouncement.toString());
         }
+
+        ServerGeneralMessage finalMatchEndedMessage
+                = new ServerGeneralMessage(ServerGeneralMessage.eActionType.COMPLETE_MATCH, i_MatchEndedReason);
 
         for (PlayerEntity player : m_MatchPlayerEntities) {
             try {

@@ -138,4 +138,7 @@ public abstract class PlayerEntity
         return m_CoinsCollected;
     }
 
+    public void ResetCoinsCollected() {
+        this.m_CoinsCollected = 0;
+    }
 }

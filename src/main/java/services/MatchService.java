@@ -7,7 +7,6 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import dto.*;
 import entities.player.HostEntity;
-import entities.player.PCPlayerEntity;
 import entities.player.WebPlayerEntity;
 import exceptions.MatchTerminationException;
 import exceptions.PlayerConnectionException;
@@ -339,6 +338,7 @@ public abstract class MatchService extends Thread
     public synchronized void RemovePlayerFromMatch(PlayerEntity i_MatchPlayer)
     {
         this.m_WaitingToQuit.add(i_MatchPlayer);
+        this.m_MatchScore.AddPlayerToDisconnectedStack(i_MatchPlayer);
     }
 
     public boolean IsGameOver() {
