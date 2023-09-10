@@ -9,6 +9,7 @@ import model.player.PlayerEntity;
 import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
 import utils.loggers.MatchLogger;
+import utils.match.MatchScoreManager;
 
 import java.net.SocketTimeoutException;
 import java.util.List;
@@ -99,21 +100,32 @@ public final class OnlineMatchService extends MatchService {
 
         if(this.m_IsGameOver) return;
 
-        this.m_IsGameOver = true;
         MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
 
+        this.m_IsGameOver = true;
+
+        // Logic - Last player didnt finish and everyone else quitted.
+        if(this.m_MatchPlayerEntities.size() == 1)
+        {
+            PlayerEntity lastPlayer = this.m_MatchPlayerEntities.get(0);
+
+            if(lastPlayer.IsConnectionAlive() && !lastPlayer.IsFinishedMatch())
+                this.m_MatchScore.SetPlayerScore(lastPlayer);
+        }
+
         this.m_MatchScore.UnionScoreBoards(); // Union disconnected stack and players finished list.
+        List<MatchScoreManager.PlayerScore> finalScoreTable = this.m_MatchScore.GetPlayersMatchScoreList();
 
-        UpdateGameStatistics(); // Update query.
-
-        for (PlayerEntity player : m_MatchPlayerEntities) {
+        for (MatchScoreManager.PlayerScore player : finalScoreTable) {
             ServerGeneralMessage scorePositionAnnouncement
                     = new ServerGeneralMessage
                     (ServerGeneralMessage.eActionType.COMPLETE_LEVEL,
-                            (new PlayerMatchInfo(player.GetUserName(), this.m_MatchScore.GetFinalLocation(player.GetUserName()), player.GetCollectedCoinsAmount()).toString()));
+                            (new PlayerMatchInfo(player.GetPlayer().GetUserName(), this.m_MatchScore.GetFinalLocation(player.GetPlayer().GetUserName()), player.GetPlayer().GetCollectedCoinsAmount()).toString()));
 
             SendMessageToAll(scorePositionAnnouncement.toString());
         }
+
+        UpdateGameStatistics(); // Update query.
 
         ServerGeneralMessage finalMatchEndedMessage
                 = new ServerGeneralMessage(ServerGeneralMessage.eActionType.COMPLETE_MATCH, i_MatchEndedReason);
