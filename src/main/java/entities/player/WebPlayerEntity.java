@@ -22,6 +22,9 @@ public class WebPlayerEntity extends PlayerEntity
     @Override
     public void CloseConnection(String i_ExceptionMessage)
     {
+        if(!this.m_Connection.IsConnected())
+            return;
+
         if(this.m_CurrentMatch != null)
             this.m_CurrentMatch.RemovePlayerFromMatch(this);
 
@@ -39,7 +42,7 @@ public class WebPlayerEntity extends PlayerEntity
         }
 
         MarkDead();
-        
+
         MatchLogger.Info(this.m_CurrentMatch.GetMatchIdentifier(), "Closing connection for player: " + this.m_Username);
         this.m_Connection.CloseConnection(i_ExceptionMessage);
         MatchLogger.Info(this.m_CurrentMatch.GetMatchIdentifier(), this.m_Username + " Connection closed!");

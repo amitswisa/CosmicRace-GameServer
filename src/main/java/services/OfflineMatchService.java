@@ -105,10 +105,16 @@ public class OfflineMatchService extends MatchService
     @Override
     public void EndMatch(String i_MatchEndedReason) {
 
+        if(this.m_IsGameOver) return;
+
         this.m_IsGameOver = true;
         MatchLogger.Info(GetMatchIdentifier(), "Terminating match...");
 
-        if(!i_MatchEndedReason.equals(GlobalSettings.MATCH_ENDED))
+        if(i_MatchEndedReason == null)
+        {
+            i_MatchEndedReason = GlobalSettings.NOT_ENOUGH_PLAYERS_TO_CONTINUE;
+        }
+        else if(!i_MatchEndedReason.equals(GlobalSettings.MATCH_ENDED))
         {
             MatchLogger.Error(GetMatchIdentifier(), i_MatchEndedReason);
         }
@@ -120,7 +126,6 @@ public class OfflineMatchService extends MatchService
         ServerGeneralMessage finalMatchEndedMessage
                 = new ServerGeneralMessage(ServerGeneralMessage.eActionType.MATCH_TERMINATION, i_MatchEndedReason);
 
-        // Notify host.
         try
         {
             this.r_MatchHost.SendMessage(finalMatchEndedMessage.toString());
@@ -128,6 +133,7 @@ public class OfflineMatchService extends MatchService
             MatchLogger.Info(this.m_MatchIdentifier,"Couldn't notify host on match ending.");
         }
 
+        String finalI_MatchEndedReason = i_MatchEndedReason;
         this.actionOnMatchPlayers((player) -> {
             try {
                 player.SendMessage(finalMatchEndedMessage.toString());
@@ -135,7 +141,7 @@ public class OfflineMatchService extends MatchService
                 MatchLogger.Warning(GetMatchIdentifier()
                         , "Couldn't update player " + player.GetUserName() + " on match ending.");
             } finally {
-                player.CloseConnection(i_MatchEndedReason);
+                player.CloseConnection(finalI_MatchEndedReason);
             }
         });
 

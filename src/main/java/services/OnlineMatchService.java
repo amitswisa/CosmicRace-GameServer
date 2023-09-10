@@ -98,6 +98,8 @@ public final class OnlineMatchService extends MatchService {
     @Override
     public void EndMatch(String i_MatchEndedReason) {
 
+        if(this.m_IsGameOver) return;
+
         this.m_IsGameOver = true;
         ServerGeneralMessage finalMatchEndedMessage;
 
@@ -113,7 +115,6 @@ public final class OnlineMatchService extends MatchService {
                     = new ServerGeneralMessage(ServerGeneralMessage.eActionType.COMPLETE_MATCH, i_MatchEndedReason);
             MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
         }
-
 
         for (PlayerEntity player : m_MatchPlayerEntities) {
             ServerGeneralMessage scorePositionAnnouncement

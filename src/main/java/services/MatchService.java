@@ -8,6 +8,7 @@ import com.google.gson.reflect.TypeToken;
 import dto.*;
 import entities.player.HostEntity;
 import entities.player.PCPlayerEntity;
+import entities.player.WebPlayerEntity;
 import exceptions.MatchTerminationException;
 import exceptions.PlayerConnectionException;
 import model.player.PlayerEntity;
@@ -107,17 +108,14 @@ public abstract class MatchService extends Thread
                 i_Match_PlayerEntity.UpdateLocation(i_PlayerCommand.GetLocation());
                 this.SendPlayerCommand(i_PlayerCommand);
                 i_PlayerCommand.SetAttackInfo(null); //Dvir asked to add it.
-                break;
             }
             case ATTACK -> {
                 i_PlayerCommand.SetAttackInfo(AttackInfo.GenerateAttackInfo(i_PlayerCommand, m_MatchPlayerEntities));
                 this.SendPlayerCommand(i_PlayerCommand);
-                break;
             }
             case COIN_COLLECT -> {
                 i_Match_PlayerEntity.MarkAlive();
                 updateCoinsOfPlayer(i_PlayerCommand.GetUsername());
-                break;
             }
             case COMPLETE_LEVEL -> {
 
@@ -135,10 +133,8 @@ public abstract class MatchService extends Thread
                     LoggerManager.warning(i_Match_PlayerEntity.GetUserName() + " " + iae.getMessage());
                 }
 
-                break;
             }
             case ELIMINATION -> {
-                MatchLogger.Debug(m_MatchIdentifier, "Elimination message arrived!");
                 if(GetNumOfActivePlayers() <= 2)
                 {
                     for(PlayerEntity pe : this.m_MatchPlayerEntities)
@@ -148,7 +144,7 @@ public abstract class MatchService extends Thread
                             continue;
                         }
 
-                       if(!pe.GetUserName().equals(i_Match_PlayerEntity.GetUserName()))
+                       if(!pe.GetUserName().equals(i_PlayerCommand.GetUsername()))
                        {
                            SetCompleteLevelPlayer(i_Match_PlayerEntity);
                        }
@@ -159,15 +155,18 @@ public abstract class MatchService extends Thread
                     }
                 }
 
-                ServerGeneralMessage eliminationNotification
-                        = new ServerGeneralMessage(ServerGeneralMessage.eActionType.ELIMINATION, "ELIMINATION");
-
-                try {
-                    i_Match_PlayerEntity.SendMessage(eliminationNotification.toString());
-                } catch(SocketTimeoutException ste) {
-                    LoggerManager.warning("Couldn't notify " + i_Match_PlayerEntity.GetUserName() + " of his elimination.");
-                }
-
+                Optional<PlayerEntity> spe = m_MatchPlayerEntities.stream().filter((p) -> p instanceof WebPlayerEntity && p.GetUserName().equals(i_PlayerCommand.GetUsername())).findFirst();
+                spe.ifPresent(player -> {
+                    try {
+                        ServerGeneralMessage eliminationNotification
+                                = new ServerGeneralMessage(ServerGeneralMessage.eActionType.ELIMINATION, "ELIMINATION");
+                        player.SendMessage(eliminationNotification.toString());
+                    } catch(SocketTimeoutException ste) {
+                        LoggerManager.warning("Couldn't notify " + player.GetUserName() + " of his elimination.");
+                    } finally {
+                        RemovePlayerFromMatch(player);
+                    }
+                });
             }
             case QUIT -> {
                 throw new PlayerConnectionException(GlobalSettings.CLIENT_CLOSED_CONNECTION);
@@ -239,6 +238,8 @@ public abstract class MatchService extends Thread
                 this.SendPlayerCommand(new PlayerCommand(MessageType.COMMAND,
                         quitedPlayer.GetUserName(), RIVAL_QUIT, new Location(0,0)));
 
+                quitedPlayer.CloseConnection(GlobalSettings.CLIENT_CLOSED_CONNECTION);
+
                 MatchLogger.Debug(GetMatchIdentifier(), "Player " + quitedPlayer.GetUserName() + " disconnected.");
             });
 
@@ -292,11 +293,6 @@ public abstract class MatchService extends Thread
     protected void setMatchStarted()
     {
         this.m_IsGameStarted = true;
-    }
-
-    protected int getNumOfPlayerInMatch()
-    {
-        return this.m_MatchPlayerEntities.size();
     }
 
     protected void runGame() throws Exception
