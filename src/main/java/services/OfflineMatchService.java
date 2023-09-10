@@ -76,7 +76,7 @@ public class OfflineMatchService extends MatchService
                     m_IsPreStageRunning = false;
                     continue;
                 } else if(hostMessage.equals("QUIT")) {
-                    this.EndMatch("Host closed match room.");
+                    this.EndMatch(GlobalSettings.HOST_CLOSED_MATCH);
                 }
             }
 
@@ -139,10 +139,10 @@ public class OfflineMatchService extends MatchService
 
         ServerGeneralMessage finalMatchEndedMessage;
 
-        if(!i_MatchEndedReason.equals(GlobalSettings.HOST_CLOSED_MATCH))
-            finalMatchEndedMessage = new ServerGeneralMessage(ServerGeneralMessage.eActionType.COMPLETE_MATCH, i_MatchEndedReason);
-        else
+        if(i_MatchEndedReason.equals(GlobalSettings.HOST_CLOSED_MATCH))
             finalMatchEndedMessage = new ServerGeneralMessage(ServerGeneralMessage.eActionType.MATCH_TERMINATION, i_MatchEndedReason);
+        else
+            finalMatchEndedMessage = new ServerGeneralMessage(ServerGeneralMessage.eActionType.COMPLETE_MATCH, i_MatchEndedReason);
 
 
         try
