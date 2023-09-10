@@ -61,6 +61,7 @@ public class WebSocketServer extends Thread
                         if(matchService.IsGameStarted())
                             throw new PlayerConnectionException("Match already started!");
 
+
                         webPlayer.SetInitData(playerData);
                         matchService.AddPlayer(webPlayer);
                         webPlayer.MarkAsReady();
