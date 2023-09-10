@@ -41,11 +41,16 @@ public class WebPlayerEntity extends PlayerEntity
             }
         }
 
-        MarkDead();
+        if(this.m_CurrentMatch != null)
+        {
+            MarkDead();
+            MatchLogger.Info(this.m_CurrentMatch.GetMatchIdentifier(), "Closing connection for player: " + this.m_Username);
+        }
 
-        MatchLogger.Info(this.m_CurrentMatch.GetMatchIdentifier(), "Closing connection for player: " + this.m_Username);
         this.m_Connection.CloseConnection(i_ExceptionMessage);
-        MatchLogger.Info(this.m_CurrentMatch.GetMatchIdentifier(), this.m_Username + " Connection closed!");
+
+        if(this.m_CurrentMatch != null)
+            MatchLogger.Info(this.m_CurrentMatch.GetMatchIdentifier(), this.m_Username + " Connection closed!");
     }
 
     public void HandleMessageReceived(String i_Text)
