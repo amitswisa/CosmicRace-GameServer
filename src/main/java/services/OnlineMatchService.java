@@ -6,6 +6,7 @@ import dto.ServerGeneralMessage;
 import entities.player.HostEntity;
 import match.MatchMaking;
 import model.player.PlayerEntity;
+import utils.GlobalSettings;
 import utils.json.JsonFormatter;
 import utils.loggers.LoggerManager;
 import utils.loggers.MatchLogger;
@@ -99,6 +100,10 @@ public final class OnlineMatchService extends MatchService {
     public void EndMatch(String i_MatchEndedReason) {
 
         if(this.m_IsGameOver) return;
+
+        // TODO - Why this case sends i_MatchEndedReason as null.
+        if(i_MatchEndedReason == null)
+            i_MatchEndedReason = GlobalSettings.NOT_ENOUGH_PLAYERS_TO_CONTINUE;
 
         MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
 
