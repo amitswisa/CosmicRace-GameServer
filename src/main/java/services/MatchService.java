@@ -312,6 +312,7 @@ public abstract class MatchService extends Thread
                     }
                     else
                     {
+                        MatchLogger.Debug(this.m_MatchIdentifier, matchPlayer.GetUserName() + " error inside runGame: " + pqe.getMessage());// TODO - DELETE.
                         matchPlayer.CloseConnection(pqe.getMessage());
                     }
                 }
