@@ -106,7 +106,16 @@ public abstract class MatchService extends Thread
         switch (i_PlayerCommand.GetAction())
         {
             case IDLE, RUN_RIGHT, RUN_LEFT, DEATH, UPDATE_LOCATION, JUMP -> {
-                i_Match_PlayerEntity.MarkAlive();
+
+                if(!this.m_IsFriendMode)
+                    i_Match_PlayerEntity.MarkAlive();
+                else
+                    if(i_PlayerCommand.GetAction().equals(DEATH))
+                        i_Match_PlayerEntity.MarkDead();
+                    else
+                        if(i_Match_PlayerEntity.IsDead())
+                            return;
+
                 i_Match_PlayerEntity.UpdateLocation(i_PlayerCommand.GetLocation());
                 this.SendPlayerCommand(i_PlayerCommand);
                 i_PlayerCommand.SetAttackInfo(null); //Dvir asked to add it.
@@ -157,6 +166,10 @@ public abstract class MatchService extends Thread
             }
             case QUIT -> {
                 throw new PlayerConnectionException(GlobalSettings.CLIENT_CLOSED_CONNECTION);
+            }
+            case REVIVE -> {
+                if(this.m_IsFriendMode)
+                    i_Match_PlayerEntity.MarkAlive();
             }
             default -> {
                 LoggerManager.warning("Player " + i_PlayerCommand.GetUsername() + " command not found");

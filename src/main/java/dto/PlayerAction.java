@@ -14,5 +14,6 @@ public class PlayerAction {
     public static final String COIN_COLLECT = "COIN_COLLECT";
     public static final String COMPLETE_LEVEL = "COMPLETE_LEVEL";
     public static final String ELIMINATION = "ELIMINATION";
+    public static final String REVIVE = "REVIVE";
 
 }
