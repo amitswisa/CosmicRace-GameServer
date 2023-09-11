@@ -63,20 +63,21 @@ public class PCPlayerEntity extends PlayerEntity implements Comparable<PCPlayerE
         if(!this.m_Connection.IsConnected())
             return;
 
-        if(this.m_CurrentMatch != null)
-            this.m_CurrentMatch.RemovePlayerFromMatch(this);
-        /*else
-            MatchMaking.RemovePlayerFromQueue(this);*/ // TODO - Resume.
-
-        // Notify player on connection close.
         try {
             this.SendMessage(new ServerGeneralMessage(ServerGeneralMessage.eActionType.NOTIFICATION, i_ExceptionMessage).toString());
         } catch(SocketTimeoutException ste) {
             LoggerManager.warning("Couldn't notify player " + this.m_Username + " on " + i_ExceptionMessage);
+        } finally {
+            this.m_Connection.CloseConnection(i_ExceptionMessage);
         }
 
+        if(this.m_CurrentMatch != null)
+            this.m_CurrentMatch.RemovePlayerFromMatch(this);
+        else
+            MatchMaking.RemovePlayerFromQueue(this);
+
         MarkDead();
-        this.m_Connection.CloseConnection(i_ExceptionMessage);
+
     }
 
     public boolean EqualByUsername(String i_Username)

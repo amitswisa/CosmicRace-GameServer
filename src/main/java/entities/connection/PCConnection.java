@@ -91,7 +91,6 @@ public class PCConnection extends ConnectionModel {
             return;
 
         try {
-            this.m_IsConnected = false;
             this.m_SocketConnection.close();
 
             if(!i_ExceptionMessage.equals(GlobalSettings.MATCH_ENDED))

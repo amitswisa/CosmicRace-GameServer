@@ -321,6 +321,10 @@ public abstract class MatchService extends Thread
                     MatchLogger.Error(this.GetMatchIdentifier()
                             , "Player " + matchPlayer.GetUserName() + " command error: " + jse.getMessage());
                 }
+                catch(Exception generalException)
+                {
+                    LoggerManager.warning("Unhandled exception: " + generalException.getMessage());
+                }
             }
 
             this.removeWaitingToQuitPlayers();
@@ -331,6 +335,9 @@ public abstract class MatchService extends Thread
 
     public synchronized void RemovePlayerFromMatch(PlayerEntity i_MatchPlayer)
     {
+        if(this.m_WaitingToQuit.contains(i_MatchPlayer))
+            return;
+
         this.m_WaitingToQuit.add(i_MatchPlayer);
         this.m_MatchScore.AddPlayerToDisconnectedStack(i_MatchPlayer);
     }

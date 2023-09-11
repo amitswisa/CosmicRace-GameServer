@@ -100,7 +100,10 @@ public final class OnlineMatchService extends MatchService {
     public void EndMatch(String i_MatchEndedReason) {
 
         if(this.m_IsGameOver) return;
-        if(i_MatchEndedReason == null) return;
+        if(i_MatchEndedReason == null)
+        {
+            i_MatchEndedReason = GlobalSettings.NOT_ENOUGH_PLAYERS_TO_CONTINUE;
+        }
 
         MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
 
