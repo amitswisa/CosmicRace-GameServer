@@ -288,7 +288,15 @@ public abstract class MatchService extends Thread
                     if(!playerUpdate.equals(GlobalSettings.NO_MESSAGES_IN_CLIENT_BUFFER))
                     {
                         playerCommand.ParseFromJson(playerUpdate);
-                        this.handlePlayerResponse(matchPlayer, playerCommand);
+
+                        // In offline mode -> change matchPlayer to the player who host referred to according to message.
+                        if(matchPlayer instanceof HostEntity)
+                        {
+                            matchPlayer = findPlayerInList(playerCommand.GetUsername());
+                        }
+
+                        if(matchPlayer != null)
+                            this.handlePlayerResponse(matchPlayer, playerCommand);
                     }
                 }
                 catch(PlayerConnectionException pqe)

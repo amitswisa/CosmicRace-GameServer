@@ -49,14 +49,13 @@ public final class OnlineMatchService extends MatchService {
 
     @Override
     public void run() {
+
         setMatchStarted();
 
         try
         {
             this.initMatch();
-
             this.runGame();
-
         } catch(Exception e) {
             this.EndMatch(e.getMessage());
         }
