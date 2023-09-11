@@ -68,7 +68,7 @@ public abstract class MatchService extends Thread
 
         this.actionOnMatchPlayers((player) -> {
             JsonElement playerData = player.GetPlayerMatchData();
-            playersMap.put(player.GetUserName(), playerData);
+            playersMap.put(player.GetUserName().toLowerCase(), playerData);
         });
 
         JsonObject mainObject = new JsonObject();
