@@ -12,6 +12,7 @@ import utils.loggers.LoggerManager;
 import utils.loggers.MatchLogger;
 import utils.match.MatchScoreManager;
 
+import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.function.Consumer;
@@ -57,7 +58,11 @@ public final class OnlineMatchService extends MatchService {
             this.initMatch();
             this.runGame();
         } catch(Exception e) {
-            this.EndMatch(e.getMessage());
+            try {
+                this.EndMatch(e.getMessage());
+            }catch(Exception exc) {
+                exc.printStackTrace();
+            }
         }
     }
 
@@ -96,15 +101,16 @@ public final class OnlineMatchService extends MatchService {
     }
 
     @Override
-    public void EndMatch(String i_MatchEndedReason) {
+    public void EndMatch(String i_MatchEndedReason) throws IOException {
 
         if(this.m_IsGameOver) return;
 
         // TODO - Why this case sends i_MatchEndedReason as null.
         if(i_MatchEndedReason == null)
         {
-            MatchLogger.Debug(this.m_MatchIdentifier, "EndMatch - i_MatchEndedReason is null.");
-            i_MatchEndedReason = GlobalSettings.NOT_ENOUGH_PLAYERS_TO_CONTINUE;
+            throw new IOException("Null Exception");
+            //MatchLogger.Debug(this.m_MatchIdentifier, "EndMatch - i_MatchEndedReason is null.");
+            //i_MatchEndedReason = GlobalSettings.NOT_ENOUGH_PLAYERS_TO_CONTINUE;
         }
 
         MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
@@ -116,7 +122,7 @@ public final class OnlineMatchService extends MatchService {
         {
             PlayerEntity lastPlayer = this.m_MatchPlayerEntities.get(0);
 
-            if(lastPlayer.IsConnectionAlive() && !lastPlayer.IsFinishedMatch())
+            if(lastPlayer.IsConnectionAlive() && !lastPlayer.IsPlayerFinish())
                 this.m_MatchScore.SetPlayerScore(lastPlayer);
         }
 

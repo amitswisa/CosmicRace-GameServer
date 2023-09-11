@@ -65,8 +65,8 @@ public class PCPlayerEntity extends PlayerEntity implements Comparable<PCPlayerE
 
         if(this.m_CurrentMatch != null)
             this.m_CurrentMatch.RemovePlayerFromMatch(this);
-        else
-            MatchMaking.RemovePlayerFromQueue(this);
+        /*else
+            MatchMaking.RemovePlayerFromQueue(this);*/ // TODO - Resume.
 
         // Notify player on connection close.
         try {

@@ -131,7 +131,7 @@ public class OfflineMatchService extends MatchService
         {
             PlayerEntity lastPlayer = this.m_MatchPlayerEntities.get(1); //this.m_MatchPlayerEntities.get(0) is THE HOST.
 
-            if(lastPlayer.IsConnectionAlive() && !lastPlayer.IsFinishedMatch())
+            if(lastPlayer.IsConnectionAlive() && !lastPlayer.IsPlayerFinish())
                 this.m_MatchScore.SetPlayerScore(lastPlayer);
         }
 

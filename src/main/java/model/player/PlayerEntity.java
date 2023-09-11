@@ -96,7 +96,7 @@ public abstract class PlayerEntity
         this.m_CoinsCollected += 1;
     }
 
-    public boolean IsFinishedMatch()
+    public boolean IsPlayerFinish()
     {
         return this.m_IsFinished;
     }

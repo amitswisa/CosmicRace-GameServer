@@ -55,7 +55,7 @@ public abstract class MatchService extends Thread
     // Abstract methods.
     abstract public void run();
     abstract public void SendPlayerCommand(PlayerCommand i_PlayerCommand);
-    abstract public void EndMatch(String i_MatchEndedReason);
+    abstract public void EndMatch(String i_MatchEndedReason) throws IOException;
     abstract protected void initMatch() throws Exception;
     abstract protected void actionOnMatchPlayers(Consumer<PlayerEntity> processor);
     abstract public PlayerEntity GetHost();
@@ -267,7 +267,7 @@ public abstract class MatchService extends Thread
             if(matchPlayer instanceof HostEntity)
                 continue;
 
-            if(!matchPlayer.IsFinishedMatch())
+            if(!matchPlayer.IsPlayerFinish())
                 return false;
         }
 
