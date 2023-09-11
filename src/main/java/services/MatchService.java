@@ -80,7 +80,7 @@ public abstract class MatchService extends Thread
     protected PlayerEntity findPlayerInList(String i_PlayerUsername)
     {
         Optional<PlayerEntity> playerOptional = this.m_MatchPlayerEntities.stream()
-                .filter(p -> p.EqualByUsername(i_PlayerUsername))
+                .filter(p -> !(p instanceof HostEntity) && p.EqualByUsername(i_PlayerUsername))
                 .findFirst();
 
         return playerOptional.orElse(null);
