@@ -17,6 +17,8 @@ import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static dto.PlayerAction.ATTACK;
+
 public final class OnlineMatchService extends MatchService {
 
     public OnlineMatchService(String i_MatchIdentifier, List<PlayerEntity> i_MatchPlayersList)
@@ -81,7 +83,7 @@ public final class OnlineMatchService extends MatchService {
     {
         actionOnMatchPlayers((player) -> {
 
-            if(!player.GetUserName().equals(i_PlayerCommand.GetUsername()))
+            if(!player.GetUserName().equals(i_PlayerCommand.GetUsername()) || i_PlayerCommand.GetAction().equals(ATTACK))
             {
                 try {
                     String command = JsonFormatter.GetGson().toJson(i_PlayerCommand, PlayerCommand.class);

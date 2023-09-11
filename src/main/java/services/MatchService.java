@@ -232,7 +232,6 @@ public abstract class MatchService extends Thread
                     && GetNumOfActivePlayers() < GlobalSettings.MINIMUM_AMOUNT_OF_PLAYERS
                     && this.m_IsGameStarted)
             {
-                MatchLogger.Debug(this.m_MatchIdentifier, "Throwing min players from removeWaitingToQuitPlayers.");
                 throw new MatchTerminationException(this.GetMatchIdentifier(), GlobalSettings.NOT_ENOUGH_PLAYERS_TO_CONTINUE);
             }
         }
