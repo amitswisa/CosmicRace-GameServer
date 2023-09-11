@@ -112,8 +112,8 @@ public abstract class MatchService extends Thread
                 else
                     if(i_PlayerCommand.GetAction().equals(DEATH)){
                         i_Match_PlayerEntity.MarkDead();
-                        this.SendPlayerCommand(new PlayerCommand(MessageType.COMMAND, i_Match_PlayerEntity.GetUserName(),
-                                IDLE, i_PlayerCommand.GetLocation()));
+//                        this.SendPlayerCommand(new PlayerCommand(MessageType.COMMAND, i_Match_PlayerEntity.GetUserName(),
+//                                IDLE, i_PlayerCommand.GetLocation()));
                     }
                     else
                         if(i_Match_PlayerEntity.IsDead())
