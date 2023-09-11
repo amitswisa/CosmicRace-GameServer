@@ -53,7 +53,7 @@ public class PCPlayerEntity extends PlayerEntity implements Comparable<PCPlayerE
         }
 
         JsonObject resData = JsonFormatter.createJsonFromString(response.body().string());
-        this.m_Username = String.valueOf((resData).get("username")).replace("\"", "");
+        this.m_Username = String.valueOf((resData).get("username")).replace("\"", "").toLowerCase();
         m_Character = JsonFormatter.GetGson().fromJson(resData, Character.class);
     }
 
