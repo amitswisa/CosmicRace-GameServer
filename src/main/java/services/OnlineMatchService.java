@@ -150,6 +150,12 @@ public final class OnlineMatchService extends MatchService {
         this.interrupt();
     }
 
+    @Override
+    public void SendServerCommand(String i_ServerMessage)
+    {
+        SendMessageToAll(i_ServerMessage);
+    }
+
     @Override //RAN
     public HostEntity GetHost(){
         return (HostEntity) this.m_MatchPlayerEntities.get(0);

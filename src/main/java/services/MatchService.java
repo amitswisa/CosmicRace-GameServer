@@ -36,6 +36,7 @@ public abstract class MatchService extends Thread
     protected final List<PlayerEntity> m_MatchQuitedMatchPlayerEntities;
     protected final List<PlayerEntity> m_WaitingToQuit;
     protected MatchScoreManager m_MatchScore;
+    protected boolean m_IsFriendMode;
     protected boolean m_IsGameOver;
     protected boolean m_IsGameStarted;
 
@@ -48,6 +49,7 @@ public abstract class MatchService extends Thread
         this.m_WaitingToQuit = new ArrayList<>();
         this.m_IsGameOver = false;
         this.m_IsGameStarted = false;
+        this.m_IsFriendMode = false;
     }
 
     // Abstract methods.
@@ -58,6 +60,7 @@ public abstract class MatchService extends Thread
     abstract protected void actionOnMatchPlayers(Consumer<PlayerEntity> processor);
     abstract public PlayerEntity GetHost();
     abstract public int GetNumOfActivePlayers();
+    abstract public void SendServerCommand(String i_ServerMessage);
 
     protected String getMatchPlayersAsJson()
     {
@@ -127,7 +130,8 @@ public abstract class MatchService extends Thread
                                     (ServerGeneralMessage.eActionType.COMPLETE_LEVEL,
                                             (new PlayerMatchInfo(i_Match_PlayerEntity.GetUserName(), playerScorePosition, i_Match_PlayerEntity.GetCollectedCoinsAmount()).toString()));
 
-                    SendMessageToAll(scorePositionAnnouncement.toString());
+                    SendServerCommand(scorePositionAnnouncement.toString());
+
                 } catch (IllegalArgumentException iae) {
                     LoggerManager.warning(i_Match_PlayerEntity.GetUserName() + " " + iae.getMessage());
                 }

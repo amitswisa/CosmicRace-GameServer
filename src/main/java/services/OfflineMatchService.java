@@ -25,6 +25,7 @@ public class OfflineMatchService extends MatchService
     {
         super(i_MatchIdentifier, i_MatchPlayersList);
         this.r_MatchHost = i_HostEntity;
+        super.m_IsFriendMode = true;
         SendMessageToHost(new ServerGeneralMessage(ServerGeneralMessage.eActionType.ROOM_CREATED, i_MatchIdentifier).toString());
     }
 
@@ -196,6 +197,13 @@ public class OfflineMatchService extends MatchService
     {
         String command = JsonFormatter.GetGson().toJson(i_PlayerCommand, PlayerCommand.class);
         SendMessageToHost(command);
+    }
+
+    @Override
+    public void SendServerCommand(String i_ServerMessage)
+    {
+        SendMessageToHost(i_ServerMessage);
+        SendMessageToAll(i_ServerMessage);
     }
 
     synchronized public void AddPlayer(WebPlayerEntity i_NewWebPlayer)
