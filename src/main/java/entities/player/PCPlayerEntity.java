@@ -60,6 +60,9 @@ public class PCPlayerEntity extends PlayerEntity implements Comparable<PCPlayerE
     @Override
     public void CloseConnection(String i_ExceptionMessage)
     {
+        if(!this.m_Connection.IsConnected())
+            return;
+
         if(this.m_CurrentMatch != null)
             this.m_CurrentMatch.RemovePlayerFromMatch(this);
         else
