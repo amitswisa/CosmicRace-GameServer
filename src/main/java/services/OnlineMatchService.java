@@ -102,7 +102,10 @@ public final class OnlineMatchService extends MatchService {
 
         // TODO - Why this case sends i_MatchEndedReason as null.
         if(i_MatchEndedReason == null)
+        {
+            MatchLogger.Debug(this.m_MatchIdentifier, "EndMatch - i_MatchEndedReason is null.");
             i_MatchEndedReason = GlobalSettings.NOT_ENOUGH_PLAYERS_TO_CONTINUE;
+        }
 
         MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
 
