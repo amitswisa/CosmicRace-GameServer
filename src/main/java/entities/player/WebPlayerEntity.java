@@ -71,7 +71,7 @@ public class WebPlayerEntity extends PlayerEntity
     public void SetInitData(JsonObject i_PlayerData)
     {
         int characterId = i_PlayerData.get("characterid").getAsInt();
-        m_Username = i_PlayerData.get("username").getAsString().replace("\"", "");
+        m_Username = i_PlayerData.get("username").getAsString().replace("\"", "").toLowerCase();
         m_Character = new Character(characterId, "None", 1, 0, 10, 50, 10, 3, 1, 0, 0);
     }
 }
