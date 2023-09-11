@@ -58,11 +58,7 @@ public final class OnlineMatchService extends MatchService {
             this.initMatch();
             this.runGame();
         } catch(Exception e) {
-            try {
-                this.EndMatch(e.getMessage());
-            }catch(Exception exc) {
-                exc.printStackTrace();
-            }
+            this.EndMatch(e.getMessage());
         }
     }
 
@@ -101,17 +97,10 @@ public final class OnlineMatchService extends MatchService {
     }
 
     @Override
-    public void EndMatch(String i_MatchEndedReason) throws IOException {
+    public void EndMatch(String i_MatchEndedReason) {
 
         if(this.m_IsGameOver) return;
-
-        // TODO - Why this case sends i_MatchEndedReason as null.
-        if(i_MatchEndedReason == null)
-        {
-            throw new IOException("Null Exception");
-            //MatchLogger.Debug(this.m_MatchIdentifier, "EndMatch - i_MatchEndedReason is null.");
-            //i_MatchEndedReason = GlobalSettings.NOT_ENOUGH_PLAYERS_TO_CONTINUE;
-        }
+        if(i_MatchEndedReason == null) return;
 
         MatchLogger.Info(GetMatchIdentifier(), i_MatchEndedReason);
 
