@@ -55,39 +55,32 @@ public class AttackInfo {
      * In case the attacker can't attack, since he has cool-down - returns NULL*/
     public static AttackInfo GenerateAttackInfo(PlayerCommand i_PlayerCommand, List<PlayerEntity> i_MatchPlayerEntities) {
 
-        int attackerInd = 0;
         AttackInfo attackInfo = new AttackInfo();
         PlayerEntity attacker = GetPlayer(i_PlayerCommand.GetUsername(), i_MatchPlayerEntities);
 
         if(System.currentTimeMillis() - attacker.GetLastAttackTime() >= ATTACK_COOLDOWN) { // if the cool-down is over. He is able to attack
             attackInfo.SetAttackerName(attacker.GetUserName());
 
-            for (int i = 0; i < i_MatchPlayerEntities.size(); i++) {
-                if (attacker.GetUserName().equals(i_MatchPlayerEntities.get(i).GetUserName())) {
-                    attackerInd = i;
-                    break;
-                }
-            }
-
             Random random = new Random();
 
-            while (!attacker.IsDead()) {
-                int victimInd = random.nextInt(i_MatchPlayerEntities.size());
+            List<PlayerEntity> alivePlayers = i_MatchPlayerEntities.stream().
+                    filter(player ->
+                            !(player instanceof HostEntity) &&
+                                !player.IsDead() &&
+                                    !player.GetUserName().equals(attacker.GetUserName())).toList();
 
-                if (victimInd != attackerInd) {
-
-                    PlayerEntity victim = i_MatchPlayerEntities.get(victimInd);
-                    if(!victim.IsDead() &&
-                            !(victim instanceof HostEntity)){
-
-                        attackInfo.SetVictimName(victim.GetUserName());
-                        attacker.SetLastAttackTime();
-                        victim.MarkDead();
-                        LoggerManager.info("Attack occur: " + attacker.GetUserName() + " attacked " + victim.GetUserName());
-                        break;
-                    }
-                }
+            if(alivePlayers.isEmpty()){
+                return null;
             }
+
+            int victimInd = random.nextInt(alivePlayers.size());
+
+            PlayerEntity victim = alivePlayers.get(victimInd);
+
+            attackInfo.SetVictimName(victim.GetUserName());
+            attacker.SetLastAttackTime();
+            victim.MarkDead();
+            LoggerManager.info("Attack occur: " + attacker.GetUserName() + " attacked " + victim.GetUserName());
         }
 
         if(attackInfo.isValidAttack()){
