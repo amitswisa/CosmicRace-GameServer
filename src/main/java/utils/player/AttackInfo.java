@@ -1,7 +1,7 @@
 package utils.player;
 
 import dto.PlayerCommand;
-import entities.player.WebPlayerEntity;
+import entities.player.HostEntity;
 import model.player.PlayerEntity;
 import utils.loggers.LoggerManager;
 
@@ -22,7 +22,10 @@ public class AttackInfo {
         this.m_AttackID = m_AttackID;
     }
 
-    public AttackInfo() {}
+    public AttackInfo() {
+        this.m_AttackerName = "";
+        this.m_Victim = "";
+    }
 
     public void SetAttackerName(String m_AttackerName) {
         this.m_AttackerName = m_AttackerName;
@@ -58,7 +61,6 @@ public class AttackInfo {
 
         if(System.currentTimeMillis() - attacker.GetLastAttackTime() >= ATTACK_COOLDOWN) { // if the cool-down is over. He is able to attack
             attackInfo.SetAttackerName(attacker.GetUserName());
-//        attackInfo.SetAttackID(i_PlayerCommand.);
 
             for (int i = 0; i < i_MatchPlayerEntities.size(); i++) {
                 if (attacker.GetUserName().equals(i_MatchPlayerEntities.get(i).GetUserName())) {
@@ -75,7 +77,8 @@ public class AttackInfo {
                 if (victimInd != attackerInd) {
 
                     PlayerEntity victim = i_MatchPlayerEntities.get(victimInd);
-                    if(!victim.IsDead()){
+                    if(!victim.IsDead() &&
+                            !(victim instanceof HostEntity)){
 
                         attackInfo.SetVictimName(victim.GetUserName());
                         attacker.SetLastAttackTime();
@@ -87,6 +90,16 @@ public class AttackInfo {
             }
         }
 
-        return attackInfo;
+        if(attackInfo.isValidAttack()){
+            return attackInfo;
+        }
+        else{
+            return null;
+        }
     }
+
+    private boolean isValidAttack(){
+        return !m_AttackerName.isEmpty() && !m_Victim.isEmpty();
+    }
+
 }

@@ -112,8 +112,12 @@ public abstract class MatchService extends Thread
                 i_PlayerCommand.SetAttackInfo(null); //Dvir asked to add it.
             }
             case ATTACK -> {
-                i_PlayerCommand.SetAttackInfo(AttackInfo.GenerateAttackInfo(i_PlayerCommand, m_MatchPlayerEntities));
-                this.SendPlayerCommand(i_PlayerCommand);
+                AttackInfo attackInfo = AttackInfo.GenerateAttackInfo(i_PlayerCommand, m_MatchPlayerEntities);
+
+                if(attackInfo != null){
+                    i_PlayerCommand.SetAttackInfo(attackInfo);
+                    this.SendPlayerCommand(i_PlayerCommand);
+                }
             }
             case COIN_COLLECT -> {
                 i_Match_PlayerEntity.MarkAlive();
